@@ -1,0 +1,37 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="popup.css">
+  </head>
+  <body>
+
+    <div id="wrapper">
+      <div id="settings">
+
+        <div id="mousewheelVolumeWrapper">
+          <p class="text title">Mousewheel Volume Control</p>
+          <div class="setting" id="mousewheelSettings">
+            <input class="checkbox" id="useMousewheelVolume" type="checkbox">
+            <input id="defaultIncrement" type="number" min=0 max=20 placeholder="Increment" value=5>
+          </div>
+        </div>
+
+        <div class="setting" id="roundedVolumeWrapper">
+          <input class="checkbox" id="useRoundedVolume" type="checkbox" value=false>
+          <p class="text">Use Rounded Volume</p>
+        </div>
+
+        <div id="defaultVolumeWrapper">
+          <p class="text title">Default Volume</p>
+          <div class="setting" id="defaultVolumeSettings">
+            <input class="checkbox" id="useDefaultVolume" type="checkbox" value=false>
+            <input id="defaultVolume" type="number" min=0 max=100 placeholder="Default Volume" value=20>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <script src="popup.js"></script>
+
+  </body>
+</html>
