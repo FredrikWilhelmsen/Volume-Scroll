@@ -12,10 +12,17 @@ let addMousewheelHandler = function(video){
     let onScroll = function(event){
       event.preventDefault();
 
-      video.volume += (video.dataset.increment / 100) * (event.deltaY / 100 * -1); //deltaY is how much the wheel scrolled, 100 up, -100 down. Divided by 100 to only get direction, then inverted
+      let vol = video.volume + (video.dataset.increment / 100) * (event.deltaY / 100 * -1); //deltaY is how much the wheel scrolled, 100 up, -100 down. Divided by 100 to only get direction, then inverted
+
+      if(vol < 0){
+        vol = 0;
+      }
+      else if(vol > 1) {
+        vol = 1;
+      }
 
       //Rounding the volume to the nearest increment, in case the original volume was not on the increment.
-      let volume = video.volume * 100;
+      let volume = vol * 100;
       volume = volume / video.dataset.increment;
       volume = Math.round(volume);
       volume = volume * video.dataset.increment;
