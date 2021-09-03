@@ -20,20 +20,6 @@ document.getElementById("defaultIncrement").addEventListener("change", function(
   chrome.storage.sync.set({increment: input.value});
 });
 
-document.getElementById("useRoundedVolume").addEventListener("change", function(){
-  //Rounded Volume Toggle
-  let input = document.getElementById("useRoundedVolume");
-  document.getElementById("useDefaultVolume").disabled = input.checked;
-  if(input.checked){
-    document.getElementById("defaultVolume").disabled = true;
-    document.getElementById("useDefaultVolume").checked = false;
-
-    chrome.storage.sync.set({useDefaultVolume: false});
-  }
-
-  chrome.storage.sync.set({useRoundedVolume: input.checked});
-});
-
 document.getElementById("useDefaultVolume").addEventListener("change", function(){
   //Default Volume Toggle
   let input = document.getElementById("useDefaultVolume");
@@ -65,16 +51,6 @@ let loadSettings = function(){
 
   chrome.storage.sync.get("increment", (data) => {
     document.getElementById("defaultIncrement").value = data.increment;
-  });
-
-  chrome.storage.sync.get("useRoundedVolume", (data) => {
-    document.getElementById("useRoundedVolume").checked = data.useRoundedVolume;
-
-    document.getElementById("useDefaultVolume").disabled = data.useRoundedVolume;
-    if(data.useRoundedVolume){
-      document.getElementById("defaultVolume").disabled = true;
-      document.getElementById("useDefaultVolume").checked = false;
-    }
   });
 
   chrome.storage.sync.get("useDefaultVolume", (data) => {

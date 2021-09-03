@@ -1,7 +1,6 @@
 let defaultVolume = 20;
 let defaultIncrement = 5;
 let useDefaultVolume = false;
-let useRoundedVolume = true;
 let useMousewheelVolume = true;
 
 chrome.runtime.onInstalled.addListener(() => {
@@ -15,10 +14,6 @@ chrome.runtime.onInstalled.addListener(() => {
 
   chrome.storage.sync.get({useDefaultVolume: useDefaultVolume}, (data) => {
     chrome.storage.sync.set({useDefaultVolume: data.useDefaultVolume});
-  });
-
-  chrome.storage.sync.get({useRoundedVolume: useRoundedVolume}, (data) => {
-    chrome.storage.sync.set({useRoundedVolume: data.useRoundedVolume});
   });
 
   chrome.storage.sync.get({useMousewheelVolume: useMousewheelVolume}, (data) => {
