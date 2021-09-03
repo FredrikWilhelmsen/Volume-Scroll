@@ -22,6 +22,7 @@ let addMousewheelHandler = function(video){
       volume = volume / 100;
 
       video.volume = volume;
+      video.dataset.volume = volume;
 
       console.log("Set volume of video to " + video.volume);
     }
@@ -35,18 +36,16 @@ let handleDefaultVolume = function(video){
   chrome.storage.sync.get("volume", (vol) => {
     video.volume = vol.volume / 100;
     video.dataset.volume = vol.volume / 100;
-    console.log("Set volume of video to " + video.volume);
-    console.log(video);
+    console.log("Set default volume of video to " + video.volume);
 
     let change = function(){
-      video.volume = video.dataset.volume;
+      if(!(video.volume == video.dataset.volume - video.dataset.increment || video.volume == video.dataset.volume + video.dataset.increment)){ //Checks to see if the registered change in volume is equal to the increment. If it is not then it is denied.
+        video.volume = video.dataset.volume;
+      }
+
     };
 
     video.addEventListener("volumechange", change);
-
-    setTimeout(function(){
-      video.removeEventListener("volumechange", change);
-    }, 1500);
   });
 };
 
