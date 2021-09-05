@@ -1,0 +1,41 @@
+.scrollOverlay {
+  font-size: 40px;
+  -webkit-text-stroke-width: 1px;
+  -webkit-text-stroke-color: black;
+  font-weight: bold;
+  color: white;
+
+  opacity: 0;
+
+  padding-left: 5px;
+  position: absolute;
+  z-index: 2;
+}
+
+@keyframes fade {
+  0% {
+    opacity: 1;
+  }
+
+  90% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+.scrollOverlayFade {
+  animation-name: fade;
+  animation-duration: 2s;
+}
+
+.scrollContainer {
+  position: relative;
+}
+
+.scrollContainer video {
+  position: absolute;
+  z-index: 1;
+}
