@@ -7,13 +7,13 @@ const config = {
 let addMousewheelHandler = function(video){
   chrome.storage.sync.get("increment", (data) => {
     video.dataset.increment = data.increment;
-    console.log("adding scroll handler");
 
     let onScroll = function(event){
       event.preventDefault();
 
       let vol = video.volume + (video.dataset.increment / 100) * (event.deltaY / 100 * -1); //deltaY is how much the wheel scrolled, 100 up, -100 down. Divided by 100 to only get direction, then inverted
 
+      //Limiting the volume to between 0-1
       if(vol < 0){
         vol = 0;
       }
@@ -31,7 +31,24 @@ let addMousewheelHandler = function(video){
       video.volume = volume;
       video.dataset.volume = volume;
 
-      console.log("Set volume of video to " + video.volume);
+      //Remove all old overlays
+      let parent = video.parentElement;
+
+      while (parent.firstChild !== video) {
+        parent.removeChild(parent.firstChild);
+      }
+
+      //Add new overlay
+      let div = document.createElement("div");
+      div.innerHTML = Math.round(video.volume * 100);
+      div.classList.add("scrollOverlay");
+      parent.classList.add("scrollContainer");
+
+      //Animate fade
+      div.classList.remove("scrollOverlayFade");
+      div.classList.add("scrollOverlayFade");
+
+      parent.insertBefore(div, video);
     }
 
     video.addEventListener("wheel", onScroll);
@@ -43,7 +60,6 @@ let handleDefaultVolume = function(video){
   chrome.storage.sync.get("volume", (vol) => {
     video.volume = vol.volume / 100;
     video.dataset.volume = vol.volume / 100;
-    console.log("Set default volume of video to " + video.volume);
 
     let change = function(){
       if(!(video.volume == video.dataset.volume - video.dataset.increment || video.volume == video.dataset.volume + video.dataset.increment)){ //Checks to see if the registered change in volume is equal to the increment. If it is not then it is denied.
