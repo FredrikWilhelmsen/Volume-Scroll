@@ -4,7 +4,9 @@
 
 body {
   width: 200;
-  height: 225;
+  height: 300;
+  background-color: #282A35;
+  color: white;
 }
 
 #wrapper {
@@ -24,7 +26,7 @@ body {
   align-items: stretch;
 }
 
-.setting {
+.input {
   display: flex;
   align-items: center;
   justify-content: stretch;
@@ -35,11 +37,29 @@ body {
   margin-bottom: 5%;
 }
 
+#overlayColorWrapper .title {
+  margin-bottom: 0px;
+}
+
+.valueDisplay {
+  text-align: center;
+  margin-bottom: 0px;
+}
+
+#colorInputWrapper {
+  margin-bottom: 5%;
+  width: 80%;
+}
+
+#overlayColorInput {
+  width: 100%;
+}
+
 .checkbox {
   margin-right: 5%;
 }
 
-input[type="number"] {
+input[type="range"] {
   width: 100%;
   flex-grow: 1;
 }

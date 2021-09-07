@@ -5,55 +5,58 @@ const config = {
 };
 
 let addMousewheelHandler = function(video){
-  chrome.storage.sync.get("increment", (data) => {
-    video.dataset.increment = data.increment;
+  let onScroll = function(event){
+    event.preventDefault();
 
-    let onScroll = function(event){
-      event.preventDefault();
+    chrome.storage.sync.get("increment", (incData) => {
+      chrome.storage.sync.get("fontColor", (colorData) => {
+        chrome.storage.sync.get("fontSize", (fontSizeData) => {
+          let vol = video.volume + (incData.increment / 100) * (event.deltaY / 100 * -1); //deltaY is how much the wheel scrolled, 100 up, -100 down. Divided by 100 to only get direction, then inverted
 
-      let vol = video.volume + (video.dataset.increment / 100) * (event.deltaY / 100 * -1); //deltaY is how much the wheel scrolled, 100 up, -100 down. Divided by 100 to only get direction, then inverted
+          //Limiting the volume to between 0-1
+          if(vol < 0){
+            vol = 0;
+          }
+          else if(vol > 1) {
+            vol = 1;
+          }
 
-      //Limiting the volume to between 0-1
-      if(vol < 0){
-        vol = 0;
-      }
-      else if(vol > 1) {
-        vol = 1;
-      }
+          //Rounding the volume to the nearest increment, in case the original volume was not on the increment.
+          let volume = vol * 100;
+          volume = volume / incData.increment;
+          volume = Math.round(volume);
+          volume = volume * incData.increment;
+          volume = volume / 100;
 
-      //Rounding the volume to the nearest increment, in case the original volume was not on the increment.
-      let volume = vol * 100;
-      volume = volume / video.dataset.increment;
-      volume = Math.round(volume);
-      volume = volume * video.dataset.increment;
-      volume = volume / 100;
+          video.volume = volume;
+          video.dataset.volume = volume;
 
-      video.volume = volume;
-      video.dataset.volume = volume;
+          //Remove all old overlays
+          let parent = video.parentElement;
 
-      //Remove all old overlays
-      let parent = video.parentElement;
+          while (parent.firstChild !== video) {
+            parent.removeChild(parent.firstChild);
+          }
 
-      while (parent.firstChild !== video) {
-        parent.removeChild(parent.firstChild);
-      }
+          //Add new overlay
+          let div = document.createElement("div");
+          div.innerHTML = Math.round(video.volume * 100);
+          div.style.color = colorData.fontColor;
+          div.style.fontSize = fontSizeData.fontSize + "px";
+          div.classList.add("scrollOverlay");
+          parent.classList.add("scrollContainer");
 
-      //Add new overlay
-      let div = document.createElement("div");
-      div.innerHTML = Math.round(video.volume * 100);
-      div.classList.add("scrollOverlay");
-      parent.classList.add("scrollContainer");
+          //Animate fade
+          //div.classList.remove("scrollOverlayFade");
+          div.classList.add("scrollOverlayFade");
 
-      //Animate fade
-      div.classList.remove("scrollOverlayFade");
-      div.classList.add("scrollOverlayFade");
+          parent.insertBefore(div, video);
+        });
+      });
+    });
+  }
 
-      parent.insertBefore(div, video);
-    }
-
-    video.addEventListener("wheel", onScroll);
-
-  });
+  video.addEventListener("wheel", onScroll);
 }
 
 let handleDefaultVolume = function(video){
@@ -62,10 +65,11 @@ let handleDefaultVolume = function(video){
     video.dataset.volume = vol.volume / 100;
 
     let change = function(){
-      if(!(video.volume == video.dataset.volume - video.dataset.increment || video.volume == video.dataset.volume + video.dataset.increment)){ //Checks to see if the registered change in volume is equal to the increment. If it is not then it is denied.
-        video.volume = video.dataset.volume;
-      }
-
+      chrome.storage.sync.get("increment", (incData) => {
+        if(!(video.volume == video.dataset.volume - incData.increment || video.volume == video.dataset.volume + incData.increment)){ //Checks to see if the registered change in volume is equal to the increment. If it is not then it is denied.
+          video.volume = video.dataset.volume;
+        }
+      });
     };
 
     video.addEventListener("volumechange", change);

@@ -8,19 +8,38 @@
       <div id="settings">
 
         <div id="mousewheelVolumeWrapper">
-          <p class="text title">Mousewheel Volume Control</p>
-          <div class="setting" id="mousewheelSettings">
+          <p class="title">Scroll Increment</p>
+          <div class="input">
             <input class="checkbox" id="useMousewheelVolume" type="checkbox">
-            <input id="defaultIncrement" type="number" min=0 max=20 placeholder="Increment" value=5>
+            <input id="defaultIncrementSlider" type="range" min=0 max=20 value=5>
+          </div>
+          <p class="valueDisplay"></p>
+        </div>
+
+        <div id="overlayFontSizeWrapper">
+          <p class="title">Overlay Font Size</p>
+          <div class="input">
+            <input id="overlayFontSizeSlider" type="range" min=10 max=100 step=5 value=40>
+          </div>
+          <p class="valueDisplay"></p>
+        </div>
+
+        <div id="overlayColorWrapper">
+          <p class="title">Overlay Color</p>
+          <div id="wrapper">
+            <div class="input" id="colorInputWrapper">
+              <input id="overlayColorInput" type="color" value="#ffffff">
+            </div>
           </div>
         </div>
 
         <div id="defaultVolumeWrapper">
-          <p class="text title">Default Volume</p>
-          <div class="setting" id="defaultVolumeSettings">
+          <p class="title">Default Volume</p>
+          <div class="input">
             <input class="checkbox" id="useDefaultVolume" type="checkbox" value=false>
-            <input id="defaultVolume" type="number" min=0 max=100 placeholder="Default Volume" value=20>
+            <input id="defaultVolumeSlider" type="range" min=0 max=100 value=20>
           </div>
+          <p class="valueDisplay"></p>
         </div>
 
       </div>
