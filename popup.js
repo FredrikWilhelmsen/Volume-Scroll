@@ -65,11 +65,11 @@ let loadSettings = function(){
   chrome.storage.sync.get("useMousewheelVolume", (data) => {
     document.getElementById("useMousewheelVolume").checked = data.useMousewheelVolume;
 
-    document.getElementById("defaultIncrementSlider").disabled = !data.useMousewheelVolume;
+    document.getElementById("incrementSlider").disabled = !data.useMousewheelVolume;
   });
 
   chrome.storage.sync.get("increment", (data) => {
-    document.getElementById("defaultIncrementSlider").value = data.increment;
+    document.getElementById("incrementSlider").value = data.increment;
 
     document.querySelector("#mousewheelVolumeWrapper .valueDisplay").innerHTML = data.increment;
   });
