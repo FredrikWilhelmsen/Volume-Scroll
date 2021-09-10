@@ -1,9 +1,11 @@
 let blacklist = [
-  "www.music.youtube.com",
-  "www.spotify.com"
+  "music.youtube.com",
+  "open.spotify.com"
 ];
 
 if(!blacklist.includes(window.location.hostname)){
+  console.log("running");
+  console.log(window.location.hostname);
   let body = document.documentElement || document.body;
   const config = {
     childList: true,
