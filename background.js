@@ -2,6 +2,8 @@ let defaultVolume = 20;
 let defaultIncrement = 5;
 let useDefaultVolume = false;
 let useMousewheelVolume = true;
+let defaultColor = "#ffffff"; //white
+let defaultFontSize = 40;
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.sync.get({volume: defaultVolume}, (data) => {
@@ -18,5 +20,13 @@ chrome.runtime.onInstalled.addListener(() => {
 
   chrome.storage.sync.get({useMousewheelVolume: useMousewheelVolume}, (data) => {
     chrome.storage.sync.set({useMousewheelVolume: data.useMousewheelVolume});
+  });
+
+  chrome.storage.sync.get({fontColor: defaultColor}, (data) => {
+    chrome.storage.sync.set({fontColor: data.fontColor});
+  });
+
+  chrome.storage.sync.get({fontSize: defaultFontSize}, (data) => {
+    chrome.storage.sync.set({fontSize: data.fontSize});
   });
 });
