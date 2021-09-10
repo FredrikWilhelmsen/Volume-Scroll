@@ -65,7 +65,7 @@ if(!blacklist.includes(window.location.hostname)){
 
           //Animate fade
           div.classList.remove("scrollOverlayFade");
-          setTimeout(function(){div.classList.add("scrollOverlayFade")}, 10);
+          setTimeout(function(){div.classList.add("scrollOverlayFade")}, 1);
         });
       }
     }
