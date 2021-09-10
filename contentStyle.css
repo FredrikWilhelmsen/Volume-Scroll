@@ -5,9 +5,8 @@
 
   opacity: 0;
 
-  padding-left: 5px;
   position: absolute;
-  z-index: 2;
+  z-index: 9999;
 }
 
 @keyframes fade {
@@ -29,11 +28,6 @@
   animation-duration: 2s;
 }
 
-.scrollContainer {
+.body {
   position: relative;
-}
-
-.scrollContainer video {
-  position: absolute;
-  z-index: 1;
 }

@@ -30,64 +30,62 @@ let onScroll = function(event){
       let video = element;
 
       chrome.storage.sync.get("increment", (incData) => {
-        chrome.storage.sync.get("fontColor", (colorData) => {
-          chrome.storage.sync.get("fontSize", (fontSizeData) => {
-            let vol = video.volume + (incData.increment / 100) * (event.deltaY / 100 * -1); //deltaY is how much the wheel scrolled, 100 up, -100 down. Divided by 100 to only get direction, then inverted
+        let vol = video.volume + (incData.increment / 100) * (event.deltaY / 100 * -1); //deltaY is how much the wheel scrolled, 100 up, -100 down. Divided by 100 to only get direction, then inverted
 
-            //Limiting the volume to between 0-1
-            if(vol < 0){
-              vol = 0;
-            }
-            else if(vol > 1) {
-              vol = 1;
-            }
+        //Limiting the volume to between 0-1
+        if(vol < 0){
+          vol = 0;
+        }
+        else if(vol > 1) {
+          vol = 1;
+        }
 
-            //Rounding the volume to the nearest increment, in case the original volume was not on the increment.
-            let volume = vol * 100;
-            volume = volume / incData.increment;
-            volume = Math.round(volume);
-            volume = volume * incData.increment;
-            volume = volume / 100;
+        //Rounding the volume to the nearest increment, in case the original volume was not on the increment.
+        let volume = vol * 100;
+        volume = volume / incData.increment;
+        volume = Math.round(volume);
+        volume = volume * incData.increment;
+        volume = volume / 100;
 
-            video.volume = volume;
-            video.dataset.volume = volume;
+        video.volume = volume;
+        video.dataset.volume = volume;
 
-            /*
-
-            //Remove all old overlays
-            let parent = video.parentElement;
-
-            while (parent.firstChild !== video) {
-              parent.removeChild(parent.firstChild);
-            }
+        //Update overlay
+        let div = document.getElementById("volumeOverlay");
+        div.innerHTML = Math.round(video.volume * 100);
+        div.style.top = event.clientY  - div.offsetHeight + "px";
+        div.style.left = event.clientX - div.offsetWidth + "px";
 
 
-            //Add new overlay
-            let div = document.createElement("div");
-            div.innerHTML = Math.round(video.volume * 100);
-            div.style.color = colorData.fontColor;
-            div.style.fontSize = fontSizeData.fontSize + "px";
-            div.classList.add("scrollOverlay");
-            parent.classList.add("scrollContainer");
-
-            //Animate fade
-            //div.classList.remove("scrollOverlayFade");
-            div.classList.add("scrollOverlayFade");
-
-            parent.insertBefore(div, video);
-            */
-          });
-        });
+        //Animate fade
+        div.classList.remove("scrollOverlayFade");
+        setTimeout(function(){div.classList.add("scrollOverlayFade")}, 10);
       });
     }
   }
 };
 
-chrome.storage.sync.get("useMousewheelVolume", (data) => {
-  if(data.useMousewheelVolume){
-    document.addEventListener("wheel", onScroll, { passive: false });
-  }
-});
+window.onload = function(){
+  chrome.storage.sync.get("useMousewheelVolume", (data) => {
+    if(data.useMousewheelVolume){
+      document.addEventListener("wheel", onScroll, { passive: false });
+
+      chrome.storage.sync.get("fontColor", (colorData) => {
+        chrome.storage.sync.get("fontSize", (fontSizeData) => {
+
+          //Add volume overlay to the page
+          let div = document.createElement("div");
+          div.id = "volumeOverlay";
+          div.classList.add("scrollOverlay");
+          div.style.color = colorData.fontColor;
+          div.style.fontSize = fontSizeData.fontSize + "px";
+
+          document.getElementsByTagName("body")[0].appendChild(div);
+        });
+      });
+    }
+  });
+}
 
 let setAudio = function(mutations){
   for(mutation of mutations){
