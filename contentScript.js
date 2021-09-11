@@ -73,8 +73,9 @@ if(!blacklist.includes(window.location.hostname)){
 
 
           //Animate fade
-          div.classList.remove("scrollOverlayFade");
-          setTimeout(function(){div.classList.add("scrollOverlayFade")}, 1);
+          let newDiv = div;
+          div.parentNode.replaceChild(newDiv, div);
+          div.classList.add("scrollOverlayFade");
         });
       }
     }
