@@ -10,7 +10,10 @@
 		"storage"
 	],
 	"action": {
-		"default_popup": "popup.html"
+		"default_popup": "popup.html",
+		"default_icon": {
+      "128": "/images/128.png"
+    }
 	},
 	"content_scripts": [
 		{
@@ -19,5 +22,8 @@
 			"css": ["contentStyle.css"],
 			"js": ["contentScript.js"]
 		}
-	]
+	],
+	"icons": {
+    "128": "/images/128.png"
+  }
 }
