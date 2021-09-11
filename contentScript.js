@@ -68,7 +68,7 @@ if(!blacklist.includes(window.location.hostname)){
           //Update overlay
           let div = document.getElementById("volumeOverlay");
           div.innerHTML = Math.round(video.volume * 100);
-          div.style.top = event.clientY  - div.offsetHeight + "px";
+          div.style.top = event.clientY - div.offsetHeight + "px";
           div.style.left = event.clientX - div.offsetWidth + "px";
 
 
