@@ -4,8 +4,6 @@ let blacklist = [
 ];
 
 if(!blacklist.includes(window.location.hostname)){
-  console.log("running");
-  console.log(window.location.hostname);
   let body = document.documentElement || document.body;
   const config = {
     childList: true,
