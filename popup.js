@@ -72,6 +72,8 @@ let loadSettings = function(){
     document.getElementById("incrementSlider").value = data.increment;
 
     document.querySelector("#mousewheelVolumeWrapper .valueDisplay").innerHTML = data.increment;
+
+    document.getElementById("defaultVolumeSlider").step = data.increment;
   });
 
   chrome.storage.sync.get("fontSize", (data) => {
