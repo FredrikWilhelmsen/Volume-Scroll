@@ -48,6 +48,13 @@ if(!blacklist.includes(window.location.hostname)){
             vol = 1;
           }
 
+          if(vol > 0){
+            video.muted = false;
+          }
+          else {
+            video.muted = true;
+          }
+
           //Rounding the volume to the nearest increment, in case the original volume was not on the increment.
           let volume = vol * 100;
           volume = volume / incData.increment;
