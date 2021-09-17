@@ -5,6 +5,11 @@ let useMousewheelVolume = true;
 let defaultColor = "#ffffff"; //white
 let defaultFontSize = 40;
 
+let defaultBlacklist = [
+  "music.youtube.com",
+  "open.spotify.com"
+];
+
 chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.sync.get({volume: defaultVolume}, (data) => {
     chrome.storage.sync.set({volume: data.volume});
@@ -28,5 +33,9 @@ chrome.runtime.onInstalled.addListener(() => {
 
   chrome.storage.sync.get({fontSize: defaultFontSize}, (data) => {
     chrome.storage.sync.set({fontSize: data.fontSize});
+  });
+
+  chrome.storage.sync.get({blacklist: defaultBlacklist}, (data) => {
+    chrome.storage.sync.set({blacklist: data.blacklist});
   });
 });

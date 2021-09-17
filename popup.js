@@ -59,7 +59,35 @@ document.getElementById("defaultVolumeSlider").addEventListener("change", functi
   document.querySelector("#defaultVolumeWrapper .valueDisplay").innerHTML = input.value;
 
   chrome.storage.sync.set({volume: input.value});
-})
+});
+
+document.getElementById("blacklist").addEventListener("change", function(){
+  //Blacklist toggle input
+  let input = document.getElementById("blacklist");
+
+  document.getElementById("blacklistState").innerHTML = (input.checked) ? "Enabled on this page" : "Disabled on this page";
+
+  chrome.storage.sync.get("blacklist", (data) => {
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+      let url = new URL(tabs[0].url).hostname;
+      console.log(url);
+      if(input.checked){ //Checkbox is checked, meaning the page should not be blacklisted
+        let blacklist = data.blacklist;
+
+        blacklist.splice(blacklist.indexOf(url), 1);
+
+        chrome.storage.sync.set({blacklist: blacklist});
+      }
+      else { //Checkbox is not checked, meaning the page should be blacklisted
+        let blacklist = data.blacklist;
+
+        blacklist.push(url);
+
+        chrome.storage.sync.set({blacklist: blacklist});
+      }
+    });
+  });
+});
 
 let loadSettings = function(){
   chrome.storage.sync.get("useMousewheelVolume", (data) => {
@@ -95,6 +123,14 @@ let loadSettings = function(){
   chrome.storage.sync.get("volume", (data) => {
     document.getElementById("defaultVolumeSlider").value = data.volume;
     document.querySelector("#defaultVolumeWrapper .valueDisplay").innerHTML = data.volume;
+  });
+
+  chrome.storage.sync.get("blacklist", (data) => {
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+      let url = new URL(tabs[0].url).hostname;
+      document.getElementById("blacklist").checked = !data.blacklist.includes(url);
+      document.getElementById("blacklistState").innerHTML = (!data.blacklist.includes(url)) ? "Enabled on this page" : "Disabled on this page";
+    });
   });
 }
 
