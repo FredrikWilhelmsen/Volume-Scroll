@@ -4,7 +4,8 @@ let useDefaultVolume = false;
 let useMousewheelVolume = true;
 let defaultColor = "#ffffff"; //white
 let defaultFontSize = 40;
-
+let defaultModifierKey = "shift";
+let useModifierKey = false;
 let defaultBlacklist = [
   "music.youtube.com",
   "open.spotify.com"
@@ -33,6 +34,14 @@ chrome.runtime.onInstalled.addListener(() => {
 
   chrome.storage.sync.get({fontSize: defaultFontSize}, (data) => {
     chrome.storage.sync.set({fontSize: data.fontSize});
+  });
+
+  chrome.storage.sync.get({useModifierKey: useModifierKey}, (data) => {
+    chrome.storage.sync.set({useModifierKey: data.useModifierKey});
+  });
+
+  chrome.storage.sync.get({modifierKey: defaultModifierKey}, (data) => {
+    chrome.storage.sync.set({modifierKey: data.modifierKey});
   });
 
   chrome.storage.sync.get({blacklist: defaultBlacklist}, (data) => {

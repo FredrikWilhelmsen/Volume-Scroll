@@ -1,76 +1,103 @@
+let body = document.documentElement || document.body;
+
 chrome.storage.sync.get("blacklist", (blacklistData) => {
   if(!blacklistData.blacklist.includes(window.location.hostname)){
-    let body = document.documentElement || document.body;
+    let isModifierKeyPressed = true;
+
+    chrome.storage.sync.get("useModifierKey", (modifierData) => {
+      if(modifierData.useModifierKey){
+        isModifierKeyPressed = false;
+
+        chrome.storage.sync.get("modifierKey", (modifierKeyData) => {
+          let modifierKey = modifierKeyData.modifierKey;
+
+          body.addEventListener("keydown", function(event){
+            if(modifierKey == event.key){
+              isModifierKeyPressed = true;
+            }
+          });
+
+          body.addEventListener("keyup", function(event){
+            if(modifierKey == event.key){
+              isModifierKeyPressed = false;
+            }
+          });
+        });
+      }
+    });
+
     const config = {
       childList: true,
       subtree: true
     };
 
     let handleDefaultVolume = function(video){
-    chrome.storage.sync.get("volume", (vol) => {
-      video.volume = vol.volume / 100;
-      video.dataset.volume = vol.volume / 100;
+      chrome.storage.sync.get("volume", (vol) => {
+        video.volume = vol.volume / 100;
+        video.dataset.volume = vol.volume / 100;
 
-      let change = function(){
-        chrome.storage.sync.get("increment", (incData) => {
-          if(!(video.volume == video.dataset.volume - incData.increment || video.volume == video.dataset.volume + incData.increment)){ //Checks to see if the registered change in volume is equal to the increment. If it is not then it is denied.
-            video.volume = video.dataset.volume;
-          }
-        });
-      };
+        let change = function(){
+          chrome.storage.sync.get("increment", (incData) => {
+            if(!(video.volume == video.dataset.volume - incData.increment || video.volume == video.dataset.volume + incData.increment)){ //Checks to see if the registered change in volume is equal to the increment. If it is not then it is denied.
+              video.volume = video.dataset.volume;
+            }
+          });
+        };
 
-      video.addEventListener("volumechange", change);
-    });
+        video.addEventListener("volumechange", change);
+      });
     };
 
     let onScroll = function(event){
-      let elements = document.elementsFromPoint(event.clientX, event.clientY)
-      for(element of elements){
-        if(element.tagName == "VIDEO"){
-          event.preventDefault();
+      if(isModifierKeyPressed){
+        let elements = document.elementsFromPoint(event.clientX, event.clientY)
+        for(element of elements){
+          if(element.tagName == "VIDEO"){
+            event.preventDefault();
 
-          let video = element;
+            let video = element;
 
-          chrome.storage.sync.get("increment", (incData) => {
-            let vol = video.volume + (incData.increment / 100) * (event.deltaY / 100 * -1); //deltaY is how much the wheel scrolled, 100 up, -100 down. Divided by 100 to only get direction, then inverted
+            chrome.storage.sync.get("increment", (incData) => {
+              let vol = video.volume + (incData.increment / 100) * (event.deltaY / 100 * -1); //deltaY is how much the wheel scrolled, 100 up, -100 down. Divided by 100 to only get direction, then inverted
 
-            //Limiting the volume to between 0-1
-            if(vol < 0){
-              vol = 0;
-            }
-            else if(vol > 1) {
-              vol = 1;
-            }
+              //Limiting the volume to between 0-1
+              if(vol < 0){
+                vol = 0;
+              }
+              else if(vol > 1) {
+                vol = 1;
+              }
 
-            if(vol > 0){
-              video.muted = false;
-            }
-            else {
-              video.muted = true;
-            }
+              if(vol > 0){
+                video.muted = false;
+              }
+              else {
+                video.muted = true;
+              }
 
-            //Rounding the volume to the nearest increment, in case the original volume was not on the increment.
-            let volume = vol * 100;
-            volume = volume / incData.increment;
-            volume = Math.round(volume);
-            volume = volume * incData.increment;
-            volume = volume / 100;
+              //Rounding the volume to the nearest increment, in case the original volume was not on the increment.
+              let volume = vol * 100;
+              volume = volume / incData.increment;
+              volume = Math.round(volume);
+              volume = volume * incData.increment;
+              volume = volume / 100;
 
-            video.volume = volume;
-            video.dataset.volume = volume;
+              video.volume = volume;
+              video.dataset.volume = volume;
 
-            //Update overlay
-            let div = document.getElementById("volumeOverlay");
-            div.innerHTML = Math.round(video.volume * 100);
-            div.style.top = event.clientY - div.offsetHeight + "px";
-            div.style.left = event.clientX - div.offsetWidth + "px";
+              //Update overlay
+              let div = document.getElementById("volumeOverlay");
+              div.innerHTML = Math.round(video.volume * 100);
+              div.style.top = event.clientY - div.offsetHeight + "px";
+              div.style.left = event.clientX - div.offsetWidth + "px";
 
 
-            //Animate fade
-            let newDiv = div;
-            div.parentNode.replaceChild(newDiv, div);
-            div.classList.add("scrollOverlayFade");
-          });
+              //Animate fade
+              let newDiv = div;
+              div.parentNode.replaceChild(newDiv, div);
+              div.classList.add("scrollOverlayFade");
+            });
+          }
         }
       }
     }
@@ -108,7 +135,6 @@ chrome.storage.sync.get("blacklist", (blacklistData) => {
                 handleDefaultVolume(video);
               }
             });
-
           }
         }
       }

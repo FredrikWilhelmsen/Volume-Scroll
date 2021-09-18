@@ -1,9 +1,11 @@
 document.getElementById("useMousewheelVolume").addEventListener("change", function(){
   //Mousewheel control toggle
   let input = document.getElementById("useMousewheelVolume");
+
   document.getElementById("incrementSlider").disabled = !input.checked;
   document.getElementById("overlayFontSizeSlider").disabled = !input.checked;
   document.getElementById("overlayColorInput").disabled = !input.checked;
+  document.getElementById("useModifierKey").disabled = !input.checked;
 
   chrome.storage.sync.set({useMousewheelVolume: input.checked});
 });
@@ -61,6 +63,33 @@ document.getElementById("defaultVolumeSlider").addEventListener("change", functi
   chrome.storage.sync.set({volume: input.value});
 });
 
+document.getElementById("useModifierKey").addEventListener("change", function(){
+  let input = document.getElementById("useModifierKey");
+  chrome.storage.sync.set({useModifierKey: input.checked});
+});
+
+document.getElementById("modifierKey").addEventListener("click", function(){
+  if(document.getElementById("useModifierKey").checked){
+    let element = document.getElementById("modifierKey");
+    let body = document.documentElement || document.body;
+
+    element.innerHTML = "----";
+
+    let keyDown = function(event){
+      event.preventDefault();
+
+      let key = event.key;
+      element.innerHTML = (key == " ") ? "Space" : key;
+
+      chrome.storage.sync.set({modifierKey: key});
+
+      body.removeEventListener("keydown", keyDown);
+    }
+
+    body.addEventListener("keydown", keyDown);
+  }
+});
+
 document.getElementById("blacklist").addEventListener("change", function(){
   //Blacklist toggle input
   let input = document.getElementById("blacklist");
@@ -91,9 +120,13 @@ document.getElementById("blacklist").addEventListener("change", function(){
 
 let loadSettings = function(){
   chrome.storage.sync.get("useMousewheelVolume", (data) => {
-    document.getElementById("useMousewheelVolume").checked = data.useMousewheelVolume;
+    let useMousewheelVolume = data.useMousewheelVolume;
+    document.getElementById("useMousewheelVolume").checked = useMousewheelVolume;
 
-    document.getElementById("incrementSlider").disabled = !data.useMousewheelVolume;
+    document.getElementById("incrementSlider").disabled = !useMousewheelVolume;
+    document.getElementById("overlayFontSizeSlider").disabled = !useMousewheelVolume;
+    document.getElementById("overlayColorInput").disabled = !useMousewheelVolume;
+    document.getElementById("useModifierKey").disabled = !useMousewheelVolume;
   });
 
   chrome.storage.sync.get("increment", (data) => {
@@ -123,6 +156,14 @@ let loadSettings = function(){
   chrome.storage.sync.get("volume", (data) => {
     document.getElementById("defaultVolumeSlider").value = data.volume;
     document.querySelector("#defaultVolumeWrapper .valueDisplay").innerHTML = data.volume;
+  });
+
+  chrome.storage.sync.get("useModifierKey", (data) => {
+    document.getElementById("useModifierKey").checked = data.useModifierKey;
+  });
+
+  chrome.storage.sync.get("modifierKey", (data) => {
+    document.getElementById("modifierKey").innerHTML = data.modifierKey;
   });
 
   chrome.storage.sync.get("blacklist", (data) => {
