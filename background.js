@@ -4,7 +4,7 @@ let useDefaultVolume = false;
 let useMousewheelVolume = true;
 let defaultColor = "#ffffff"; //white
 let defaultFontSize = 40;
-let defaultModifierKey = "shift";
+let defaultModifierKey = "Shift";
 let useModifierKey = false;
 let defaultBlacklist = [
   "music.youtube.com",
