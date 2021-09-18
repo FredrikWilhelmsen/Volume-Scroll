@@ -1,5 +1,4 @@
 document.getElementById("useMousewheelVolume").addEventListener("change", function(){
-  //Mousewheel control toggle
   let input = document.getElementById("useMousewheelVolume");
 
   document.getElementById("incrementSlider").disabled = !input.checked;
@@ -11,7 +10,6 @@ document.getElementById("useMousewheelVolume").addEventListener("change", functi
 });
 
 document.getElementById("incrementSlider").addEventListener("change", function(){
-  //Increment range input
   let input = document.getElementById("incrementSlider");
 
   document.querySelector("#mousewheelVolumeWrapper .valueDisplay").innerHTML = input.value;
@@ -31,8 +29,31 @@ document.getElementById("incrementSlider").addEventListener("change", function()
   document.querySelector("#defaultVolumeWrapper .valueDisplay").innerHTML = volume;
 });
 
+document.getElementById("incrementSlider").addEventListener("wheel", function(event){
+  event.preventDefault();
+
+  let input = document.getElementById("incrementSlider");
+
+  input.value = parseInt(input.value) + event.deltaY / 100 * -1; //Gets the direction of the scroll, then divides by 100 to get just the value 1 or -1.
+
+  document.querySelector("#mousewheelVolumeWrapper .valueDisplay").innerHTML = input.value;
+
+  chrome.storage.sync.set({increment: input.value});
+
+  let defaultVolumeInput = document.getElementById("defaultVolumeSlider");
+  defaultVolumeInput.step = input.value;
+
+  let volume = defaultVolumeInput.value;
+  volume = volume / input.value;
+  volume = Math.round(volume);
+  volume = volume * input.value;
+  defaultVolumeInput.value = volume;
+
+  chrome.storage.sync.set({volume: volume});
+  document.querySelector("#defaultVolumeWrapper .valueDisplay").innerHTML = volume;
+});
+
 document.getElementById("overlayFontSizeSlider").addEventListener("change", function(){
-  //Font size range input
   let input = document.getElementById("overlayFontSizeSlider");
 
   document.querySelector("#overlayFontSizeWrapper .valueDisplay").innerHTML = input.value;
@@ -40,14 +61,24 @@ document.getElementById("overlayFontSizeSlider").addEventListener("change", func
   chrome.storage.sync.set({fontSize: input.value});
 });
 
+document.getElementById("overlayFontSizeSlider").addEventListener("wheel", function(event){
+  event.preventDefault();
+
+  let input = document.getElementById("overlayFontSizeSlider");
+
+  input.value = parseInt(input.value) + (event.deltaY / 100 * -1) * input.step; //Gets the direction of the scroll, then divides by 100 to get just the value 1 or -1.
+
+  document.querySelector("#overlayFontSizeWrapper .valueDisplay").innerHTML = input.value;
+
+  chrome.storage.sync.set({fontSize: input.value});
+});
+
 document.getElementById("overlayColorInput").addEventListener("change", function(){
-  //Overlay color input
   let input = document.getElementById("overlayColorInput");
   chrome.storage.sync.set({fontColor: input.value});
 });
 
 document.getElementById("useDefaultVolume").addEventListener("change", function(){
-  //Default Volume Toggle
   let input = document.getElementById("useDefaultVolume");
   document.getElementById("defaultVolumeSlider").disabled = !input.checked;
 
@@ -55,8 +86,19 @@ document.getElementById("useDefaultVolume").addEventListener("change", function(
 });
 
 document.getElementById("defaultVolumeSlider").addEventListener("change", function(){
-  //Defult volume range input
   let input = document.getElementById("defaultVolumeSlider");
+
+  document.querySelector("#defaultVolumeWrapper .valueDisplay").innerHTML = input.value;
+
+  chrome.storage.sync.set({volume: input.value});
+});
+
+document.getElementById("defaultVolumeSlider").addEventListener("wheel", function(event){
+  event.preventDefault();
+
+  let input = document.getElementById("defaultVolumeSlider");
+
+  input.value = parseInt(input.value) + (event.deltaY / 100 * -1) * input.step; //Gets the direction of the scroll, then divides by 100 to get just the value 1 or -1.
 
   document.querySelector("#defaultVolumeWrapper .valueDisplay").innerHTML = input.value;
 
@@ -91,7 +133,6 @@ document.getElementById("modifierKey").addEventListener("click", function(){
 });
 
 document.getElementById("blacklist").addEventListener("change", function(){
-  //Blacklist toggle input
   let input = document.getElementById("blacklist");
 
   document.getElementById("blacklistState").innerHTML = (input.checked) ? "Enabled on this page" : "Disabled on this page";
