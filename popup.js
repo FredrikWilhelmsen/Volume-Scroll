@@ -9,7 +9,7 @@ document.getElementById("useMousewheelVolume").addEventListener("change", functi
   chrome.storage.sync.set({useMousewheelVolume: input.checked});
 });
 
-document.getElementById("incrementSlider").addEventListener("change", function(){
+document.getElementById("incrementSlider").addEventListener("input", function(){
   let input = document.getElementById("incrementSlider");
 
   document.querySelector("#mousewheelVolumeWrapper .valueDisplay").innerHTML = input.value;
@@ -53,7 +53,7 @@ document.getElementById("incrementSlider").addEventListener("wheel", function(ev
   document.querySelector("#defaultVolumeWrapper .valueDisplay").innerHTML = volume;
 });
 
-document.getElementById("overlayFontSizeSlider").addEventListener("change", function(){
+document.getElementById("overlayFontSizeSlider").addEventListener("input", function(){
   let input = document.getElementById("overlayFontSizeSlider");
 
   document.querySelector("#overlayFontSizeWrapper .valueDisplay").innerHTML = input.value;
@@ -85,7 +85,7 @@ document.getElementById("useDefaultVolume").addEventListener("change", function(
   chrome.storage.sync.set({useDefaultVolume: input.checked});
 });
 
-document.getElementById("defaultVolumeSlider").addEventListener("change", function(){
+document.getElementById("defaultVolumeSlider").addEventListener("input", function(){
   let input = document.getElementById("defaultVolumeSlider");
 
   document.querySelector("#defaultVolumeWrapper .valueDisplay").innerHTML = input.value;
