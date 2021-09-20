@@ -4,6 +4,7 @@ let useDefaultVolume = false;
 let useMousewheelVolume = true;
 let defaultColor = "#ffffff"; //white
 let defaultFontSize = 40;
+let useOverlayMouse = true;
 let defaultModifierKey = "Shift";
 let useModifierKey = false;
 let defaultBlacklist = [
@@ -34,6 +35,10 @@ chrome.runtime.onInstalled.addListener(() => {
 
   chrome.storage.sync.get({fontSize: defaultFontSize}, (data) => {
     chrome.storage.sync.set({fontSize: data.fontSize});
+  });
+
+  chrome.storage.sync.get({useOverlayMouse: useOverlayMouse}, (data) => {
+    chrome.storage.sync.set({useOverlayMouse: data.useOverlayMouse});
   });
 
   chrome.storage.sync.get({useModifierKey: useModifierKey}, (data) => {

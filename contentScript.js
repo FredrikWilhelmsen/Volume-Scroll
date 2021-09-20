@@ -85,12 +85,22 @@ chrome.storage.sync.get("blacklist", (blacklistData) => {
               video.volume = volume;
               video.dataset.volume = volume;
 
-              //Update overlay
+              //Update overlay text
               let div = document.getElementById("volumeOverlay");
               div.innerHTML = Math.round(video.volume * 100);
-              div.style.top = event.clientY - div.offsetHeight + "px";
-              div.style.left = event.clientX - div.offsetWidth + "px";
 
+              //position the overlay
+              chrome.storage.sync.get("useOverlayMouse", (data) => {
+                if(data.useOverlayMouse){
+                  div.style.top = window.scrollY + event.clientY - div.offsetHeight + "px";
+                  div.style.left = window.scrollX + event.clientX - div.offsetWidth + "px";
+                }
+                else {
+                  let vidPos = video.getBoundingClientRect();
+                  div.style.top = 10 + window.scrollY + vidPos.top + "px";
+                  div.style.left = 10 + window.scrollX + vidPos.left + "px";
+                }
+              });
 
               //Animate fade
               let newDiv = div;

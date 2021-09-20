@@ -5,6 +5,7 @@ document.getElementById("useMousewheelVolume").addEventListener("change", functi
   document.getElementById("overlayFontSizeSlider").disabled = !input.checked;
   document.getElementById("overlayColorInput").disabled = !input.checked;
   document.getElementById("useModifierKey").disabled = !input.checked;
+  document.getElementById("overlayPosition").disabled = !input.checked;
 
   chrome.storage.sync.set({useMousewheelVolume: input.checked});
 });
@@ -105,8 +106,17 @@ document.getElementById("defaultVolumeSlider").addEventListener("wheel", functio
   chrome.storage.sync.set({volume: input.value});
 });
 
+document.getElementById("overlayPosition").addEventListener("change", function(){
+  let input = document.getElementById("overlayPosition")
+
+  document.getElementById("overlayPositiontState").innerHTML = (input.checked) ? "Mouse position" : "Video position";
+
+  chrome.storage.sync.set({useOverlayMouse: input.checked});
+});
+
 document.getElementById("useModifierKey").addEventListener("change", function(){
   let input = document.getElementById("useModifierKey");
+
   chrome.storage.sync.set({useModifierKey: input.checked});
 });
 
@@ -168,6 +178,7 @@ let loadSettings = function(){
     document.getElementById("overlayFontSizeSlider").disabled = !useMousewheelVolume;
     document.getElementById("overlayColorInput").disabled = !useMousewheelVolume;
     document.getElementById("useModifierKey").disabled = !useMousewheelVolume;
+    document.getElementById("overlayPosition").disabled = !useMousewheelVolume;
   });
 
   chrome.storage.sync.get("increment", (data) => {
@@ -197,6 +208,11 @@ let loadSettings = function(){
   chrome.storage.sync.get("volume", (data) => {
     document.getElementById("defaultVolumeSlider").value = data.volume;
     document.querySelector("#defaultVolumeWrapper .valueDisplay").innerHTML = data.volume;
+  });
+
+  chrome.storage.sync.get("useOverlayMouse", (data) => {
+    document.getElementById("overlayPosition").checked = data.useOverlayMouse;
+    document.getElementById("overlayPositiontState").innerHTML = (data.useOverlayMouse) ? "Mouse position" : "Video position";
   });
 
   chrome.storage.sync.get("useModifierKey", (data) => {

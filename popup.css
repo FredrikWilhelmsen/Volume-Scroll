@@ -4,7 +4,7 @@
 
 body {
   width: 250;
-  height: 400;
+  height: 450;
   background-color: #282A35;
   color: white;
 }
@@ -30,7 +30,6 @@ body {
 .input {
   display: flex;
   align-items: center;
-  justify-content: space-between;
 }
 
 .title {
