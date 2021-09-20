@@ -109,7 +109,7 @@ document.getElementById("defaultVolumeSlider").addEventListener("wheel", functio
 document.getElementById("overlayPosition").addEventListener("change", function(){
   let input = document.getElementById("overlayPosition")
 
-  document.getElementById("overlayPositiontState").innerHTML = (input.checked) ? "Mouse position" : "Video position";
+  document.getElementById("overlayPositiontState").innerHTML = (input.checked) ? "Relative to mouse" : "Relative to video";
 
   chrome.storage.sync.set({useOverlayMouse: input.checked});
 });
@@ -212,7 +212,7 @@ let loadSettings = function(){
 
   chrome.storage.sync.get("useOverlayMouse", (data) => {
     document.getElementById("overlayPosition").checked = data.useOverlayMouse;
-    document.getElementById("overlayPositiontState").innerHTML = (data.useOverlayMouse) ? "Mouse position" : "Video position";
+    document.getElementById("overlayPositiontState").innerHTML = (data.useOverlayMouse) ? "Relative to mouse" : "Relative to video";
   });
 
   chrome.storage.sync.get("useModifierKey", (data) => {
