@@ -1,30 +1,33 @@
 {
-	"name": "Volume Scroll",
-	"description": "Scrollable Volume",
-	"version": "1.2",
-	"manifest_version": 3,
-	"background": {
-		"service_worker": "background.js"
-	},
-	"permissions": [
-		"storage",
-		"tabs"
-	],
-	"action": {
-		"default_popup": "popup.html",
-		"default_icon": {
-      "128": "/images/128.png"
+    "name": "Volume Scroll",
+    "description": "Scrollable Volume",
+    "version": "1.2",
+    "manifest_version": 3,
+    "permissions": [
+        "storage",
+        "tabs"
+    ],
+    "action": {
+        "default_popup": "popup.html",
+        "default_icon": {
+            "128": "/images/128.png"
+        }
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "<all_urls>"
+            ],
+            "run_at": "document_start",
+            "css": [
+                "contentStyle.css"
+            ],
+            "js": [
+                "contentScript.js"
+            ]
+        }
+    ],
+    "icons": {
+        "128": "/images/128.png"
     }
-	},
-	"content_scripts": [
-		{
-			"matches": ["<all_urls>"],
-			"run_at": "document_start",
-			"css": ["contentStyle.css"],
-			"js": ["contentScript.js"]
-		}
-	],
-	"icons": {
-    "128": "/images/128.png"
-  }
 }
