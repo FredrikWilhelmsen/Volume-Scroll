@@ -35,10 +35,11 @@ chrome.storage.sync.get("blacklist", (blacklistData) => {
       chrome.storage.sync.get("volume", (vol) => {
         video.volume = vol.volume / 100;
         video.dataset.volume = vol.volume / 100;
+        console.log("New video added, volume set to: " + video.volume);
 
         let change = function(){
           chrome.storage.sync.get("increment", (incData) => {
-            if(!(video.volume == video.dataset.volume - incData.increment || video.volume == video.dataset.volume + incData.increment)){ //Checks to see if the registered change in volume is equal to the increment. If it is not then it is denied.
+            if(!(video.volume == video.dataset.volume - incData.increment || video.volume == video.dataset.volume + incData.increment || video.volume == video.dataset.volume)){ //Checks to see if the registered change in volume is equal to the increment. If it is not then it is denied.
               video.volume = video.dataset.volume;
             }
           });
