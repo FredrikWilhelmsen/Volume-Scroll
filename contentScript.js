@@ -65,7 +65,6 @@ let onScroll = function(event){
 let handleDefaultVolume = function(video){
   video.volume = settings.volume / 100;
   video.dataset.volume = settings.volume / 100;
-  console.log(settings);
 
   let change = function(){
     if(!(video.volume == video.dataset.volume - settings.volumeIncrement || video.volume == video.dataset.volume + settings.volumeIncrement || video.volume == video.dataset.volume)){ //Checks to see if the registered change in volume is equal to the increment. If it is not then it is denied.
@@ -76,8 +75,26 @@ let handleDefaultVolume = function(video){
   video.addEventListener("volumechange", change);
 };
 
+let setAudio = function(mutations){
+  for(mutation of mutations){
+    for(node of mutation.addedNodes){
+      if(node.tagName == "VIDEO"){
+        let video = node;
+
+        if(settings.useDefaultVolume){
+          handleDefaultVolume(video);
+        }
+      }
+    }
+  }
+}
+
 chrome.storage.sync.get("userSettings", result => {
   settings = result.userSettings;
+
+  chrome.storage.onChanged.addListener((changes) => {
+    settings = changes.userSettings.newValue;
+  })
 
   if(settings.blacklist.includes(window.location.hostname)){
     return;
@@ -112,20 +129,6 @@ chrome.storage.sync.get("userSettings", result => {
     body.appendChild(div);
   }
 
-  let setAudio = function(mutations){
-    for(mutation of mutations){
-      for(node of mutation.addedNodes){
-        if(node.tagName == "VIDEO"){
-          let video = node;
-
-          if(settings.useDefaultVolume){
-            handleDefaultVolume(video);
-          }
-        }
-      }
-    }
-  }
-
   const config = {
     childList: true,
     subtree: true
@@ -134,4 +137,3 @@ chrome.storage.sync.get("userSettings", result => {
   let observer = new MutationObserver(setAudio);
   observer.observe(body, config);
 });
-
