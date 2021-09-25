@@ -14,18 +14,20 @@ const defaultSettings = {
     ]
 }
 
-function setUserSettings(settings) {
-    chrome.storage.sync.set({userSettings: settings})
-        .then(result => {
-            if (chrome.runtime.lastError) {
-                console.error('Could not set user data: ' + chrome.runtime.lastError.message)
-            }
-        });
+export function setUserSettings(settings) {
+    chrome.storage.sync.set({userSettings: settings}, result => {
+        if (chrome.runtime.lastError) {
+            console.error("Could not set user data: " + chrome.runtime.lastError.message)
+        }
+    });
 }
 
-function getUserSettings() {
+export function getUserSettings() {
     // TODO: bit unsure if this actually works
-    return chrome.storage.sync.get('userSettings').then(result => {
-        return result ? result : defaultSettings;
+    return new Promise((resolve) => {
+      chrome.storage.sync.get({userSettings: defaultSettings}, result => {
+          setUserSettings(result.userSettings);
+          resolve(result ? result : defaultSettings);
+      });
     });
 }

@@ -27,6 +27,17 @@
             ]
         }
     ],
+    "web_accessible_resources": [
+            {
+                "resources": [
+                    "main.js",
+                    "settings.js"
+                ],
+                "matches": [
+                    "<all_urls>"
+                ]
+            }
+		],
     "icons": {
         "128": "/images/128.png"
     }
