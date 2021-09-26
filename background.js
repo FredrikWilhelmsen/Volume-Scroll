@@ -7,8 +7,9 @@ const defaultSettings = {
     fontColor: "#ffffff", //white
     fontSize: 40,
     useOverlayMouse: true,
-    modifierKey: "Shift",
+    modifierKey: "Alt",
     useModifierKey: false,
+    invertModifierKey: false,
     blacklist: [
     "music.youtube.com",
     "open.spotify.com"

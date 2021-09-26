@@ -3,26 +3,31 @@ let settings = {};
 let isModifierKeyPressed = false;
 
 let onScroll = function (event) {
-    if(settings.blacklist.includes(window.location.hostname))
-        return;
+    switch(true){
+        case settings.blacklist.includes(window.location.hostname):
+        case !settings.useMousewheelVolume:
+        case settings.useModifierKey && !settings.invertModifierKey && !isModifierKeyPressed:
+        case settings.useModifierKey && settings.invertModifierKey && isModifierKeyPressed:
+            return;
+        default:
+            break;
+    }
 
-    if (!settings.useMousewheelVolume)
-        return;
+    let elements = document.elementsFromPoint(event.clientX, event.clientY);
+    for (const element of elements) {
+        if (element.tagName !== "VIDEO")
+            continue;
 
-    if(settings.useModifierKey && !isModifierKeyPressed)
-        return;
+        let video = element;
 
-    let elements = document.elementsFromPoint(event.clientX, event.clientY)
-    for (element of elements) {
-        if (element.tagName != "VIDEO")
+        if (!Boolean(video.webkitAudioDecodedByteCount)) //video has audio. If not stops volume scrolling
             continue;
 
         event.preventDefault();
 
-        let video = element;
         let volume = 1;
 
-        if (video.volume > settings.volumeIncrement / 100 || (video.volume == settings.volumeIncrement / 100 && event.deltaY < 0) || !settings.usePreciseScroll) {
+        if (video.volume > settings.volumeIncrement / 100 || (video.volume === settings.volumeIncrement / 100 && event.deltaY < 0) || !settings.usePreciseScroll) {
             volume = video.volume + (settings.volumeIncrement / 100) * (event.deltaY / 100 * -1); //deltaY is how much the wheel scrolled, 100 up, -100 down. Divided by 100 to only get direction, then inverted
 
             //Rounding the volume to the nearest increment, in case the original volume was not on the increment.
@@ -31,8 +36,7 @@ let onScroll = function (event) {
             volume = Math.round(volume);
             volume = volume * settings.volumeIncrement;
             volume = volume / 100;
-        }
-        else {
+        } else {
             volume = video.volume + (1 / 100) * (event.deltaY / 100 * -1);
         }
 
@@ -43,11 +47,7 @@ let onScroll = function (event) {
             volume = 1;
         }
 
-        if (volume > 0) {
-            video.muted = false;
-        } else {
-            video.muted = true;
-        }
+        video.muted = volume <= 0;
 
         video.volume = volume;
         video.dataset.volume = volume;
@@ -89,10 +89,10 @@ let handleDefaultVolume = function (video) {
 };
 
 let setAudio = function (mutations) {
-    if(!settings.useDefaultVolume)
+    if (!settings.useDefaultVolume)
         return;
 
-    if(settings.blacklist.includes(window.location.hostname))
+    if (settings.blacklist.includes(window.location.hostname))
         return;
 
     for (mutation of mutations) {
@@ -112,16 +112,17 @@ chrome.storage.sync.get("userSettings", result => {
 
     chrome.storage.onChanged.addListener((changes) => {
         settings = changes.userSettings.newValue;
-    })
+    });
 
     body.addEventListener("keydown", function (event) {
-        if (settings.modifierKey == event.key) {
+        if (settings.modifierKey === event.key) {
+            event.stopPropagation();
             isModifierKeyPressed = true;
         }
     });
 
     body.addEventListener("keyup", function (event) {
-        if (settings.modifierKey == event.key) {
+        if (settings.modifierKey === event.key) {
             isModifierKeyPressed = false;
         }
     });

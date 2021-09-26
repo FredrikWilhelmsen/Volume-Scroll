@@ -10,6 +10,7 @@ chrome.storage.sync.get("userSettings", data => {
         modifierKey,
         useOverlayMouse,
         useModifierKey,
+        invertModifierKey,
         blacklist
     } = data.userSettings;
 
@@ -23,6 +24,7 @@ chrome.storage.sync.get("userSettings", data => {
         document.getElementById("useModifierKey").disabled = !input.checked;
         document.getElementById("overlayPosition").disabled = !input.checked;
         document.getElementById("preciseScroll").disabled = !input.checked;
+        document.getElementById("invertModifierKey").disabled = !input.checked || !document.getElementById("useModifierKey").checked;
 
         chrome.storage.sync.get("userSettings", result => {
             chrome.storage.sync.set({userSettings: {...result.userSettings, useMousewheelVolume: input.checked}});
@@ -165,6 +167,8 @@ chrome.storage.sync.get("userSettings", data => {
     document.getElementById("useModifierKey").addEventListener("change", function () {
         let input = document.getElementById("useModifierKey");
 
+        document.getElementById("invertModifierKey").disabled = !input.checked;
+
         chrome.storage.sync.get("userSettings", result => {
             chrome.storage.sync.set({userSettings: {...result.userSettings, useModifierKey: input.checked}});
         });
@@ -192,6 +196,16 @@ chrome.storage.sync.get("userSettings", data => {
 
             body.addEventListener("keydown", keyDown);
         }
+    });
+
+    document.getElementById("invertModifierKey").addEventListener("input", function(){
+        let input = document.getElementById("invertModifierKey");
+
+        document.getElementById("invertModifierKeyState").innerHTML = (input.checked) ? "Enabled" : "Disabled";
+
+        chrome.storage.sync.get("userSettings", result => {
+            chrome.storage.sync.set({userSettings: {...result.userSettings, invertModifierKey: input.checked}});
+        });
     });
 
     document.getElementById("blacklist").addEventListener("change", function () {
@@ -225,6 +239,7 @@ chrome.storage.sync.get("userSettings", data => {
     document.getElementById("useModifierKey").disabled = !useMousewheelVolume;
     document.getElementById("overlayPosition").disabled = !useMousewheelVolume;
     document.getElementById("preciseScroll").disabled = !useMousewheelVolume;
+    document.getElementById("invertModifierKey").disabled = !useMousewheelVolume || !document.getElementById("useModifierKey").checked;
 
     document.getElementById("incrementSlider").value = volumeIncrement;
     document.querySelector("#mousewheelVolumeWrapper .valueDisplay").innerHTML = volumeIncrement;
@@ -248,8 +263,12 @@ chrome.storage.sync.get("userSettings", data => {
     document.getElementById("overlayPositionState").innerHTML = (useOverlayMouse) ? "Relative to mouse" : "Relative to video";
 
     document.getElementById("useModifierKey").checked = useModifierKey;
+    document.getElementById("invertModifierKey").disabled = !useModifierKey;
 
     document.getElementById("modifierKey").innerHTML = modifierKey;
+
+    document.getElementById("invertModifierKey").checked = invertModifierKey;
+    document.getElementById("invertModifierKeyState").innerHTML = (invertModifierKey) ? "Enabled" : "Disabled";
 
     chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
         let url = new URL(tabs[0].url).hostname;

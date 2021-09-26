@@ -4,7 +4,7 @@
   </head>
   <body>
 
-    <div id="wrapper">
+    <div class="wrapper">
       <div id="settings">
 
         <div id="blacklistWrapper" title="Enable or disable the extension on this page">
@@ -40,6 +40,14 @@
           </div>
         </div>
 
+        <div id="invertModifierKeyWrapper" title="When holding the modifier key on a video you will scroll the page instead of the volume">
+          <p class="title">Invert modifier key</p>
+          <div class="input">
+            <input class="checkbox" id="invertModifierKey" type="checkbox">
+            <p id="invertModifierKeyState">Disabled</p>
+          </div>
+        </div>
+
         <div id="overlayFontSizeWrapper" title="Set the text size of the overlay">
           <p class="title">Overlay Font Size</p>
           <div class="input">
@@ -50,7 +58,7 @@
 
         <div id="overlayColorWrapper" title="Set the color of the overlay">
           <p class="title">Overlay Color</p>
-          <div id="wrapper">
+          <div class="wrapper">
             <div class="input" id="colorInputWrapper">
               <input id="overlayColorInput" type="color" value="#ffffff">
             </div>

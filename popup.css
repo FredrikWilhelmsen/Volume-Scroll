@@ -4,12 +4,12 @@
 
 body {
   width: 275px;
-  height: 500px;
+  height: 550px;
   background-color: #282A35;
   color: white;
 }
 
-#wrapper {
+.wrapper {
   height: 100%;
 
   display: flex;
