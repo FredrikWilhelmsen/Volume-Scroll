@@ -7,7 +7,7 @@
     <div id="wrapper">
       <div id="settings">
 
-        <div id="blacklistWrapper">
+        <div id="blacklistWrapper" title="Enable or disable the extension on this page">
           <p class="title">Blacklist Page</p>
           <div class="input">
             <input class="checkbox" id="blacklist" type="checkbox">
@@ -15,7 +15,7 @@
           </div>
         </div>
 
-        <div id="mousewheelVolumeWrapper">
+        <div id="mousewheelVolumeWrapper" title="Set how much the volume will change by when scrolling">
           <p class="title">Scroll Increment</p>
           <div class="input">
             <input class="checkbox" id="useMousewheelVolume" type="checkbox">
@@ -24,7 +24,15 @@
           <p class="valueDisplay"></p>
         </div>
 
-        <div id="modifierKeyWrapper">
+        <div id="preciseScrollWrapper" title="Scroll by one when going below the set increment">
+          <p class="title">Precise Scroll</p>
+          <div class="input">
+            <input class="checkbox" id="preciseScroll" type="checkbox" checked=true>
+            <p id="preciseScrollState">Precise scroll is enabled</p>
+          </div>
+        </div>
+
+        <div id="modifierKeyWrapper" title="Set a key that must be held down while scrolling to change the volume">
           <p class="title">Modifier Key</p>
           <div class="input">
             <input class="checkbox" id="useModifierKey" type="checkbox">
@@ -32,7 +40,7 @@
           </div>
         </div>
 
-        <div id="overlayFontSizeWrapper">
+        <div id="overlayFontSizeWrapper" title="Set the text size of the overlay">
           <p class="title">Overlay Font Size</p>
           <div class="input">
             <input id="overlayFontSizeSlider" type="range" min=10 max=100 step=5 value=40>
@@ -40,7 +48,7 @@
           <p class="valueDisplay"></p>
         </div>
 
-        <div id="overlayColorWrapper">
+        <div id="overlayColorWrapper" title="Set the color of the overlay">
           <p class="title">Overlay Color</p>
           <div id="wrapper">
             <div class="input" id="colorInputWrapper">
@@ -49,15 +57,15 @@
           </div>
         </div>
 
-        <div id="overlayPositionWrapper">
+        <div id="overlayPositionWrapper" title="Set where the overlay will be displayed">
           <p class="title">Overlay Position</p>
           <div class="input">
             <input class="checkbox" id="overlayPosition" type="checkbox" checked=true>
-            <p id="overlayPositiontState">Mouse position</p>
+            <p id="overlayPositionState">Mouse position</p>
           </div>
         </div>
 
-        <div id="defaultVolumeWrapper">
+        <div id="defaultVolumeWrapper" title="Set a default volume level for every video">
           <p class="title">Default Volume</p>
           <div class="input">
             <input class="checkbox" id="useDefaultVolume" type="checkbox" value=false>

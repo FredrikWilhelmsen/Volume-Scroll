@@ -1,12 +1,8 @@
-let setUserSetting = function (settings, result) {
-    chrome.storage.sync.set({userSettings: {...result.userSettings, ...settings}});
-    result.userSettings = newSettings;
-}
-
-chrome.storage.sync.get("userSettings", result => {
+chrome.storage.sync.get("userSettings", data => {
     const {
         volume,
         volumeIncrement,
+        usePreciseScroll,
         useDefaultVolume,
         useMousewheelVolume,
         fontColor,
@@ -15,9 +11,9 @@ chrome.storage.sync.get("userSettings", result => {
         useOverlayMouse,
         useModifierKey,
         blacklist
-    } = result.userSettings;
+    } = data.userSettings;
 
-    //Add event listenersa
+    //Add event listeners
     document.getElementById("useMousewheelVolume").addEventListener("change", function () {
         let input = document.getElementById("useMousewheelVolume");
 
@@ -26,16 +22,17 @@ chrome.storage.sync.get("userSettings", result => {
         document.getElementById("overlayColorInput").disabled = !input.checked;
         document.getElementById("useModifierKey").disabled = !input.checked;
         document.getElementById("overlayPosition").disabled = !input.checked;
+        document.getElementById("preciseScroll").disabled = !input.checked;
 
-        setUserSetting({useMousewheelVolume: input.checked}, result);
+        chrome.storage.sync.get("userSettings", result => {
+            chrome.storage.sync.set({userSettings: {...result.userSettings, useMousewheelVolume: input.checked}});
+        });
     });
 
     document.getElementById("incrementSlider").addEventListener("input", function () {
         let input = document.getElementById("incrementSlider");
 
         document.querySelector("#mousewheelVolumeWrapper .valueDisplay").innerHTML = input.value;
-
-        setUserSetting({volumeIncrement: input.value});
 
         let defaultVolumeInput = document.getElementById("defaultVolumeSlider");
         defaultVolumeInput.step = input.value;
@@ -46,7 +43,9 @@ chrome.storage.sync.get("userSettings", result => {
         volume = volume * input.value;
         defaultVolumeInput.value = volume;
 
-        setUserSetting({volume: volume});
+        chrome.storage.sync.get("userSettings", result => {
+            chrome.storage.sync.set({userSettings: {...result.userSettings, volumeIncrement: input.value, volume: volume}});
+        });
         document.querySelector("#defaultVolumeWrapper .valueDisplay").innerHTML = volume;
     });
 
@@ -59,7 +58,9 @@ chrome.storage.sync.get("userSettings", result => {
 
         document.querySelector("#mousewheelVolumeWrapper .valueDisplay").innerHTML = input.value;
 
-        setUserSetting({volumeIncrement: input.value});
+        chrome.storage.sync.get("userSettings", result => {
+            chrome.storage.sync.set({userSettings: {...result.userSettings, volumeIncrement: input.value}});
+        });
 
         let defaultVolumeInput = document.getElementById("defaultVolumeSlider");
         defaultVolumeInput.step = input.value;
@@ -70,8 +71,20 @@ chrome.storage.sync.get("userSettings", result => {
         volume = volume * input.value;
         defaultVolumeInput.value = volume;
 
-        setUserSetting({volume: volume});
+        chrome.storage.sync.get("userSettings", result => {
+            chrome.storage.sync.set({userSettings: {...result.userSettings, volumeIncrement: input.value, volume: volume}});
+        });
         document.querySelector("#defaultVolumeWrapper .valueDisplay").innerHTML = volume;
+    });
+
+    document.getElementById("preciseScroll").addEventListener("input", function(){
+        let input = document.getElementById("preciseScroll");
+
+        document.getElementById("preciseScrollState").innerHTML = (input.checked) ? "Precise scroll is enabled" : "Precise scroll is disabled";
+
+        chrome.storage.sync.get("userSettings", result => {
+            chrome.storage.sync.set({userSettings: {...result.userSettings, usePreciseScroll: input.checked}});
+        });
     });
 
     document.getElementById("overlayFontSizeSlider").addEventListener("input", function () {
@@ -79,7 +92,9 @@ chrome.storage.sync.get("userSettings", result => {
 
         document.querySelector("#overlayFontSizeWrapper .valueDisplay").innerHTML = input.value;
 
-        setUserSetting({fontSize: input.value});
+        chrome.storage.sync.get("userSettings", result => {
+            chrome.storage.sync.set({userSettings: {...result.userSettings, fontSize: input.value}});
+        });
     });
 
     document.getElementById("overlayFontSizeSlider").addEventListener("wheel", function (event) {
@@ -91,19 +106,26 @@ chrome.storage.sync.get("userSettings", result => {
 
         document.querySelector("#overlayFontSizeWrapper .valueDisplay").innerHTML = input.value;
 
-        setUserSetting({fontSize: input.value});
+        chrome.storage.sync.get("userSettings", result => {
+            chrome.storage.sync.set({userSettings: {...result.userSettings, fontSize: input.value}});
+        });
     });
 
     document.getElementById("overlayColorInput").addEventListener("change", function () {
         let input = document.getElementById("overlayColorInput");
-        setUserSetting({fontColor: input.value});
+
+        chrome.storage.sync.get("userSettings", result => {
+            chrome.storage.sync.set({userSettings: {...result.userSettings, fontColor: input.value}});
+        });
     });
 
     document.getElementById("useDefaultVolume").addEventListener("change", function () {
         let input = document.getElementById("useDefaultVolume");
         document.getElementById("defaultVolumeSlider").disabled = !input.checked;
 
-        setUserSetting({useDefaultVolume: input.checked});
+        chrome.storage.sync.get("userSettings", result => {
+            chrome.storage.sync.set({userSettings: {...result.userSettings, useDefaultVolume: input.checked}});
+        });
     });
 
     document.getElementById("defaultVolumeSlider").addEventListener("input", function () {
@@ -111,7 +133,9 @@ chrome.storage.sync.get("userSettings", result => {
 
         document.querySelector("#defaultVolumeWrapper .valueDisplay").innerHTML = input.value;
 
-        setUserSetting({volume: input.value});
+        chrome.storage.sync.get("userSettings", result => {
+            chrome.storage.sync.set({userSettings: {...result.userSettings, volume: input.value}});
+        });
     });
 
     document.getElementById("defaultVolumeSlider").addEventListener("wheel", function (event) {
@@ -123,21 +147,27 @@ chrome.storage.sync.get("userSettings", result => {
 
         document.querySelector("#defaultVolumeWrapper .valueDisplay").innerHTML = input.value;
 
-        setUserSetting({volume: input.value});
+        chrome.storage.sync.get("userSettings", result => {
+            chrome.storage.sync.set({userSettings: {...result.userSettings, volume: input.value}});
+        });
     });
 
     document.getElementById("overlayPosition").addEventListener("change", function () {
         let input = document.getElementById("overlayPosition")
 
-        document.getElementById("overlayPositiontState").innerHTML = (input.checked) ? "Relative to mouse" : "Relative to video";
+        document.getElementById("overlayPositionState").innerHTML = (input.checked) ? "Relative to mouse" : "Relative to video";
 
-        setUserSetting({useOverlayMouse: input.checked});
+        chrome.storage.sync.get("userSettings", result => {
+            chrome.storage.sync.set({userSettings: {...result.userSettings, useOverlayMouse: input.checked}});
+        });
     });
 
     document.getElementById("useModifierKey").addEventListener("change", function () {
         let input = document.getElementById("useModifierKey");
 
-        setUserSetting({useModifierKey: input.checked});
+        chrome.storage.sync.get("userSettings", result => {
+            chrome.storage.sync.set({userSettings: {...result.userSettings, useModifierKey: input.checked}});
+        });
     });
 
     document.getElementById("modifierKey").addEventListener("click", function () {
@@ -153,7 +183,9 @@ chrome.storage.sync.get("userSettings", result => {
                 let key = event.key;
                 element.innerHTML = (key == " ") ? "Space" : key;
 
-                setUserSetting({modifierKey: key});
+                chrome.storage.sync.get("userSettings", result => {
+                    chrome.storage.sync.set({userSettings: {...result.userSettings, modifierKey: key}});
+                });
 
                 body.removeEventListener("keydown", keyDown);
             }
@@ -172,11 +204,15 @@ chrome.storage.sync.get("userSettings", result => {
             if (input.checked) { //Checkbox is checked, meaning the page should not be blacklisted
                 blacklist.splice(blacklist.indexOf(url), 1);
 
-                setUserSetting({blacklist: blacklist});
+                chrome.storage.sync.get("userSettings", result => {
+                    chrome.storage.sync.set({userSettings: {...result.userSettings, blacklist: blacklist}});
+                });
             } else { //Checkbox is not checked, meaning the page should be blacklisted
                 blacklist.push(url);
 
-                setUserSetting({blacklist: blacklist});
+                chrome.storage.sync.get("userSettings", result => {
+                    chrome.storage.sync.set({userSettings: {...result.userSettings, blacklist: blacklist}});
+                });
             }
         });
     });
@@ -188,10 +224,14 @@ chrome.storage.sync.get("userSettings", result => {
     document.getElementById("overlayColorInput").disabled = !useMousewheelVolume;
     document.getElementById("useModifierKey").disabled = !useMousewheelVolume;
     document.getElementById("overlayPosition").disabled = !useMousewheelVolume;
+    document.getElementById("preciseScroll").disabled = !useMousewheelVolume;
 
     document.getElementById("incrementSlider").value = volumeIncrement;
     document.querySelector("#mousewheelVolumeWrapper .valueDisplay").innerHTML = volumeIncrement;
     document.getElementById("defaultVolumeSlider").step = volumeIncrement;
+
+    document.getElementById("preciseScroll").checked = usePreciseScroll;
+    document.getElementById("preciseScrollState").innerHTML = (usePreciseScroll) ? "Precise scroll is enabled" : "Precise scroll is disabled";
 
     document.getElementById("overlayFontSizeSlider").value = fontSize;
     document.querySelector("#overlayFontSizeWrapper .valueDisplay").innerHTML = fontSize;
@@ -205,7 +245,7 @@ chrome.storage.sync.get("userSettings", result => {
     document.querySelector("#defaultVolumeWrapper .valueDisplay").innerHTML = volume;
 
     document.getElementById("overlayPosition").checked = useOverlayMouse;
-    document.getElementById("overlayPositiontState").innerHTML = (useOverlayMouse) ? "Relative to mouse" : "Relative to video";
+    document.getElementById("overlayPositionState").innerHTML = (useOverlayMouse) ? "Relative to mouse" : "Relative to video";
 
     document.getElementById("useModifierKey").checked = useModifierKey;
 

@@ -1,6 +1,7 @@
 const defaultSettings = {
     volume: 20,
     volumeIncrement: 5,
+    usePreciseScroll: true,
     useDefaultVolume: false,
     useMousewheelVolume: true,
     fontColor: "#ffffff", //white
