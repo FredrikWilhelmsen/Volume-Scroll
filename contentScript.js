@@ -12,7 +12,7 @@ let onScroll = function (event) {
                 let video = element;
                 let volume = 1;
 
-                if (video.volume > settings.volumeIncrement / 100 || (video.volume == settings.volumeIncrement / 100 && event.deltaY < 0)) {
+                if (video.volume > settings.volumeIncrement / 100 || (video.volume == settings.volumeIncrement / 100 && event.deltaY < 0) || !settings.usePreciseScroll) {
                     volume = video.volume + (settings.volumeIncrement / 100) * (event.deltaY / 100 * -1); //deltaY is how much the wheel scrolled, 100 up, -100 down. Divided by 100 to only get direction, then inverted
 
                     //Rounding the volume to the nearest increment, in case the original volume was not on the increment.
