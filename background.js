@@ -11,7 +11,6 @@ const defaultSettings = {
     useModifierKey: false,
     invertModifierKey: false,
     blacklist: [
-    "music.youtube.com",
     "open.spotify.com"
     ]
 }
