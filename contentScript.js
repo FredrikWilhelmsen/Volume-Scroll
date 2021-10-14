@@ -72,12 +72,14 @@ let onScroll = function (event) {
         if (element.tagName === "VIDEO") {
             event.preventDefault();
             handleScroll(element, element);
+            break;
         }
         else if(element.tagName === "YTMUSIC-PLAYER" || element.tagName === "YTMUSIC-PLAYER-BAR"){
             event.preventDefault();
             let video = document.getElementsByTagName("VIDEO")[0];
             let display = document.getElementsByTagName("YTMUSIC-PLAYER")[0];
             handleScroll(display, video);
+            break;
         }
     }
 }
