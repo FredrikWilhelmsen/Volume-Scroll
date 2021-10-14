@@ -1,7 +1,7 @@
 {
 	"name": "Volume Scroll",
 	"description": "Scrollable Volume",
-	"version": "1.3",
+	"version": "1.3.1",
 	"manifest_version": 3,
 	"background": {
 		"service_worker": "background.js"
@@ -19,6 +19,7 @@
 	"content_scripts": [
 		{
 			"matches": ["<all_urls>"],
+			"all_frames": true,
 			"run_at": "document_start",
 			"css": ["contentStyle.css"],
 			"js": ["contentScript.js"]

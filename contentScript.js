@@ -2,8 +2,62 @@ let body = document.documentElement || document.body || document.getElementsByTa
 let settings = {};
 let isModifierKeyPressed = false;
 
+let handleScroll = function (element, video) {
+    if (!Boolean(video.webkitAudioDecodedByteCount)) //video has audio. If not stops volume scrolling
+        return;
+
+    let volume = 1;
+
+    if (video.volume > settings.volumeIncrement / 100 || (video.volume === settings.volumeIncrement / 100 && event.deltaY < 0) || !settings.usePreciseScroll) {
+        volume = video.volume + (settings.volumeIncrement / 100) * (event.deltaY / 100 * -1); //deltaY is how much the wheel scrolled, 100 up, -100 down. Divided by 100 to only get direction, then inverted
+
+        //Rounding the volume to the nearest increment, in case the original volume was not on the increment.
+        volume = volume * 100;
+        volume = volume / settings.volumeIncrement;
+        volume = Math.round(volume);
+        volume = volume * settings.volumeIncrement;
+        volume = volume / 100;
+    } else {
+        volume = video.volume + (1 / 100) * (event.deltaY / 100 * -1);
+    }
+
+    //Limiting the volume to between 0-1
+    if (volume < 0) {
+        volume = 0;
+    } else if (volume > 1) {
+        volume = 1;
+    }
+
+    video.muted = volume <= 0;
+
+    video.volume = volume;
+    video.dataset.volume = volume;
+
+    //Update overlay text
+    let div = document.getElementById("volumeOverlay");
+    div.innerHTML = Math.round(video.volume * 100);
+    div.style.color = settings.fontColor;
+    div.style.fontSize = settings.fontSize + "px";
+
+    //position the overlay
+    if (settings.useOverlayMouse) {
+        div.style.top = window.scrollY + event.clientY - div.offsetHeight + "px";
+        div.style.left = window.scrollX + event.clientX - div.offsetWidth + "px";
+    } else {
+        let vidPos = element.getBoundingClientRect();
+        div.style.top = 10 + window.scrollY + vidPos.top + "px";
+        div.style.left = 10 + window.scrollX + vidPos.left + "px";
+    }
+
+    //Animate fade
+    let newDiv = div;
+    div.parentNode.replaceChild(newDiv, div);
+    div.classList.add("scrollOverlayFade");
+}
+
 let onScroll = function (event) {
-    switch(true){
+    //Switch is to check for multiple cases where the volume scroll should not be performed
+    switch (true) {
         case settings.blacklist.includes(window.location.hostname):
         case !settings.useMousewheelVolume:
         case settings.useModifierKey && !settings.invertModifierKey && !isModifierKeyPressed:
@@ -15,63 +69,16 @@ let onScroll = function (event) {
 
     let elements = document.elementsFromPoint(event.clientX, event.clientY);
     for (const element of elements) {
-        if (element.tagName !== "VIDEO")
-            continue;
-
-        let video = element;
-
-        if (!Boolean(video.webkitAudioDecodedByteCount)) //video has audio. If not stops volume scrolling
-            continue;
-
-        event.preventDefault();
-
-        let volume = 1;
-
-        if (video.volume > settings.volumeIncrement / 100 || (video.volume === settings.volumeIncrement / 100 && event.deltaY < 0) || !settings.usePreciseScroll) {
-            volume = video.volume + (settings.volumeIncrement / 100) * (event.deltaY / 100 * -1); //deltaY is how much the wheel scrolled, 100 up, -100 down. Divided by 100 to only get direction, then inverted
-
-            //Rounding the volume to the nearest increment, in case the original volume was not on the increment.
-            volume = volume * 100;
-            volume = volume / settings.volumeIncrement;
-            volume = Math.round(volume);
-            volume = volume * settings.volumeIncrement;
-            volume = volume / 100;
-        } else {
-            volume = video.volume + (1 / 100) * (event.deltaY / 100 * -1);
+        if (element.tagName === "VIDEO") {
+            event.preventDefault();
+            handleScroll(element, element);
         }
-
-        //Limiting the volume to between 0-1
-        if (volume < 0) {
-            volume = 0;
-        } else if (volume > 1) {
-            volume = 1;
+        else if(element.tagName === "YTMUSIC-PLAYER" || element.tagName === "YTMUSIC-PLAYER-BAR"){
+            event.preventDefault();
+            let video = document.getElementsByTagName("VIDEO")[0];
+            let display = document.getElementsByTagName("YTMUSIC-PLAYER")[0];
+            handleScroll(display, video);
         }
-
-        video.muted = volume <= 0;
-
-        video.volume = volume;
-        video.dataset.volume = volume;
-
-        //Update overlay text
-        let div = document.getElementById("volumeOverlay");
-        div.innerHTML = Math.round(video.volume * 100);
-        div.style.color = settings.fontColor;
-        div.style.fontSize = settings.fontSize + "px";
-
-        //position the overlay
-        if (settings.useOverlayMouse) {
-            div.style.top = window.scrollY + event.clientY - div.offsetHeight + "px";
-            div.style.left = window.scrollX + event.clientX - div.offsetWidth + "px";
-        } else {
-            let vidPos = video.getBoundingClientRect();
-            div.style.top = 10 + window.scrollY + vidPos.top + "px";
-            div.style.left = 10 + window.scrollX + vidPos.left + "px";
-        }
-
-        //Animate fade
-        let newDiv = div;
-        div.parentNode.replaceChild(newDiv, div);
-        div.classList.add("scrollOverlayFade");
     }
 }
 
@@ -95,9 +102,9 @@ let setAudio = function (mutations) {
     if (settings.blacklist.includes(window.location.hostname))
         return;
 
-    for (mutation of mutations) {
-        for (node of mutation.addedNodes) {
-            if (node.tagName != "VIDEO")
+    for (const mutation of mutations) {
+        for (const node of mutation.addedNodes) {
+            if (node.tagName !== "VIDEO")
                 continue;
 
             let video = node;
