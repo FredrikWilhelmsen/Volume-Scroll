@@ -15,18 +15,19 @@
           </div>
         </div>
 
-        <div id="mousewheelVolumeWrapper" title="Set how much the volume will change by when scrolling">
+        <div id="mousewheelVolumeWrapper">
           <p class="title">Scroll Increment</p>
-          <div class="input">
-            <input class="checkbox" id="useMousewheelVolume" type="checkbox">
-            <input id="incrementSlider" type="range" min=1 max=20 value=5>
+          <div title="Set how much the volume will change by when scrolling">
+            <div class="input">
+              <input class="checkbox" id="useMousewheelVolume" type="checkbox">
+              <input id="incrementSlider" type="range" min=1 max=20 value=5>
+            </div>
+            <p class="valueDisplay"></p>
           </div>
-          <p class="valueDisplay"></p>
-        </div>
 
-        <div id="preciseScrollWrapper" title="Scroll by one when going below the set increment">
-          <p class="title">Precise Scroll</p>
-          <div class="input">
+          <br/>
+
+          <div class="input" title="Scroll by one when going below the set increment">
             <input class="checkbox" id="preciseScroll" type="checkbox" checked=true>
             <p id="preciseScrollState">Precise scroll is enabled</p>
           </div>
@@ -38,36 +39,35 @@
             <input class="checkbox" id="useModifierKey" type="checkbox">
             <kbd id="modifierKey">shift</kbd>
           </div>
-        </div>
 
-        <div id="invertModifierKeyWrapper" title="When holding the modifier key on a video you will scroll the page instead of the volume">
-          <p class="title">Invert modifier key</p>
+          <br/>
+
           <div class="input">
             <input class="checkbox" id="invertModifierKey" type="checkbox">
-            <p id="invertModifierKeyState">Disabled</p>
+            <p id="invertModifierKeyState">Normal</p>
           </div>
         </div>
 
-        <div id="overlayFontSizeWrapper" title="Set the text size of the overlay">
-          <p class="title">Overlay Font Size</p>
-          <div class="input">
-            <input id="overlayFontSizeSlider" type="range" min=10 max=100 step=5 value=40>
+        <div id="overlayWrapper">
+          <p class="title">Overlay</p>
+          <div title="Set the text size of the overlay">
+            <div class="input">
+              <input id="overlayFontSizeSlider" type="range" min=10 max=100 step=5 value=40>
+            </div>
+            <p class="valueDisplay"></p>
           </div>
-          <p class="valueDisplay"></p>
-        </div>
 
-        <div id="overlayColorWrapper" title="Set the color of the overlay">
-          <p class="title">Overlay Color</p>
-          <div class="wrapper">
+          <br/>
+
+          <div class="colorWrapper" title="Set the color of the overlay">
             <div class="input" id="colorInputWrapper">
               <input id="overlayColorInput" type="color" value="#ffffff">
             </div>
           </div>
-        </div>
 
-        <div id="overlayPositionWrapper" title="Set where the overlay will be displayed">
-          <p class="title">Overlay Position</p>
-          <div class="input">
+          <br/>
+
+          <div class="input" title="Set where the overlay will be displayed">
             <input class="checkbox" id="overlayPosition" type="checkbox" checked=true>
             <p id="overlayPositionState">Mouse position</p>
           </div>

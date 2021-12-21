@@ -4,14 +4,18 @@
 
 body {
   width: 275px;
-  height: 550px;
+  height: 500px;
   background-color: #282A35;
   color: white;
 }
 
 .wrapper {
   height: 100%;
+  display: flex;
+  justify-content: center;
+}
 
+.colorWrapper {
   display: flex;
   justify-content: center;
 }

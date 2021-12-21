@@ -2,7 +2,7 @@ let body = document.documentElement || document.body || document.getElementsByTa
 let settings = {};
 let isModifierKeyPressed = false;
 
-let handleScroll = function (element, video) {
+let handleScroll = function (element, video, volumeBar = null) {
     if (!Boolean(video.webkitAudioDecodedByteCount)) //video has audio. If not stops volume scrolling
         return;
 
@@ -21,6 +21,8 @@ let handleScroll = function (element, video) {
         volume = video.volume + (1 / 100) * (event.deltaY / 100 * -1);
     }
 
+    volume = Math.round(volume * 100) / 100;
+
     //Limiting the volume to between 0-1
     if (volume < 0) {
         volume = 0;
@@ -32,6 +34,13 @@ let handleScroll = function (element, video) {
 
     video.volume = volume;
     video.dataset.volume = volume;
+
+    if(volumeBar != null){
+        volumeBar.setAttribute("step", 1);
+        volumeBar.setAttribute("value", volume * 100);
+        volumeBar.ariaValueNow = volume * 100;
+        console.log(volumeBar);
+    }
 
     //Update overlay text
     let div = document.getElementById("volumeOverlay");
@@ -78,7 +87,9 @@ let onScroll = function (event) {
             event.preventDefault();
             let video = document.getElementsByTagName("VIDEO")[0];
             let display = document.getElementsByTagName("YTMUSIC-PLAYER")[0];
-            handleScroll(display, video);
+            let slider = document.getElementById("volume-slider");
+            //console.log(slider);
+            handleScroll(display, video, slider);
             break;
         }
     }

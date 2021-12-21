@@ -92,7 +92,7 @@ chrome.storage.sync.get("userSettings", data => {
     document.getElementById("overlayFontSizeSlider").addEventListener("input", function () {
         let input = document.getElementById("overlayFontSizeSlider");
 
-        document.querySelector("#overlayFontSizeWrapper .valueDisplay").innerHTML = input.value;
+        document.querySelector("#overlayWrapper .valueDisplay").innerHTML = input.value;
 
         chrome.storage.sync.get("userSettings", result => {
             chrome.storage.sync.set({userSettings: {...result.userSettings, fontSize: input.value}});
@@ -201,7 +201,7 @@ chrome.storage.sync.get("userSettings", data => {
     document.getElementById("invertModifierKey").addEventListener("input", function(){
         let input = document.getElementById("invertModifierKey");
 
-        document.getElementById("invertModifierKeyState").innerHTML = (input.checked) ? "Enabled" : "Disabled";
+        document.getElementById("invertModifierKeyState").innerHTML = (input.checked) ? "Inverted" : "Normal";
 
         chrome.storage.sync.get("userSettings", result => {
             chrome.storage.sync.set({userSettings: {...result.userSettings, invertModifierKey: input.checked}});
@@ -249,7 +249,7 @@ chrome.storage.sync.get("userSettings", data => {
     document.getElementById("preciseScrollState").innerHTML = (usePreciseScroll) ? "Precise scroll is enabled" : "Precise scroll is disabled";
 
     document.getElementById("overlayFontSizeSlider").value = fontSize;
-    document.querySelector("#overlayFontSizeWrapper .valueDisplay").innerHTML = fontSize;
+    document.querySelector("#overlayWrapper .valueDisplay").innerHTML = fontSize;
 
     document.getElementById("overlayColorInput").value = fontColor;
 
@@ -268,7 +268,7 @@ chrome.storage.sync.get("userSettings", data => {
     document.getElementById("modifierKey").innerHTML = modifierKey;
 
     document.getElementById("invertModifierKey").checked = invertModifierKey;
-    document.getElementById("invertModifierKeyState").innerHTML = (invertModifierKey) ? "Enabled" : "Disabled";
+    document.getElementById("invertModifierKeyState").innerHTML = (invertModifierKey) ? "Inverted" : "Normal";
 
     chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
         let url = new URL(tabs[0].url).hostname;
