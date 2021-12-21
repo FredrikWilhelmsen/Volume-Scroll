@@ -106,7 +106,7 @@ chrome.storage.sync.get("userSettings", data => {
 
         input.value = parseInt(input.value) + (event.deltaY / 100 * -1) * input.step; //Gets the direction of the scroll, then divides by 100 to get just the value 1 or -1.
 
-        document.querySelector("#overlayFontSizeWrapper .valueDisplay").innerHTML = input.value;
+        document.querySelector("#overlayWrapper .valueDisplay").innerHTML = input.value;
 
         chrome.storage.sync.get("userSettings", result => {
             chrome.storage.sync.set({userSettings: {...result.userSettings, fontSize: input.value}});
