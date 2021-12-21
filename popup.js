@@ -174,7 +174,9 @@ chrome.storage.sync.get("userSettings", data => {
         });
     });
 
-    document.getElementById("modifierKey").addEventListener("click", function () {
+    let modifierKeyOnClick = function() {
+        document.getElementById("modifierKey").removeEventListener("click", modifierKeyOnClick);
+
         if (document.getElementById("useModifierKey").checked) {
             let element = document.getElementById("modifierKey");
             let body = document.documentElement || document.body;
@@ -191,12 +193,60 @@ chrome.storage.sync.get("userSettings", data => {
                     chrome.storage.sync.set({userSettings: {...result.userSettings, modifierKey: key}});
                 });
 
+                document.getElementById("modifierKey").addEventListener("click", modifierKeyOnClick);
                 body.removeEventListener("keydown", keyDown);
+                body.removeEventListener("mousedown", click);
+                body.removeEventListener("contextmenu", stopContextMenu);
+            }
+
+            let getMouseKey = function(key){
+                switch (key){
+                    case 0:
+                        return "Left Mouse";
+                    case 1:
+                        return "Middle Mouse";
+                    case 2:
+                        return "Right Mouse";
+                    case 3:
+                        return "Mouse 3";
+                    case 4:
+                        return "Mouse 4";
+                }
+            }
+
+            let click = function(event){
+                event.preventDefault();
+                let key = getMouseKey(event.button);
+                element.innerHTML = key;
+
+                chrome.storage.sync.get("userSettings", result => {
+                    chrome.storage.sync.set({userSettings: {...result.userSettings, modifierKey: key}});
+                });
+
+
+                body.removeEventListener("keydown", keyDown);
+                body.removeEventListener("mousedown", click);
+                setTimeout(function(){
+                    body.removeEventListener("contextmenu", stopContextMenu);
+                }, 1000);
+
+                setTimeout(function(){
+                  document.getElementById("modifierKey").addEventListener("click", modifierKeyOnClick);
+                }, 100);
+            }
+
+            let stopContextMenu = function(event){
+                event.preventDefault();
+                return false;
             }
 
             body.addEventListener("keydown", keyDown);
+            body.addEventListener("mousedown", click);
+            body.addEventListener("contextmenu", stopContextMenu);
         }
-    });
+    }
+
+    document.getElementById("modifierKey").addEventListener("click", modifierKeyOnClick);
 
     document.getElementById("invertModifierKey").addEventListener("input", function(){
         let input = document.getElementById("invertModifierKey");

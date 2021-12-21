@@ -1,9 +1,34 @@
 let body = document.documentElement || document.body || document.getElementsByTagName("body")[0];
 let settings = {};
 let isModifierKeyPressed = false;
+let scrolled = false;
 
-let handleScroll = function (element, video, volumeBar = null) {
-    if (!Boolean(video.webkitAudioDecodedByteCount)) //video has audio. If not stops volume scrolling
+function hasAudio (video) {
+    return video.mozHasAudio ||
+    Boolean(video.webkitAudioDecodedByteCount) ||
+    Boolean(video.audioTracks && video.audioTracks.length);
+}
+
+let getVideo = function(){
+  let elements = document.elementsFromPoint(event.clientX, event.clientY);
+  for (const element of elements) {
+      if (element.tagName === "VIDEO") {
+          event.preventDefault();
+          return {display: element, video: element, slider: null};
+      }
+      else if(element.tagName === "YTMUSIC-PLAYER" || element.tagName === "YTMUSIC-PLAYER-BAR"){
+          event.preventDefault();
+          let video = document.getElementsByTagName("VIDEO")[0];
+          let display = document.getElementsByTagName("YTMUSIC-PLAYER")[0];
+          let slider = document.getElementById("volume-slider");
+          return {display: display, video: video, slider: slider};
+      }
+  }
+}
+
+let handleScroll = function (element, video, volumeBar) {
+    scrolled = true;
+    if (!hasAudio(video)) //video has audio. If not stops volume scrolling
         return;
 
     let volume = 1;
@@ -39,7 +64,6 @@ let handleScroll = function (element, video, volumeBar = null) {
         volumeBar.setAttribute("step", 1);
         volumeBar.setAttribute("value", volume * 100);
         volumeBar.ariaValueNow = volume * 100;
-        console.log(volumeBar);
     }
 
     //Update overlay text
@@ -76,23 +100,8 @@ let onScroll = function (event) {
             break;
     }
 
-    let elements = document.elementsFromPoint(event.clientX, event.clientY);
-    for (const element of elements) {
-        if (element.tagName === "VIDEO") {
-            event.preventDefault();
-            handleScroll(element, element);
-            break;
-        }
-        else if(element.tagName === "YTMUSIC-PLAYER" || element.tagName === "YTMUSIC-PLAYER-BAR"){
-            event.preventDefault();
-            let video = document.getElementsByTagName("VIDEO")[0];
-            let display = document.getElementsByTagName("YTMUSIC-PLAYER")[0];
-            let slider = document.getElementById("volume-slider");
-            //console.log(slider);
-            handleScroll(display, video, slider);
-            break;
-        }
-    }
+    let videoElements = getVideo();
+    handleScroll(videoElements.display, videoElements.video, videoElements.slider);
 }
 
 let handleDefaultVolume = function (video) {
@@ -134,8 +143,30 @@ chrome.storage.sync.get("userSettings", result => {
         settings = changes.userSettings.newValue;
     });
 
+    let getMouseKey = function(key){
+        switch (key){
+            case 0:
+                return "Left Mouse";
+            case 1:
+                return "Middle Mouse";
+            case 2:
+                return "Right Mouse";
+            case 3:
+                return "Mouse 3";
+            case 4:
+                return "Mouse 4";
+        }
+    }
+
     body.addEventListener("keydown", function (event) {
         if (settings.modifierKey === event.key) {
+            event.stopPropagation();
+            isModifierKeyPressed = true;
+        }
+    });
+
+    body.addEventListener("mousedown", function(event){
+        if(settings.modifierKey === getMouseKey(event.button)){
             event.stopPropagation();
             isModifierKeyPressed = true;
         }
@@ -144,6 +175,35 @@ chrome.storage.sync.get("userSettings", result => {
     body.addEventListener("keyup", function (event) {
         if (settings.modifierKey === event.key) {
             isModifierKeyPressed = false;
+        }
+    });
+
+    body.addEventListener("mouseup", function(event){
+        if(settings.modifierKey === getMouseKey(event.button)){
+            event.stopPropagation();
+            isModifierKeyPressed = false;
+
+            if(scrolled){
+              event.preventDefault();
+              scrolled = false;
+
+              if(event.button === 0 && !settings.invertModifierKey){
+                  let video = getVideo().video;
+                  video.paused ? video.play() : video.pause();
+              }
+
+              let stopContextMenu = function(event){
+                  event.preventDefault();
+                  event.stopPropagation();
+                  event.stopImmediatePropagation();
+                  return false;
+              }
+
+              body.addEventListener("contextmenu", stopContextMenu, true);
+              setTimeout(function(){
+                body.removeEventListener("contextmenu", stopContextMenu);
+              }, 1000);
+            }
         }
     });
 
