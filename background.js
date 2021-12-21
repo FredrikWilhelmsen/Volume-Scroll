@@ -7,7 +7,7 @@ const defaultSettings = {
     fontColor: "#ffffff", //white
     fontSize: 40,
     useOverlayMouse: true,
-    modifierKey: "Alt",
+    modifierKey: "Right Mouse",
     useModifierKey: false,
     invertModifierKey: false,
     blacklist: [
