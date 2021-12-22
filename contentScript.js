@@ -199,10 +199,12 @@ chrome.storage.sync.get("userSettings", result => {
                   return false;
               }
 
-              body.addEventListener("contextmenu", stopContextMenu, true);
-              setTimeout(function(){
-                body.removeEventListener("contextmenu", stopContextMenu);
-              }, 1000);
+              if(event.button === 2){
+                  body.addEventListener("contextmenu", stopContextMenu, true);
+                  setTimeout(function(){
+                      body.removeEventListener("contextmenu", stopContextMenu, true);
+                  }, 1000);
+              }
             }
         }
     });
