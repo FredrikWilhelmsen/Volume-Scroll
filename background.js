@@ -11,12 +11,12 @@ const defaultSettings = {
     useModifierKey: false,
     invertModifierKey: false,
     blacklist: [
-    "open.spotify.com"
+        "open.spotify.com"
     ]
 }
 
 chrome.runtime.onInstalled.addListener(() => {
-    chrome.storage.sync.get({userSettings: defaultSettings}, result => {
-        chrome.storage.sync.set({userSettings: result.userSettings});
+    chrome.storage.sync.get({ userSettings: defaultSettings }, result => {
+        chrome.storage.sync.set({ userSettings: result.userSettings });
     });
 });

@@ -3,30 +3,30 @@ let settings = {};
 let isModifierKeyPressed = false;
 let scrolled = false;
 
-function hasAudio (video) {
+function hasAudio(video) {
     return video.mozHasAudio ||
-    Boolean(video.webkitAudioDecodedByteCount) ||
-    Boolean(video.audioTracks && video.audioTracks.length);
+        Boolean(video.webkitAudioDecodedByteCount) ||
+        Boolean(video.audioTracks && video.audioTracks.length);
 }
 
-let getVideo = function(){
-  let elements = document.elementsFromPoint(event.clientX, event.clientY);
-  for (const element of elements) {
-      if (element.tagName === "VIDEO") {
-          event.preventDefault();
-          return {display: element, video: element, slider: null};
-      }
-      else if(element.tagName === "YTMUSIC-PLAYER" || element.tagName === "YTMUSIC-PLAYER-BAR"){
-          event.preventDefault();
-          let video = document.getElementsByTagName("VIDEO")[0];
-          let display = document.getElementsByTagName("YTMUSIC-PLAYER")[0];
-          let slider = document.getElementById("volume-slider");
-          return {display: display, video: video, slider: slider};
-      }
-  }
+let getVideo = function () {
+    let elements = document.elementsFromPoint(event.clientX, event.clientY);
+    for (const element of elements) {
+        if (element.tagName === "VIDEO") {
+            event.preventDefault();
+            return { display: element, video: element, slider: null };
+        }
+        else if (element.tagName === "YTMUSIC-PLAYER" || element.tagName === "YTMUSIC-PLAYER-BAR") {
+            event.preventDefault();
+            let video = document.getElementsByTagName("VIDEO")[0];
+            let display = document.getElementsByTagName("YTMUSIC-PLAYER")[0];
+            let slider = document.getElementById("volume-slider");
+            return { display: display, video: video, slider: slider };
+        }
+    }
 }
 
-let handleScroll = function (element, video, volumeBar) {
+let handleScroll = function (element, video, volumeBar, event) {
     scrolled = true;
     if (!hasAudio(video)) //video has audio. If not stops volume scrolling
         return;
@@ -60,7 +60,11 @@ let handleScroll = function (element, video, volumeBar) {
     video.volume = volume;
     video.dataset.volume = volume;
 
-    if(volumeBar != null){
+    //Set volume cookie to avoid volume fighting
+    document.cookie = "volume=" + volume * 100;
+    console.log(document.cookie);
+
+    if (volumeBar != null) {
         volumeBar.setAttribute("step", 1);
         volumeBar.setAttribute("value", volume * 100);
         volumeBar.ariaValueNow = volume * 100;
@@ -101,7 +105,7 @@ let onScroll = function (event) {
     }
 
     let videoElements = getVideo();
-    handleScroll(videoElements.display, videoElements.video, videoElements.slider);
+    handleScroll(videoElements.display, videoElements.video, videoElements.slider, event);
 }
 
 let handleDefaultVolume = function (video) {
@@ -143,8 +147,8 @@ chrome.storage.sync.get("userSettings", result => {
         settings = changes.userSettings.newValue;
     });
 
-    let getMouseKey = function(key){
-        switch (key){
+    let getMouseKey = function (key) {
+        switch (key) {
             case 0:
                 return "Left Mouse";
             case 1:
@@ -165,8 +169,8 @@ chrome.storage.sync.get("userSettings", result => {
         }
     });
 
-    body.addEventListener("mousedown", function(event){
-        if(settings.modifierKey === getMouseKey(event.button)){
+    body.addEventListener("mousedown", function (event) {
+        if (settings.modifierKey === getMouseKey(event.button)) {
             event.stopPropagation();
             isModifierKeyPressed = true;
         }
@@ -178,38 +182,38 @@ chrome.storage.sync.get("userSettings", result => {
         }
     });
 
-    body.addEventListener("mouseup", function(event){
-        if(settings.modifierKey === getMouseKey(event.button)){
+    body.addEventListener("mouseup", function (event) {
+        if (settings.modifierKey === getMouseKey(event.button)) {
             event.stopPropagation();
             isModifierKeyPressed = false;
 
-            if(scrolled){
-              event.preventDefault();
-              scrolled = false;
+            if (scrolled) {
+                event.preventDefault();
+                scrolled = false;
 
-              if(event.button === 0 && !settings.invertModifierKey){
-                  let video = getVideo().video;
-                  video.paused ? video.play() : video.pause();
-              }
+                if (event.button === 0 && !settings.invertModifierKey) {
+                    let video = getVideo().video;
+                    video.paused ? video.play() : video.pause();
+                }
 
-              let stopContextMenu = function(event){
-                  event.preventDefault();
-                  event.stopPropagation();
-                  event.stopImmediatePropagation();
-                  return false;
-              }
+                let stopContextMenu = function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    event.stopImmediatePropagation();
+                    return false;
+                }
 
-              if(event.button === 2){
-                  body.addEventListener("contextmenu", stopContextMenu, true);
-                  setTimeout(function(){
-                      body.removeEventListener("contextmenu", stopContextMenu, true);
-                  }, 1000);
-              }
+                if (event.button === 2) {
+                    body.addEventListener("contextmenu", stopContextMenu, true);
+                    setTimeout(function () {
+                        body.removeEventListener("contextmenu", stopContextMenu, true);
+                    }, 1000);
+                }
             }
         }
     });
 
-    document.addEventListener("wheel", onScroll, {passive: false});
+    document.addEventListener("wheel", onScroll, { passive: false });
 
     //Add volume overlay to the page
     let div = document.createElement("div");
