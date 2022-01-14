@@ -62,7 +62,6 @@ let handleScroll = function (element, video, volumeBar, event) {
 
     //Set volume cookie to avoid volume fighting
     document.cookie = "volume=" + volume * 100;
-    console.log(document.cookie);
 
     if (volumeBar != null) {
         volumeBar.setAttribute("step", 1);
