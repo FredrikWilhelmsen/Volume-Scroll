@@ -148,7 +148,6 @@ let setAudio = function (mutations) {
                 continue;
 
             let video = node;
-            console.log("Found new video!", video);
 
             handleDefaultVolume(video);
         }
