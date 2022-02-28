@@ -1,6 +1,6 @@
 {
 	"name": "Volume Scroll",
-	"description": "Scrollable Volume",
+	"description": "Scrollable Volume for any video on the internet",
 	"version": "1.4",
 	"manifest_version": 3,
 	"background": {

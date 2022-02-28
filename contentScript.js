@@ -9,7 +9,7 @@ function hasAudio(video) {
         Boolean(video.audioTracks && video.audioTracks.length);
 }
 
-let getVideo = function () {
+let getVideo = function (event) {
     let elements = document.elementsFromPoint(event.clientX, event.clientY);
     for (const element of elements) {
         if (element.tagName === "VIDEO") {
@@ -60,8 +60,30 @@ let handleScroll = function (element, video, volumeBar, event) {
     video.volume = volume;
     video.dataset.volume = volume;
 
-    //Set volume cookie to avoid volume fighting
-    document.cookie = "volume=" + volume * 100;
+    //Set saved volume to avoid volume fighting
+    var cookie = document.cookie.match(new RegExp('(^| )' + "PREF" + '=([^;]+)'));
+    if(cookie){
+        cookie = "volume=" + volume * 100 + cookie[2].slice(cookie[2].indexOf("&"));
+        var date = new Date();
+        date.setMonth(date.getMonth() + 24);
+        document.cookie = "PREF=" + cookie + ";expires=" + date + ";domain=.youtube.com;path=/";
+
+        let data = JSON.stringify({
+            volume: volume * 100,
+            muted: video.muted,
+        });
+    
+        window.localStorage.setItem("yt-player-volume", JSON.stringify({
+            data: data,
+            expiration : Date.now() + 2592e6,
+            creation: Date.now(),
+        }));
+    
+        window.sessionStorage.setItem("yt-player-volume", JSON.stringify({
+            data: data,
+            creation: Date.now(),
+        }));
+    }
 
     if (volumeBar != null) {
         volumeBar.setAttribute("step", 1);
@@ -103,7 +125,7 @@ let onScroll = function (event) {
             break;
     }
 
-    let videoElements = getVideo();
+    let videoElements = getVideo(event);
     handleScroll(videoElements.display, videoElements.video, videoElements.slider, event);
 }
 
@@ -191,7 +213,7 @@ chrome.storage.sync.get("userSettings", result => {
                 scrolled = false;
 
                 if (event.button === 0 && !settings.invertModifierKey) {
-                    let video = getVideo().video;
+                    let video = getVideo(event).video;
                     video.paused ? video.play() : video.pause();
                 }
 
