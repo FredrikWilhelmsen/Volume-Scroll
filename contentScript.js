@@ -31,22 +31,30 @@ let handleScroll = function (element, video, volumeBar, event) {
     if (!hasAudio(video)) //video has audio. If not stops volume scrolling
         return;
 
-    let volume = 1;
+    let volume = video.volume * 100; //video.volume is a percentage, multiplied by 100 to get integer values
+    let direction = event.deltaY / 100 * -1 //deltaY is how much the wheel scrolled, 100 up, -100 down. Divided by 100 to only get direction, then inverted
+    let increment = settings.volumeIncrement;
 
-    if (video.volume > settings.volumeIncrement / 100 || (video.volume === settings.volumeIncrement / 100 && event.deltaY < 0) || !settings.usePreciseScroll) {
-        volume = video.volume + (settings.volumeIncrement / 100) * (event.deltaY / 100 * -1); //deltaY is how much the wheel scrolled, 100 up, -100 down. Divided by 100 to only get direction, then inverted
+    if(settings.usePreciseScroll){
+        if(direction === -1 && volume <= 5){
+            increment = 1;
+        }
+        else if(direction === 1 && volume < 5){
+            increment = 1;
+        }
+    }
 
+    volume += increment * direction;
+
+    if(volume > settings.volumeIncrement){
         //Rounding the volume to the nearest increment, in case the original volume was not on the increment.
-        volume = volume * 100;
         volume = volume / settings.volumeIncrement;
         volume = Math.round(volume);
         volume = volume * settings.volumeIncrement;
-        volume = volume / 100;
-    } else {
-        volume = video.volume + (1 / 100) * (event.deltaY / 100 * -1);
     }
 
-    volume = Math.round(volume * 100) / 100;
+    volume = Math.round(volume);
+    volume = volume / 100;
 
     //Limiting the volume to between 0-1
     if (volume < 0) {
