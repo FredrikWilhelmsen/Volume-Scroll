@@ -123,9 +123,14 @@ let onScroll = function (event) {
 }
 
 let handleDefaultVolume = function (video) {
-    video.volume = settings.volume / 100;
-    video.dataset.volume = settings.volume / 100;
-
+    if (settings.useDefaultVolume){
+        video.volume = settings.volume / 100;
+        video.dataset.volume = settings.volume / 100;
+    }
+    else {
+        video.dataset.volume = video.volume;
+    }
+    
     let change = function () {
         if(video.volume != video.dataset.volume){
             video.volume = video.dataset.volume;
@@ -136,9 +141,6 @@ let handleDefaultVolume = function (video) {
 };
 
 let setAudio = function (mutations) {
-    if (!settings.useDefaultVolume)
-        return;
-
     if (settings.blacklist.includes(window.location.hostname))
         return;
 
