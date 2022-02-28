@@ -82,22 +82,6 @@ let handleScroll = function (element, video, volumeBar, event) {
             date.setMonth(date.getMonth() + 24);
             document.cookie = "PREF=" + cookie + ";expires=" + date + ";domain=.youtube.com;path=/";
         }
-
-        let data = JSON.stringify({
-            volume: volume * 100,
-            muted: video.muted,
-        });
-    
-        window.localStorage.setItem("yt-player-volume", JSON.stringify({
-            data: data,
-            expiration : Date.now() + 2592e6,
-            creation: Date.now(),
-        }));
-    
-        window.sessionStorage.setItem("yt-player-volume", JSON.stringify({
-            data: data,
-            creation: Date.now(),
-        }));
     }
 
     //Update overlay text
@@ -164,6 +148,7 @@ let setAudio = function (mutations) {
                 continue;
 
             let video = node;
+            console.log("Found new video!", video);
 
             handleDefaultVolume(video);
         }
