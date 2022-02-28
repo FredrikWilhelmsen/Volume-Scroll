@@ -35,11 +35,12 @@ let handleScroll = function (element, video, volumeBar, event) {
     let direction = event.deltaY / 100 * -1 //deltaY is how much the wheel scrolled, 100 up, -100 down. Divided by 100 to only get direction, then inverted
     let increment = settings.volumeIncrement;
 
+    //Set increment value to 1 if below the increment value and precise scroll is enabled
     if(settings.usePreciseScroll){
-        if(direction === -1 && volume <= 5){
+        if(direction === -1 && volume <= settings.volumeIncrement){
             increment = 1;
         }
-        else if(direction === 1 && volume < 5){
+        else if(direction === 1 && volume < settings.volumeIncrement){
             increment = 1;
         }
     }
@@ -47,7 +48,7 @@ let handleScroll = function (element, video, volumeBar, event) {
     volume += increment * direction;
 
     if(volume > settings.volumeIncrement){
-        //Rounding the volume to the nearest increment, in case the original volume was not on the increment.
+        //Rounding the volume to the nearest increment, in case the original volume was not on the increment
         volume = volume / settings.volumeIncrement;
         volume = Math.round(volume);
         volume = volume * settings.volumeIncrement;
@@ -65,16 +66,22 @@ let handleScroll = function (element, video, volumeBar, event) {
 
     video.muted = volume <= 0;
 
-    video.volume = volume;
     video.dataset.volume = volume;
+    video.volume = volume;
 
-    //Set saved volume to avoid volume fighting
-    var cookie = document.cookie.match(new RegExp('(^| )' + "PREF" + '=([^;]+)'));
-    if(cookie){
-        cookie = "volume=" + volume * 100 + cookie[2].slice(cookie[2].indexOf("&"));
-        var date = new Date();
-        date.setMonth(date.getMonth() + 24);
-        document.cookie = "PREF=" + cookie + ";expires=" + date + ";domain=.youtube.com;path=/";
+    if (volumeBar != null) {
+        volumeBar.setAttribute("step", 1);
+        volumeBar.setAttribute("value", volume * 100);
+        volumeBar.ariaValueNow = volume * 100;
+
+        //Set saved volume to avoid volume fighting
+        var cookie = document.cookie.match(new RegExp('(^| )' + "PREF" + '=([^;]+)'));
+        if(cookie){
+            cookie = "volume=" + volume * 100 + cookie[2].slice(cookie[2].indexOf("&"));
+            var date = new Date();
+            date.setMonth(date.getMonth() + 24);
+            document.cookie = "PREF=" + cookie + ";expires=" + date + ";domain=.youtube.com;path=/";
+        }
 
         let data = JSON.stringify({
             volume: volume * 100,
@@ -91,12 +98,6 @@ let handleScroll = function (element, video, volumeBar, event) {
             data: data,
             creation: Date.now(),
         }));
-    }
-
-    if (volumeBar != null) {
-        volumeBar.setAttribute("step", 1);
-        volumeBar.setAttribute("value", volume * 100);
-        volumeBar.ariaValueNow = volume * 100;
     }
 
     //Update overlay text
@@ -142,7 +143,7 @@ let handleDefaultVolume = function (video) {
     video.dataset.volume = settings.volume / 100;
 
     let change = function () {
-        if (!(video.volume == video.dataset.volume - settings.volumeIncrement || video.volume == video.dataset.volume + settings.volumeIncrement || video.volume == video.dataset.volume)) { //Checks to see if the registered change in volume is equal to the increment. If it is not then it is denied.
+        if(video.volume != video.dataset.volume){
             video.volume = video.dataset.volume;
         }
     };
