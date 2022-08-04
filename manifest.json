@@ -8,8 +8,7 @@
 	},
 	"permissions": [
 		"storage",
-		"tabs",
-		"cookies"
+		"tabs"
 	],
 	"action": {
 		"default_popup": "popup.html",

@@ -73,15 +73,6 @@ let handleScroll = function (element, video, volumeBar, event) {
         volumeBar.setAttribute("step", 1);
         volumeBar.setAttribute("value", volume * 100);
         volumeBar.ariaValueNow = volume * 100;
-
-        //Set saved volume to avoid volume fighting
-        var cookie = document.cookie.match(new RegExp('(^| )' + "PREF" + '=([^;]+)'));
-        if(cookie){
-            cookie = "volume=" + volume * 100 + cookie[2].slice(cookie[2].indexOf("&"));
-            var date = new Date();
-            date.setMonth(date.getMonth() + 24);
-            document.cookie = "PREF=" + cookie + ";expires=" + date + ";domain=.youtube.com;path=/";
-        }
     }
 
     //Update overlay text
