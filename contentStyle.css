@@ -11,7 +11,7 @@
   pointer-events: none;
 }
 
-@keyframes fade {
+@keyframes fadeEffect {
   0% {
     opacity: 1;
   }
@@ -26,8 +26,9 @@
 }
 
 .scrollOverlayFade {
-  animation-name: fade;
+  animation-name: fadeEffect;
   animation-duration: 2s;
+  animation-direction: normal;
 }
 
 .body {
