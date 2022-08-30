@@ -24,6 +24,7 @@ let getVideo = function (event) {
             return { display: display, video: video, slider: slider };
         }
     }
+    return null;
 }
 
 let handleScroll = function (element, video, volumeBar, event) {
@@ -76,7 +77,7 @@ let handleScroll = function (element, video, volumeBar, event) {
     }
 
     //Update overlay text
-    let div = document.getElementById("volumeOverlay");
+    let div = document.getElementById("volumeScrollOverlay");
     div.innerHTML = Math.round(video.volume * 100);
     div.style.color = settings.fontColor;
     div.style.fontSize = settings.fontSize + "px";
@@ -94,7 +95,7 @@ let handleScroll = function (element, video, volumeBar, event) {
     //Animate fade
     let newDiv = div;
     div.parentNode.replaceChild(newDiv, div);
-    div.classList.add("scrollOverlayFade");
+    div.classList.add("volumeScrollOverlayFade");
 }
 
 let onScroll = function (event) {
@@ -110,6 +111,7 @@ let onScroll = function (event) {
     }
 
     let videoElements = getVideo(event);
+    if(videoElements === null) return;
     handleScroll(videoElements.display, videoElements.video, videoElements.slider, event);
 }
 
@@ -224,8 +226,8 @@ chrome.storage.sync.get("userSettings", result => {
 
     //Add volume overlay to the page
     let div = document.createElement("div");
-    div.id = "volumeOverlay";
-    div.classList.add("scrollOverlay");
+    div.id = "volumeScrollOverlay";
+    div.classList.add("volumeScrollOverlay");
     div.style.color = settings.fontColor;
     div.style.fontSize = settings.fontSize + "px";
 

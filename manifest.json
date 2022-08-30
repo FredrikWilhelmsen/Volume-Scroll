@@ -13,8 +13,8 @@
 	"action": {
 		"default_popup": "popup.html",
 		"default_icon": {
-      "128": "/images/128.png"
-    }
+      		"128": "/images/128.png"
+    	}
 	},
 	"content_scripts": [
 		{

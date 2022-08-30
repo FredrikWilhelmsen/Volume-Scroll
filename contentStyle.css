@@ -1,4 +1,4 @@
-.scrollOverlay {
+.volumeScrollOverlay {
   font-family: Roboto, Arial, sans-serif;
   font-weight: bold;
 
@@ -11,7 +11,7 @@
   pointer-events: none;
 }
 
-@keyframes fadeEffect {
+@keyframes volumeScrollFade {
   0% {
     opacity: 1;
   }
@@ -25,8 +25,8 @@
   }
 }
 
-.scrollOverlayFade {
-  animation-name: fadeEffect;
+.volumeScrollOverlayFade {
+  animation-name: volumeScrollFade;
   animation-duration: 2s;
   animation-direction: normal;
 }
