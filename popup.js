@@ -92,6 +92,14 @@ chrome.storage.sync.get("userSettings", data => {
         });
     });
 
+    document.getElementById("fullscreenScroll").addEventListener("input", function(){
+        let input = document.getElementById("fullscreenScroll");
+
+        chrome.storage.sync.get("userSettings", result => {
+            chrome.storage.sync.set({userSettings: {...result.userSettings, fullscreenOnly: input.checked}});
+        });
+    });
+
     document.getElementById("overlayFontSizeSlider").addEventListener("input", function () {
         let input = document.getElementById("overlayFontSizeSlider");
 
@@ -366,6 +374,8 @@ chrome.storage.sync.get("userSettings", data => {
 
     document.getElementById("preciseScroll").checked = usePreciseScroll;
     document.getElementById("preciseScrollState").innerHTML = (usePreciseScroll) ? "Precise scroll is enabled" : "Precise scroll is disabled";
+
+    document.getElementById("fullscreenScroll").checked = fullscreenOnly;
 
     document.getElementById("overlayFontSizeSlider").value = fontSize;
     document.querySelector("#overlayWrapper .valueDisplay").innerHTML = fontSize;

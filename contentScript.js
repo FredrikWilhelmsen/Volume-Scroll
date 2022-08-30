@@ -113,20 +113,27 @@ let handleScroll = function (element, video, volumeBar, event) {
     div.classList.add("volumeScrollOverlayFade");
 }
 
+let isFullscreen = function(){
+    return document.fullscreenElement != null;
+}
+
 let onScroll = function (event) {
+    let videoElements = getVideo(event);
+
+    console.log(settings.fullscreenOnly, isFullscreen(), settings.fullscreenOnly && !isFullscreen())
+
     //Switch is to check for multiple cases where the volume scroll should not be performed
     switch (true) {
         case settings.blacklist.includes(window.location.hostname):
         case !settings.useMousewheelVolume:
         case settings.useModifierKey && !settings.invertModifierKey && !isModifierKeyPressed:
         case settings.useModifierKey && settings.invertModifierKey && isModifierKeyPressed:
+        case videoElements === null:
+        case settings.fullscreenOnly && !isFullscreen():
             return;
         default:
             break;
     }
-
-    let videoElements = getVideo(event);
-    if(videoElements === null) return;
 
     handleScroll(videoElements.display, videoElements.video, videoElements.slider, event);
 }
