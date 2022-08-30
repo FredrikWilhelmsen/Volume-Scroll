@@ -4,9 +4,17 @@
 
 body {
   width: 275px;
-  height: 500px;
+  height: 600px;
   background-color: #282A35;
   color: white;
+}
+
+#links {
+  color: gray;
+}
+
+#links a {
+  color: #7c2eb8;
 }
 
 .wrapper {
@@ -22,7 +30,7 @@ body {
 
 #settings {
   height: 100%;
-  width: 60%;
+  width: 70%;
 
   display: flex;
   flex-direction: column;

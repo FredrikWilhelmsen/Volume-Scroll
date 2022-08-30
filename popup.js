@@ -3,6 +3,7 @@ chrome.storage.sync.get("userSettings", data => {
         volume,
         volumeIncrement,
         usePreciseScroll,
+        fullscreenOnly,
         useDefaultVolume,
         useMousewheelVolume,
         fontColor,
@@ -11,6 +12,8 @@ chrome.storage.sync.get("userSettings", data => {
         useOverlayMouse,
         useModifierKey,
         invertModifierKey,
+        toggleMuteKey,
+        useToggleMuteKey,
         blacklist
     } = data.userSettings;
 
@@ -174,6 +177,21 @@ chrome.storage.sync.get("userSettings", data => {
         });
     });
 
+    let getMouseKey = function(key){
+        switch (key){
+            case 0:
+                return "Left Mouse";
+            case 1:
+                return "Middle Mouse";
+            case 2:
+                return "Right Mouse";
+            case 3:
+                return "Mouse 3";
+            case 4:
+                return "Mouse 4";
+        }
+    }
+
     let modifierKeyOnClick = function() {
         document.getElementById("modifierKey").removeEventListener("click", modifierKeyOnClick);
 
@@ -181,7 +199,7 @@ chrome.storage.sync.get("userSettings", data => {
             let element = document.getElementById("modifierKey");
             let body = document.documentElement || document.body;
 
-            element.innerHTML = "----";
+            element.innerHTML = "-----";
 
             let keyDown = function (event) {
                 event.preventDefault();
@@ -199,21 +217,6 @@ chrome.storage.sync.get("userSettings", data => {
                 body.removeEventListener("contextmenu", stopContextMenu);
             }
 
-            let getMouseKey = function(key){
-                switch (key){
-                    case 0:
-                        return "Left Mouse";
-                    case 1:
-                        return "Middle Mouse";
-                    case 2:
-                        return "Right Mouse";
-                    case 3:
-                        return "Mouse 3";
-                    case 4:
-                        return "Mouse 4";
-                }
-            }
-
             let click = function(event){
                 event.preventDefault();
                 let key = getMouseKey(event.button);
@@ -228,7 +231,7 @@ chrome.storage.sync.get("userSettings", data => {
                 body.removeEventListener("mousedown", click);
                 setTimeout(function(){
                     body.removeEventListener("contextmenu", stopContextMenu);
-                }, 1000);
+                }, 100);
 
                 setTimeout(function(){
                   document.getElementById("modifierKey").addEventListener("click", modifierKeyOnClick);
@@ -257,6 +260,72 @@ chrome.storage.sync.get("userSettings", data => {
             chrome.storage.sync.set({userSettings: {...result.userSettings, invertModifierKey: input.checked}});
         });
     });
+
+    document.getElementById("useToggleMuteKey").addEventListener("change", function () {
+        let input = document.getElementById("useToggleMuteKey");
+
+        chrome.storage.sync.get("userSettings", result => {
+            chrome.storage.sync.set({userSettings: {...result.userSettings, useToggleMuteKey: input.checked}});
+        });
+    });
+
+    let toggleMuteKeyOnClick = function() {
+        document.getElementById("toggleMuteKey").removeEventListener("click", toggleMuteKeyOnClick);
+
+        if (document.getElementById("useToggleMuteKey").checked) {
+            let element = document.getElementById("toggleMuteKey");
+            let body = document.documentElement || document.body;
+
+            element.innerHTML = "-----";
+
+            let keyDown = function (event) {
+                event.preventDefault();
+
+                let key = event.key;
+                element.innerHTML = (key == " ") ? "Space" : key;
+
+                chrome.storage.sync.get("userSettings", result => {
+                    chrome.storage.sync.set({userSettings: {...result.userSettings, toggleMuteKey: key}});
+                });
+
+                document.getElementById("modifierKey").addEventListener("click", modifierKeyOnClick);
+                body.removeEventListener("keydown", keyDown);
+                body.removeEventListener("mousedown", click);
+                body.removeEventListener("contextmenu", stopContextMenu);
+            }
+
+            let click = function(event){
+                event.preventDefault();
+                let key = getMouseKey(event.button);
+                element.innerHTML = key;
+
+                chrome.storage.sync.get("userSettings", result => {
+                    chrome.storage.sync.set({userSettings: {...result.userSettings, toggleMuteKey: key}});
+                });
+
+                body.removeEventListener("keydown", keyDown);
+                body.removeEventListener("mousedown", click);
+                setTimeout(function(){
+                    body.removeEventListener("contextmenu", stopContextMenu);
+                }, 100);
+
+                setTimeout(function(){
+                  document.getElementById("toggleMuteKey").addEventListener("click", toggleMuteKeyOnClick);
+                }, 100);
+            }
+
+            let stopContextMenu = function(event){
+                event.preventDefault();
+                return false;
+            }
+
+            body.addEventListener("keydown", keyDown);
+            body.addEventListener("mousedown", click);
+            body.addEventListener("contextmenu", stopContextMenu);
+        }
+    }
+
+    document.getElementById("toggleMuteKey").addEventListener("click", toggleMuteKeyOnClick);
 
     document.getElementById("blacklist").addEventListener("change", function () {
         let input = document.getElementById("blacklist");
@@ -316,6 +385,9 @@ chrome.storage.sync.get("userSettings", data => {
     document.getElementById("invertModifierKey").disabled = !useModifierKey;
 
     document.getElementById("modifierKey").innerHTML = modifierKey;
+
+    document.getElementById("useToggleMuteKey").checked = useToggleMuteKey;
+    document.getElementById("toggleMuteKey").innerHTML = toggleMuteKey;
 
     document.getElementById("invertModifierKey").checked = invertModifierKey;
     document.getElementById("invertModifierKeyState").innerHTML = (invertModifierKey) ? "Inverted" : "Normal";

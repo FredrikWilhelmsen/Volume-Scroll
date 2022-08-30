@@ -3,6 +3,21 @@ let settings = {};
 let isModifierKeyPressed = false;
 let scrolled = false;
 
+let getMouseKey = function (key) {
+    switch (key) {
+        case 0:
+            return "Left Mouse";
+        case 1:
+            return "Middle Mouse";
+        case 2:
+            return "Right Mouse";
+        case 3:
+            return "Mouse 3";
+        case 4:
+            return "Mouse 4";
+    }
+}
+
 function hasAudio(video) {
     return video.mozHasAudio ||
         Boolean(video.webkitAudioDecodedByteCount) ||
@@ -112,6 +127,7 @@ let onScroll = function (event) {
 
     let videoElements = getVideo(event);
     if(videoElements === null) return;
+
     handleScroll(videoElements.display, videoElements.video, videoElements.slider, event);
 }
 
@@ -149,27 +165,46 @@ let setAudio = function (mutations) {
     }
 }
 
+let toggleMute = function(event){
+    if(!settings.useToggleMuteKey) return;
+    let videoElements = getVideo(event);
+    if(videoElements === null) return;
+
+    videoElements.video.muted = !videoElements.video.muted;
+}
+
+let handleMouseDown = function(event){
+    if (scrolled) {
+        event.preventDefault();
+        scrolled = false;
+
+        if (event.button === 0 && !settings.invertModifierKey) {
+            let video = getVideo(event).video;
+            video.paused ? video.play() : video.pause();
+        }
+
+        let stopContextMenu = function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+            return false;
+        }
+
+        if (event.button === 2) {
+            body.addEventListener("contextmenu", stopContextMenu, true);
+            setTimeout(function () {
+                body.removeEventListener("contextmenu", stopContextMenu, true);
+            }, 100);
+        }
+    }
+}
+
 chrome.storage.sync.get("userSettings", result => {
     settings = result.userSettings;
 
     chrome.storage.onChanged.addListener((changes) => {
         settings = changes.userSettings.newValue;
     });
-
-    let getMouseKey = function (key) {
-        switch (key) {
-            case 0:
-                return "Left Mouse";
-            case 1:
-                return "Middle Mouse";
-            case 2:
-                return "Right Mouse";
-            case 3:
-                return "Mouse 3";
-            case 4:
-                return "Mouse 4";
-        }
-    }
 
     body.addEventListener("keydown", function (event) {
         if (settings.modifierKey === event.key) {
@@ -183,11 +218,18 @@ chrome.storage.sync.get("userSettings", result => {
             event.stopPropagation();
             isModifierKeyPressed = true;
         }
+        else if(settings.toggleMuteKey === getMouseKey(event.button)){
+            event.stopPropagation();
+            event.preventDefault();
+        }
     });
 
     body.addEventListener("keyup", function (event) {
         if (settings.modifierKey === event.key) {
             isModifierKeyPressed = false;
+        }
+        else if(settings.toggleMuteKey === event.key){
+            toggleMute(event);
         }
     });
 
@@ -196,29 +238,13 @@ chrome.storage.sync.get("userSettings", result => {
             event.stopPropagation();
             isModifierKeyPressed = false;
 
-            if (scrolled) {
-                event.preventDefault();
-                scrolled = false;
+            handleMouseDown(event);
+        }
+        else if(settings.toggleMuteKey === getMouseKey(event.button)){
+            event.stopPropagation();
+            toggleMute(event);
 
-                if (event.button === 0 && !settings.invertModifierKey) {
-                    let video = getVideo(event).video;
-                    video.paused ? video.play() : video.pause();
-                }
-
-                let stopContextMenu = function (event) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    event.stopImmediatePropagation();
-                    return false;
-                }
-
-                if (event.button === 2) {
-                    body.addEventListener("contextmenu", stopContextMenu, true);
-                    setTimeout(function () {
-                        body.removeEventListener("contextmenu", stopContextMenu, true);
-                    }, 1000);
-                }
-            }
+            handleMouseDown(event);
         }
     });
 

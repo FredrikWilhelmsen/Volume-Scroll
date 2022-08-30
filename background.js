@@ -2,6 +2,7 @@ const defaultSettings = {
     volume: 20,
     volumeIncrement: 5,
     usePreciseScroll: true,
+    fullscreenOnly: false,
     useDefaultVolume: false,
     useMousewheelVolume: true,
     fontColor: "#ffffff", //white
@@ -10,6 +11,8 @@ const defaultSettings = {
     modifierKey: "Right Mouse",
     useModifierKey: false,
     invertModifierKey: false,
+    toggleMuteKey: "Middle Mouse",
+    useToggleMuteKey: false,
     blacklist: [
         "open.spotify.com"
     ]

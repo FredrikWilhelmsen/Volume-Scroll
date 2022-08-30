@@ -17,7 +17,7 @@
 
         <div id="mousewheelVolumeWrapper">
           <p class="title">Scroll Increment</p>
-          <div title="Set how much the volume will change by when scrolling">
+          <div title="Set how much the volume will change per tick when scrolling">
             <div class="input">
               <input class="checkbox" id="useMousewheelVolume" type="checkbox">
               <input id="incrementSlider" type="range" min=1 max=20 value=5>
@@ -31,13 +31,20 @@
             <input class="checkbox" id="preciseScroll" type="checkbox" checked=true>
             <p id="preciseScrollState">Precise scroll is enabled</p>
           </div>
+
+          <br>
+
+          <div class="input" title="Scroll by one when going below the set increment">
+            <input class="checkbox" id="preciseScroll" type="checkbox" checked=true>
+            <p id="preciseScrollState">Precise scroll is enabled</p>
+          </div>
         </div>
 
         <div id="modifierKeyWrapper" title="Set a key that must be held down while scrolling to change the volume">
           <p class="title">Modifier Key</p>
           <div class="input">
             <input class="checkbox" id="useModifierKey" type="checkbox">
-            <kbd id="modifierKey">shift</kbd>
+            <kbd id="modifierKey">Right Mouse</kbd>
           </div>
 
           <br/>
@@ -45,6 +52,14 @@
           <div class="input">
             <input class="checkbox" id="invertModifierKey" type="checkbox">
             <p id="invertModifierKeyState">Normal</p>
+          </div>
+        </div>
+
+        <div id="toggleMuteWrapper" title="Set a key to toggle audio on/off when pressed while hovering over the video">
+          <p class="title">Toggle Mute Key</p>
+          <div class="input">
+            <input class="checkbox" id="useToggleMuteKey" type="checkbox">
+            <kbd id="toggleMuteKey">Middle Mouse</kbd>
           </div>
         </div>
 
@@ -82,6 +97,9 @@
           <p class="valueDisplay"></p>
         </div>
 
+        <div id="links">
+          Want to show support? Consider leaving a <a href="https://chrome.google.com/webstore/detail/volume-scroll/gkmagiadkkhdilnaicdnngcjhmhaeaoh">review</a> or buy me a <a href="https://ko-fi.com/fredrikwilhelmsen">Coffee</a>
+        </div>
       </div>
     </div>
 
