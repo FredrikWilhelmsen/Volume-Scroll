@@ -1,16 +1,29 @@
 * {
   margin: 0px;
+  user-select: none;
+}
+
+html {
+  max-height: 600px;
+  min-height: 250px;
+  height: auto;
+  display: inline-block;
 }
 
 body {
   width: 275px;
-  height: 600px;
+  max-height: 600px;
+  min-height: 250px;
+  height: auto;
   background-color: #282A35;
   color: white;
+  display: inline-block;
 }
 
 #links {
   color: gray;
+  padding-bottom: 8px;
+  text-align: center;
 }
 
 #links a {
@@ -18,7 +31,6 @@ body {
 }
 
 .wrapper {
-  height: 100%;
   display: flex;
   justify-content: center;
 }
@@ -29,13 +41,10 @@ body {
 }
 
 #settings {
-  height: 100%;
   width: 70%;
-
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
-  justify-content: space-evenly;
   align-items: stretch;
 }
 
@@ -48,6 +57,7 @@ body {
   text-align: center;
   margin-bottom: 5%;
   font-weight: bold;
+  margin-top: 8px;
 }
 
 #overlayColorWrapper .title {
@@ -85,4 +95,31 @@ kbd {
   font-size: 16px;
   width: 70%;
   text-align: center;
+}
+
+folder {
+  font-weight: bold;
+  border: white;
+  border-top-style: none;
+  border-bottom-style: none;
+  border-left-style: solid;
+  border-right-style: none;
+  border-width: 4px;
+  background-color: #2f313e;
+  margin-bottom: 8px;
+  margin-top: 8px;
+  padding: 4px;
+  padding-left: 8px;
+}
+
+content {
+  margin-top: 8px;
+  padding-bottom: 8px;
+  display: none;
+}
+
+title {
+  cursor: pointer;
+  display: inline-block;
+  width: 100%;
 }

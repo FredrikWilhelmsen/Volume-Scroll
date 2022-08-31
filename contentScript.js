@@ -99,12 +99,13 @@ let handleScroll = function (element, video, volumeBar, event) {
 
     //position the overlay
     if (settings.useOverlayMouse) {
-        div.style.top = window.scrollY + event.clientY - div.offsetHeight + "px";
         div.style.left = window.scrollX + event.clientX - div.offsetWidth + "px";
+        div.style.top = window.scrollY + event.clientY - div.offsetHeight + "px";
     } else {
         let vidPos = element.getBoundingClientRect();
-        div.style.top = 10 + window.scrollY + vidPos.top + "px";
-        div.style.left = 10 + window.scrollX + vidPos.left + "px";
+        let overlayPos = div.getBoundingClientRect();
+        div.style.left = (vidPos.width / 100 * settings.overlayXPos) - (overlayPos.width / 2) + window.scrollX + vidPos.left + "px";
+        div.style.top = (vidPos.height / 100 * settings.overlayYPos) - (overlayPos.height / 2) + window.scrollY + vidPos.top + "px";
     }
 
     //Animate fade
@@ -118,22 +119,20 @@ let isFullscreen = function(){
 }
 
 let onScroll = function (event) {
-    let videoElements = getVideo(event);
-
-    console.log(settings.fullscreenOnly, isFullscreen(), settings.fullscreenOnly && !isFullscreen())
-
     //Switch is to check for multiple cases where the volume scroll should not be performed
     switch (true) {
         case settings.blacklist.includes(window.location.hostname):
         case !settings.useMousewheelVolume:
         case settings.useModifierKey && !settings.invertModifierKey && !isModifierKeyPressed:
         case settings.useModifierKey && settings.invertModifierKey && isModifierKeyPressed:
-        case videoElements === null:
         case settings.fullscreenOnly && !isFullscreen():
             return;
         default:
             break;
     }
+
+    let videoElements = getVideo(event);
+    if(videoElements === null) return;
 
     handleScroll(videoElements.display, videoElements.video, videoElements.slider, event);
 }

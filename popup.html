@@ -1,11 +1,15 @@
+<!DOCTYPE html>
 <html>
   <head>
     <link rel="stylesheet" href="popup.css">
+    <meta name="viewport" content="height=device-height, initial-scale=1.0">
   </head>
   <body>
 
     <div class="wrapper">
       <div id="settings">
+
+        <br>
 
         <div id="blacklistWrapper" title="Enable or disable the extension on this page">
           <p class="title">Blacklist Page</p>
@@ -15,87 +19,133 @@
           </div>
         </div>
 
-        <div id="mousewheelVolumeWrapper">
-          <p class="title">Scroll Increment</p>
-          <div title="Set how much the volume will change per tick when scrolling">
-            <div class="input">
-              <input class="checkbox" id="useMousewheelVolume" type="checkbox">
-              <input id="incrementSlider" type="range" min=1 max=20 value=5>
+        <folder>
+          <title>Scroll Settings</title>
+          <content>
+            <hr>
+            <div id="mousewheelVolumeWrapper">
+              <p class="title">Scroll Increment</p>
+              <div title="Set how much the volume will change per tick when scrolling">
+                <div class="input">
+                  <input class="checkbox" id="useMousewheelVolume" type="checkbox">
+                  <input id="incrementSlider" type="range" min=1 max=20 value=5>
+                </div>
+                <p class="valueDisplay">5</p>
+              </div>
+    
+              <br/>
+    
+              <div class="input" title="Scroll by one when going below the set increment">
+                <input class="checkbox" id="preciseScroll" type="checkbox" checked=true>
+                <p id="preciseScrollState">Precise scroll is enabled</p>
+              </div>
+    
+              <br>
+    
+              <div class="input" title="Scroll the volume only when the video is fullscreen">
+                <input class="checkbox" id="fullscreenScroll" type="checkbox" checked=false>
+                <p">Fullscreen mode only</p>
+              </div>
             </div>
-            <p class="valueDisplay"></p>
-          </div>
-
-          <br/>
-
-          <div class="input" title="Scroll by one when going below the set increment">
-            <input class="checkbox" id="preciseScroll" type="checkbox" checked=true>
-            <p id="preciseScrollState">Precise scroll is enabled</p>
-          </div>
-
-          <br>
-
-          <div class="input" title="Scroll the volume only when the video is fullscreen">
-            <input class="checkbox" id="fullscreenScroll" type="checkbox" checked=false>
-            <p">Fullscreen mode only</p>
-          </div>
-        </div>
-
-        <div id="modifierKeyWrapper" title="Set a key that must be held down while scrolling to change the volume">
-          <p class="title">Modifier Key</p>
-          <div class="input">
-            <input class="checkbox" id="useModifierKey" type="checkbox">
-            <kbd id="modifierKey">Right Mouse</kbd>
-          </div>
-
-          <br/>
-
-          <div class="input">
-            <input class="checkbox" id="invertModifierKey" type="checkbox">
-            <p id="invertModifierKeyState">Normal</p>
-          </div>
-        </div>
-
-        <div id="toggleMuteWrapper" title="Set a key to toggle audio on/off when pressed while hovering over the video">
-          <p class="title">Toggle Mute Key</p>
-          <div class="input">
-            <input class="checkbox" id="useToggleMuteKey" type="checkbox">
-            <kbd id="toggleMuteKey">Middle Mouse</kbd>
-          </div>
-        </div>
-
-        <div id="overlayWrapper">
-          <p class="title">Overlay</p>
-          <div title="Set the text size of the overlay">
-            <div class="input">
-              <input id="overlayFontSizeSlider" type="range" min=10 max=100 step=5 value=40>
+          </content>
+        </folder>
+        
+        <folder>
+          <title>Hotkey Settings</title>
+          <content>
+            <hr>
+            <div id="modifierKeyWrapper" title="Set a key that must be held down while scrolling to change the volume">
+              <p class="title">Modifier Key</p>
+              <div class="input">
+                <input class="checkbox" id="useModifierKey" type="checkbox">
+                <kbd id="modifierKey">Right Mouse</kbd>
+              </div>
+    
+              <br/>
+    
+              <div class="input">
+                <input class="checkbox" id="invertModifierKey" type="checkbox">
+                <p id="invertModifierKeyState">Normal</p>
+              </div>
             </div>
-            <p class="valueDisplay"></p>
-          </div>
-
-          <br/>
-
-          <div class="colorWrapper" title="Set the color of the overlay">
-            <div class="input" id="colorInputWrapper">
-              <input id="overlayColorInput" type="color" value="#ffffff">
+    
+            <div id="toggleMuteWrapper" title="Set a key to toggle audio on/off when pressed while hovering over the video">
+              <p class="title">Toggle Mute Key</p>
+              <div class="input">
+                <input class="checkbox" id="useToggleMuteKey" type="checkbox">
+                <kbd id="toggleMuteKey">Middle Mouse</kbd>
+              </div>
             </div>
-          </div>
+          </content>
+        </folder>
+        
+        <folder>
+          <title>Overlay Settings</title>
+          <content>
+            <hr>
+            <div id="overlayWrapper">
+              <p class="title">Overlay</p>
+              <div title="Set the text size of the overlay">
+                <div class="input">
+                  <input id="overlayFontSizeSlider" type="range" min=10 max=100 step=5 value=40>
+                </div>
+                <p class="valueDisplay">40</p>
+              </div>
+    
+              <br/>
+    
+              <div class="colorWrapper" title="Set the color of the overlay">
+                <div class="input" id="colorInputWrapper">
+                  <input id="overlayColorInput" type="color" value="#ffffff">
+                </div>
+              </div>
+    
+              <br/>
+    
+              <div class="colorWrapper" title="Set where the overlay will be displayed">
+                <div class="input" id="overlayPositionInputWrapper">
+                  <select class="select" id="overlayPositionInput" name="overlayPositionSelect">
+                    <option value="mouse">Relative to Mouse</option>
+                    <option value="[5,5]">Top Left</option>
+                    <option value="[95,5]">Top Right</option>
+                    <option value="[5,95]">Bottom Left</option>
+                    <option value="[95,95]">Bottom Right</option>
+                    <option value="custom">Custom</option>
+                  </select>
+                </div>
+              </div>
 
-          <br/>
+              <br>
 
-          <div class="input" title="Set where the overlay will be displayed">
-            <input class="checkbox" id="overlayPosition" type="checkbox" checked=true>
-            <p id="overlayPositionState">Mouse position</p>
-          </div>
-        </div>
+              <div id="overlayXPosWrapper" title="Set the relative X position of the overlay as a percentage">
+                <p class="title">Relative X Position</p>
+                <input id="overlayXPos" type="range" min=5 max=95 step=5 value=5 disabled>
+                <p class="valueDisplay">5</p>
+              </div>
 
-        <div id="defaultVolumeWrapper" title="Set a default volume level for every video">
-          <p class="title">Default Volume</p>
-          <div class="input">
-            <input class="checkbox" id="useDefaultVolume" type="checkbox" value=false>
-            <input id="defaultVolumeSlider" type="range" min=0 max=100 value=20>
-          </div>
-          <p class="valueDisplay"></p>
-        </div>
+              <div id="overlayYPosWrapper" title="Set the relative Y position of the overlay as a percentage">
+                <p class="title">Relative Y Position</p>
+                <input id="overlayYPos" type="range" min=5 max=95 step=5 value=5 disabled>
+                <p class="valueDisplay">5</p>
+              </div>
+            </div>
+          </content>
+        </folder>
+
+        <folder>
+          <title>Volume Settings</title>
+          <content>
+            <hr>
+            <div id="defaultVolumeWrapper" title="Set a default volume level for every video">
+              <p class="title">Default Volume</p>
+              <div class="input">
+                <input class="checkbox" id="useDefaultVolume" type="checkbox" value=false>
+                <input id="defaultVolumeSlider" type="range" min=0 max=100 value=20>
+              </div>
+              <p class="valueDisplay"></p>
+            </div>
+          </content>
+        </folder>
 
         <div id="links">
           Want to show support? Consider leaving a <a href="https://chrome.google.com/webstore/detail/volume-scroll/gkmagiadkkhdilnaicdnngcjhmhaeaoh">review</a> or buy me a <a href="https://ko-fi.com/fredrikwilhelmsen">Coffee</a>
