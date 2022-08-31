@@ -104,14 +104,18 @@ let handleScroll = function (element, video, volumeBar, event) {
     } else {
         let vidPos = element.getBoundingClientRect();
         let overlayPos = div.getBoundingClientRect();
-        div.style.left = (vidPos.width / 100 * settings.overlayXPos) - (overlayPos.width / 2) + window.scrollX + vidPos.left + "px";
-        div.style.top = (vidPos.height / 100 * settings.overlayYPos) - (overlayPos.height / 2) + window.scrollY + vidPos.top + "px";
+        div.style.left = (vidPos.width / 100 * settings.overlayXPos) - (overlayPos.width / 2) + "px";
+        div.style.top = (vidPos.height / 100 * settings.overlayYPos) - (overlayPos.height / 2) + "px";
     }
 
+    //move overlay next to video in DOM
+    video.insertAdjacentElement("beforebegin", div);
+    
     //Animate fade
     let newDiv = div;
     div.parentNode.replaceChild(newDiv, div);
     div.classList.add("volumeScrollOverlayFade");
+    console.log(newDiv);
 }
 
 let isFullscreen = function(){
