@@ -3,6 +3,14 @@ let settings = {};
 let isModifierKeyPressed = false;
 let scrolled = false;
 
+let createOverlay = function(){
+    let div = document.createElement("div");
+    div.id = "volumeScrollOverlay";
+    div.classList.add("volumeScrollOverlay");
+    div.style.color = settings.fontColor;
+    div.style.fontSize = settings.fontSize + "px";
+}
+
 let getMouseKey = function (key) {
     switch (key) {
         case 0:
@@ -93,6 +101,11 @@ let handleScroll = function (element, video, volumeBar, event) {
 
     //Update overlay text
     let div = document.getElementById("volumeScrollOverlay");
+
+    if(div === null){
+        createOverlay();
+    }
+
     div.innerHTML = Math.round(video.volume * 100);
     div.style.color = settings.fontColor;
     div.style.fontSize = settings.fontSize + "px";
@@ -261,11 +274,7 @@ chrome.storage.sync.get("userSettings", result => {
     document.addEventListener("wheel", onScroll, { passive: false });
 
     //Add volume overlay to the page
-    let div = document.createElement("div");
-    div.id = "volumeScrollOverlay";
-    div.classList.add("volumeScrollOverlay");
-    div.style.color = settings.fontColor;
-    div.style.fontSize = settings.fontSize + "px";
+    createOverlay();
 
     body.appendChild(div);
 
