@@ -8,8 +8,8 @@ const defaultSettings = {
     fontColor: "#ffffff", //white
     fontSize: 40,
     useOverlayMouse: true,
-    overlayXPos: 10,
-    overlayYPos: 10,
+    overlayXPos: 5,
+    overlayYPos: 5,
     modifierKey: "Right Mouse",
     useModifierKey: false,
     invertModifierKey: false,
