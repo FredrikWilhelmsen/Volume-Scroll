@@ -9,6 +9,7 @@ let createOverlay = function(){
     div.classList.add("volumeScrollOverlay");
     div.style.color = settings.fontColor;
     div.style.fontSize = settings.fontSize + "px";
+    body.appendChild(div);
 }
 
 let getMouseKey = function (key) {
@@ -104,6 +105,7 @@ let handleScroll = function (element, video, volumeBar, event) {
 
     if(div === null){
         createOverlay();
+        div = document.getElementById("volumeScrollOverlay");
     }
 
     div.innerHTML = Math.round(video.volume * 100);
@@ -128,7 +130,6 @@ let handleScroll = function (element, video, volumeBar, event) {
     let newDiv = div;
     div.parentNode.replaceChild(newDiv, div);
     div.classList.add("volumeScrollOverlayFade");
-    console.log(newDiv);
 }
 
 let isFullscreen = function(){
@@ -232,6 +233,7 @@ chrome.storage.sync.get("userSettings", result => {
     body.addEventListener("keydown", function (event) {
         if (settings.modifierKey === event.key) {
             event.stopPropagation();
+            event.preventDefault();
             isModifierKeyPressed = true;
         }
     });
@@ -239,6 +241,7 @@ chrome.storage.sync.get("userSettings", result => {
     body.addEventListener("mousedown", function (event) {
         if (settings.modifierKey === getMouseKey(event.button)) {
             event.stopPropagation();
+            event.preventDefault();
             isModifierKeyPressed = true;
         }
         else if(settings.toggleMuteKey === getMouseKey(event.button)){
@@ -275,8 +278,6 @@ chrome.storage.sync.get("userSettings", result => {
 
     //Add volume overlay to the page
     createOverlay();
-
-    body.appendChild(div);
 
     const config = {
         childList: true,

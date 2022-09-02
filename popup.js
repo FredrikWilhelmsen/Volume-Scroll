@@ -18,11 +18,6 @@ chrome.storage.sync.get("userSettings", data => {
         useToggleMuteKey,
         blacklist
     } = data.userSettings;
-    console.log(data.userSettings);
-
-    chrome.storage.onChanged.addListener((changes) => {
-        console.log(changes.userSettings.newValue);
-    });
 
     //Add event listeners
     document.getElementById("useMousewheelVolume").addEventListener("change", function () {
