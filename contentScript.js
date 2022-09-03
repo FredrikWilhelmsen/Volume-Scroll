@@ -43,7 +43,7 @@ let getVideo = function (event) {
         else if (element.tagName === "YTMUSIC-PLAYER" || element.tagName === "YTMUSIC-PLAYER-BAR") {
             event.preventDefault();
             let video = document.getElementsByTagName("VIDEO")[0];
-            let display = document.getElementsByTagName("YTMUSIC-PLAYER")[0];
+            let display = document.getElementById("song-image");
             let slider = document.getElementById("volume-slider");
             return { display: display, video: video, slider: slider };
         }
@@ -124,7 +124,7 @@ let handleScroll = function (element, video, volumeBar, event) {
     }
 
     //move overlay next to video in DOM
-    video.insertAdjacentElement("beforebegin", div);
+    element.insertAdjacentElement("beforebegin", div);
     
     //Animate fade
     let newDiv = div;
