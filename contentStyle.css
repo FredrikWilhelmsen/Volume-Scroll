@@ -1,13 +1,13 @@
 .volumeScrollOverlay {
-  font-family: Roboto, Arial, sans-serif;
-  font-weight: bold;
+  font-family: Roboto, Arial, sans-serif!important;
+  font-weight: bold!important;
 
-  opacity: 0;
+  opacity: 0!important;
 
-  position: absolute;
+  position: absolute!important;
   visibility: visible !important;
   z-index: 9999999 !important;
-  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000!important;
 
   pointer-events: none;
 }
