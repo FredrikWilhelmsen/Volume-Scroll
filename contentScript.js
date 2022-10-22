@@ -53,7 +53,8 @@ let getVideo = function (event) {
 
 let handleScroll = function (element, video, volumeBar, event) {
     scrolled = true;
-    if (!hasAudio(video)) //video has audio. If not stops volume scrolling
+    //SetTimeout for like 500ms, if nothing happened to scrolled, set it to false.
+    if (!hasAudio(video)) //video has audio. If not stops volume scrolling, doesnt work well.
         return;
 
     let volume = video.volume * 100; //video.volume is a percentage, multiplied by 100 to get integer values
@@ -149,10 +150,10 @@ let onScroll = function (event) {
             break;
     }
 
-    let videoElements = getVideo(event);
-    if(videoElements === null) return;
+    let videoElement = getVideo(event);
+    if(videoElement === null) return;
 
-    handleScroll(videoElements.display, videoElements.video, videoElements.slider, event);
+    handleScroll(videoElement.display, videoElement.video, videoElement.slider, event);
 }
 
 let handleDefaultVolume = function (video) {
@@ -191,10 +192,10 @@ let setAudio = function (mutations) {
 
 let toggleMute = function(event){
     if(!settings.useToggleMuteKey) return;
-    let videoElements = getVideo(event);
-    if(videoElements === null) return;
+    let videoElement = getVideo(event);
+    if(videoElement === null) return;
 
-    videoElements.video.muted = !videoElements.video.muted;
+    videoElement.video.muted = !videoElement.video.muted;
 }
 
 let handleMouseDown = function(event){
@@ -211,7 +212,6 @@ let handleMouseDown = function(event){
             event.preventDefault();
             event.stopPropagation();
             event.stopImmediatePropagation();
-            return false;
         }
 
         if (event.button === 2) {
