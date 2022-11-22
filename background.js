@@ -4,6 +4,7 @@ const defaultSettings = {
     usePreciseScroll: true,
     fullscreenOnly: false,
     useDefaultVolume: false,
+    useUncappedAudio: false,
     useMousewheelVolume: true,
     fontColor: "#ffffff", //white
     fontSize: 40,

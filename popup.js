@@ -5,6 +5,7 @@ chrome.storage.sync.get("userSettings", data => {
         usePreciseScroll,
         fullscreenOnly,
         useDefaultVolume,
+        useUncappedAudio,
         useMousewheelVolume,
         fontColor,
         fontSize,
@@ -31,6 +32,7 @@ chrome.storage.sync.get("userSettings", data => {
         document.getElementById("overlayPositionInput").disabled = !input.checked;
         document.getElementById("preciseScroll").disabled = !input.checked;
         document.getElementById("invertModifierKey").disabled = !input.checked || !document.getElementById("useModifierKey").checked;
+        document.getElementById("useUncappedAudio").disabled = !input.checked;
 
         chrome.storage.sync.get("userSettings", result => {
             chrome.storage.sync.set({ userSettings: { ...result.userSettings, useMousewheelVolume: input.checked } });
@@ -464,6 +466,16 @@ chrome.storage.sync.get("userSettings", data => {
         });
     });
 
+    document.getElementById("useUncappedAudio").addEventListener("input", function () {
+        let input = document.getElementById("useUncappedAudio");
+
+        document.getElementById("uncappedAudioState").innerHTML = (input.checked) ? "Volume is uncapped" : "Volume is capped";
+
+        chrome.storage.sync.get("userSettings", result => {
+            chrome.storage.sync.set({ userSettings: { ...result.userSettings, useUncappedAudio: input.checked } });
+        });
+    });
+
     //Insert stored settings
     document.getElementById("useMousewheelVolume").checked = useMousewheelVolume;
     document.getElementById("incrementSlider").disabled = !useMousewheelVolume;
@@ -473,6 +485,7 @@ chrome.storage.sync.get("userSettings", data => {
     document.getElementById("overlayPositionInput").disabled = !useMousewheelVolume;
     document.getElementById("preciseScroll").disabled = !useMousewheelVolume;
     document.getElementById("invertModifierKey").disabled = !useMousewheelVolume || !document.getElementById("useModifierKey").checked;
+    document.getElementById("useUncappedAudio").disabled = !useMousewheelVolume;
 
     document.getElementById("incrementSlider").value = volumeIncrement;
     document.querySelector("#mousewheelVolumeWrapper .valueDisplay").innerHTML = volumeIncrement;
@@ -521,6 +534,9 @@ chrome.storage.sync.get("userSettings", data => {
 
     document.getElementById("useDefaultVolume").checked = useDefaultVolume;
     document.getElementById("defaultVolumeSlider").disabled = !useDefaultVolume;
+
+    document.getElementById("useUncappedAudio").checked = useUncappedAudio;
+    document.getElementById("uncappedAudioState").innerHTML = (useUncappedAudio) ? "Volume is uncapped" : "Volume is capped";
 
     document.getElementById("defaultVolumeSlider").value = volume;
     document.querySelector("#defaultVolumeWrapper .valueDisplay").innerHTML = volume;

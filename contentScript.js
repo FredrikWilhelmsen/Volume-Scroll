@@ -2,6 +2,8 @@ let body = document.documentElement || document.body || document.getElementsByTa
 let settings = {};
 let isModifierKeyPressed = false;
 let scrolled = false;
+let audioContext = new (window.AudioContext || window.webkitAudioContext)();
+let sources = [];
 
 let createOverlay = function(){
     let div = document.createElement("div");
@@ -27,7 +29,7 @@ let getMouseKey = function (key) {
     }
 }
 
-function hasAudio(video) {
+let hasAudio = function(video) {
     return video.mozHasAudio ||
         Boolean(video.webkitAudioDecodedByteCount) ||
         Boolean(video.audioTracks && video.audioTracks.length);
@@ -37,11 +39,9 @@ let getVideo = function (event) {
     let elements = document.elementsFromPoint(event.clientX, event.clientY);
     for (const element of elements) {
         if (element.tagName === "VIDEO") {
-            event.preventDefault();
             return { display: element, video: element, slider: null };
         }
         else if (element.tagName === "YTMUSIC-PLAYER" || element.tagName === "YTMUSIC-PLAYER-BAR") {
-            event.preventDefault();
             let video = document.getElementsByTagName("VIDEO")[0];
             let display = document.getElementById("song-image");
             let slider = document.getElementById("volume-slider");
@@ -51,17 +51,52 @@ let getVideo = function (event) {
     return null;
 }
 
+let getNode = function(video){
+    for(i of sources){
+        if(i.video.isSameNode(video)){
+            return i;
+        }
+    }
+
+    let source = audioContext.createMediaElementSource(video);
+    let gainNode = audioContext.createGain();
+    source.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    gainNode.gain.value = settings.volume / 100;
+    volume = settings.volume;
+    video.volume = 1;
+
+    node = {video: video, source: source, gain: gainNode};
+    sources.push(node);
+
+    return node;
+}
+
 let handleScroll = function (element, video, volumeBar, event) {
     scrolled = true;
-    //SetTimeout for like 500ms, if nothing happened to scrolled, set it to false.
+
     if (!hasAudio(video)) //video has audio. If not stops volume scrolling, doesnt work well.
         return;
 
-    let volume = video.volume * 100; //video.volume is a percentage, multiplied by 100 to get integer values
+    event.preventDefault();
+    let volume = 0;
+
+    //Get and set volume level
+    if(settings.useUncappedAudio){
+        let node = getNode(video);
+
+        volume = node.gain.gain.value * 100;
+    }
+    else {
+        volume = video.volume * 100; //video.volume is a percentage, multiplied by 100 to get integer values
+    }
+     
     let direction = event.deltaY / 100 * -1 //deltaY is how much the wheel scrolled, 100 up, -100 down. Divided by 100 to only get direction, then inverted
     let increment = settings.volumeIncrement;
 
     //Set increment value to 1 if below the increment value and precise scroll is enabled
+    volume = Math.round(volume);
     if(settings.usePreciseScroll){
         if(direction === -1 && volume <= settings.volumeIncrement){
             increment = 1;
@@ -83,17 +118,32 @@ let handleScroll = function (element, video, volumeBar, event) {
     volume = Math.round(volume);
     volume = volume / 100;
 
-    //Limiting the volume to between 0-1
-    if (volume < 0) {
-        volume = 0;
-    } else if (volume > 1) {
-        volume = 1;
-    }
-
     video.muted = volume <= 0;
 
     video.dataset.volume = volume;
-    video.volume = volume;
+
+    if(settings.useUncappedAudio){
+        //Limiting the volume to between 0-5
+        if (volume < 0) {
+            volume = 0;
+        } else if (volume > 5) {
+            volume = 5;
+        }
+
+        node = getNode(video);
+        node.gain.gain.value = volume;
+        video.volume = 1;
+    }
+    else {
+        //Limiting the volume to between 0-1
+        if (volume < 0) {
+            volume = 0;
+        } else if (volume > 1) {
+            volume = 1;
+        }
+            
+        video.volume = volume;
+    }
 
     if (volumeBar != null) {
         volumeBar.setAttribute("step", 1);
@@ -109,7 +159,7 @@ let handleScroll = function (element, video, volumeBar, event) {
         div = document.getElementById("volumeScrollOverlay");
     }
 
-    div.innerHTML = Math.round(video.volume * 100);
+    div.innerHTML = Math.round(volume * 100);
     div.style.color = settings.fontColor;
     div.style.fontSize = settings.fontSize + "px";
 
@@ -158,16 +208,31 @@ let onScroll = function (event) {
 
 let handleDefaultVolume = function (video) {
     if (settings.useDefaultVolume){
-        video.volume = settings.volume / 100;
-        video.dataset.volume = settings.volume / 100;
+        if(settings.useUncappedAudio){
+            video.volume = 1;
+            getNode(video).gain.gain.value = settings.volume / 100;
+            video.dataset.volume = settings.volume / 100;
+        }
+        else {
+            video.volume = settings.volume / 100;
+            video.dataset.volume = settings.volume / 100;
+        }
     }
     else {
         video.dataset.volume = video.volume;
     }
     
     let change = function () {
-        if(video.volume != video.dataset.volume){
-            video.volume = video.dataset.volume;
+        if(settings.useUncappedAudio){
+            node = getNode(video);
+            if(node.gain.gain.value != video.dataset.volume){
+                node.gain.gain.value = video.dataset.volume;
+            }
+        }
+        else {
+            if(video.volume != video.dataset.volume){
+                video.volume = video.dataset.volume;
+            }
         }
     };
 
