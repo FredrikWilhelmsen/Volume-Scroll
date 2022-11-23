@@ -76,6 +76,8 @@ let getNode = function(video){
 let handleScroll = function (element, video, volumeBar, event) {
     scrolled = true;
 
+    audioContext.resume();
+
     if (!hasAudio(video)) //video has audio. If not stops volume scrolling, doesnt work well.
         return;
 
