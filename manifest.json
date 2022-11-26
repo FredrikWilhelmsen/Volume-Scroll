@@ -1,7 +1,7 @@
 {
 	"name": "Volume Scroll",
-	"description": "Scrollable Volume for any video on the internet",
-	"version": "2.1.1",
+	"description": "Scrollable volume for any video on the internet",
+	"version": "2.1.2",
 	"manifest_version": 3,
 	"background": {
 		"service_worker": "background.js"

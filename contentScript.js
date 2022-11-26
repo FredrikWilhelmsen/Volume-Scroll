@@ -2,7 +2,7 @@ let body = document.documentElement || document.body || document.getElementsByTa
 let settings = {};
 let isModifierKeyPressed = false;
 let scrolled = false;
-let audioContext = new (window.AudioContext || window.webkitAudioContext)();
+let audioContext = null;
 let sources = [];
 
 let createOverlay = function(){
@@ -76,7 +76,9 @@ let getNode = function(video){
 let handleScroll = function (element, video, volumeBar, event) {
     scrolled = true;
 
-    audioContext.resume();
+    if(settings.useUncappedAudio){
+        audioContext.resume();
+    }
 
     if (!hasAudio(video)) //video has audio. If not stops volume scrolling, doesnt work well.
         return;
@@ -293,8 +295,22 @@ let handleMouseDown = function(event){
 chrome.storage.sync.get("userSettings", result => {
     settings = result.userSettings;
 
+    if(settings.useUncappedAudio){
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    else {
+        audioContext = null;
+    }
+
     chrome.storage.onChanged.addListener((changes) => {
         settings = changes.userSettings.newValue;
+
+        if(settings.useUncappedAudio){
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        else {
+            audioContext = null;
+        }
     });
 
     body.addEventListener("keydown", function (event) {
