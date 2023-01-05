@@ -41,6 +41,11 @@ let getVideo = function (event) {
         if (element.tagName === "VIDEO") {
             return { display: element, video: element, slider: null };
         }
+        else if (element.tagName === "SHREDDIT-PLAYER"){
+            let video = element.shadowRoot.querySelector("VIDEO");
+            let slider = element.shadowRoot.querySelector("VDS-VOLUME-SLIDER")
+            return { display: element, video: video, slider: slider };
+        }
         else if (element.tagName === "YTMUSIC-PLAYER" || element.tagName === "YTMUSIC-PLAYER-BAR") {
             let video = document.getElementsByTagName("VIDEO")[0];
             let display = document.getElementById("song-image");
@@ -80,7 +85,10 @@ let handleScroll = function (element, video, volumeBar, event) {
         audioContext.resume();
     }
 
-    if (!hasAudio(video)) //video has audio. If not stops volume scrolling, doesnt work well.
+    console.log("video: ", video)
+    console.log("has audio: ", hasAudio(video))
+
+    if (!hasAudio(video)) //video has audio. If not stops volume scrolling
         return;
 
     event.preventDefault();
