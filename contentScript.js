@@ -322,7 +322,7 @@ chrome.storage.sync.get("userSettings", result => {
     });
 
     body.addEventListener("keydown", function (event) {
-        if (settings.modifierKey === event.key) {
+        if (settings.modifierKey === event.key && settings.useModifierKey) {
             event.stopPropagation();
             event.preventDefault();
             isModifierKeyPressed = true;
@@ -330,12 +330,12 @@ chrome.storage.sync.get("userSettings", result => {
     });
 
     body.addEventListener("mousedown", function (event) {
-        if (settings.modifierKey === getMouseKey(event.button)) {
+        if (settings.modifierKey === getMouseKey(event.button) && settings.useModifierKey) {
             event.stopPropagation();
             event.preventDefault();
             isModifierKeyPressed = true;
         }
-        else if(settings.toggleMuteKey === getMouseKey(event.button)){
+        else if(settings.toggleMuteKey === getMouseKey(event.button) && settings.useToggleMuteKey){
             event.stopPropagation();
             event.preventDefault();
         }
