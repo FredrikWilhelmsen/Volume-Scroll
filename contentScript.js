@@ -78,6 +78,11 @@ let getNode = function(video){
     return node;
 }
 
+let setVideoAudio = function(video, volume){
+    console.log("Setting volume to: " + volume);
+    video.volume = volume;
+}
+
 let handleScroll = function (element, video, volumeBar, event) {
     scrolled = true;
 
@@ -144,7 +149,7 @@ let handleScroll = function (element, video, volumeBar, event) {
 
         node = getNode(video);
         node.gain.gain.value = volume;
-        video.volume = 1;
+        setVideoAudio(video, 1);
     }
     else {
         //Limiting the volume to between 0-1
@@ -154,7 +159,7 @@ let handleScroll = function (element, video, volumeBar, event) {
             volume = 1;
         }
             
-        video.volume = volume;
+        setVideoAudio(video, volume);
     }
 
     if (volumeBar != null) {
@@ -226,7 +231,7 @@ let handleDefaultVolume = function (video) {
             video.dataset.volume = settings.volume / 100;
         }
         else {
-            video.volume = settings.volume / 100;
+            setVideoAudio(video, settings.volume / 100);
             video.dataset.volume = settings.volume / 100;
         }
     }
