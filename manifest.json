@@ -3,9 +3,16 @@
 	"description": "Scrollable volume for any video on the internet",
 	"version": "2.1.4",
 	"manifest_version": 3,
+	"browser_specific_settings": {
+		"gecko": {
+		  "id": "volumeScroll@zeph.no",
+		  "strict_min_version": "42.0"
+		}
+	  },	  
 	"background": {
-		"service_worker": "background.js"
-	},
+		"scripts": ["background.js"],
+		"type": "module"
+	},	  
 	"permissions": [
 		"storage",
 		"tabs"

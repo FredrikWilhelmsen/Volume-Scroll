@@ -6,7 +6,7 @@ const defaultSettings = {
     useDefaultVolume: false,
     useUncappedAudio: false,
     useMousewheelVolume: true,
-    fontColor: "#ffffff", //white
+    fontColor: "#ffff00", //white
     fontSize: 40,
     useOverlayMouse: true,
     overlayXPos: 5,

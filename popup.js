@@ -139,6 +139,7 @@ chrome.storage.sync.get("userSettings", data => {
 
     document.getElementById("overlayColorInput").addEventListener("change", function () {
         let input = document.getElementById("overlayColorInput");
+        console.log(input.value);
 
         chrome.storage.sync.get("userSettings", result => {
             chrome.storage.sync.set({ userSettings: { ...result.userSettings, fontColor: input.value } });
