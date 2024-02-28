@@ -1,5 +1,11 @@
 # JetBrains IDEs
 .idea
+.yarn
+.editorconfig
+.gitattributes
+.pnp.cjs
+.pnp.loader.mjs
+yarn.lock
 test.zip
 Volume-Scroll.zip
 *.zip
