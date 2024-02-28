@@ -11,5 +11,9 @@
     "@types/react-dom": "^18.2.19",
     "parcel": "^2.11.0",
     "typescript": "^5.3.3"
-  }
+  },
+  "scripts": {
+    "dev": "parcel watch src/index.html --public-url=./",
+    "build": "parcel build src/index.html --public-url=./"
+}
 }
