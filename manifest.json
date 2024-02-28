@@ -5,7 +5,7 @@
     "description": "Scrollable volume for any video on the internet",
   
     "icons": {
-      "128": "images/128.png"
+      "128": "/images/128.png"
     },
   
     "content_scripts": [
