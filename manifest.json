@@ -8,11 +8,8 @@
       "128": "/images/128.png"
     },
   
-    "content_scripts": [
-      {
-        "matches": ["*://*.mozilla.org/*"],
-        "js": ["borderify.js"]
-      }
-    ]
-  }
+    "browser_action": {
+      "default_popup": "dist/popup.html"
+    }
+}
   
