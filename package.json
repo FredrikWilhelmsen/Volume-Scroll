@@ -2,6 +2,7 @@
     "name": "Volume-Scroll",
     "packageManager": "yarn@4.1.0",
     "dependencies": {
+        "@types/firefox-webext-browser": "^120.0.2",
         "react": "^18.2.0",
         "react-dom": "^18.2.0"
     },
@@ -14,7 +15,7 @@
         "typescript": "^5.3.3"
     },
     "scripts": {
-        "dev": "parcel watch src/popup.html src/volumeScroll.tsx src/volumeScroll.css src/VolumeScrollController.tsx src/defaultHandler.tsx --public-url=./",
-        "build": "parcel build src/popup.html src/volumeScroll.tsx src/volumeScroll.css src/VolumeScrollController.tsx src/defaultHandler.tsx --public-url=./"
+        "dev": "parcel watch src/popup.html src/volumeScroll.tsx src/volumeScroll.css src/volumeScrollController.tsx src/defaultHandler.tsx --public-url=./",
+        "build": "parcel build src/popup.html src/volumeScroll.tsx src/volumeScroll.css src/volumeScrollController.tsx src/defaultHandler.tsx --public-url=./"
     }
 }
