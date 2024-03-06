@@ -14,7 +14,7 @@
         "typescript": "^5.3.3"
     },
     "scripts": {
-        "dev": "parcel watch src/popup.html --public-url=./",
-        "build": "parcel build src/popup.html --public-url=./"
+        "dev": "parcel watch src/popup.html src/volumeScroll.tsx src/volumeScroll.css src/VolumeScrollController.tsx src/defaultHandler.tsx --public-url=./",
+        "build": "parcel build src/popup.html src/volumeScroll.tsx src/volumeScroll.css src/VolumeScrollController.tsx src/defaultHandler.tsx --public-url=./"
     }
 }
