@@ -14,3 +14,4 @@ package-lock.json
 .parcel-cache/data.mdb
 .parcel-cache/lock.mdb
 dist/*
+.parcel-cache/*
