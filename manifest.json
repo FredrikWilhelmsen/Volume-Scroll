@@ -1,16 +1,28 @@
 {
-    "manifest_version": 2,
+    "manifest_version": 3,
     "name": "Volume Scroll",
     "version": "3.0.0",
     "description": "Scrollable volume for any video on the internet",
     "homepage_url": "https://github.com/FredrikWilhelmsen/Volume-Scroll/",
+
+    "permissions": [
+        "storage"
+    ],
 
     "icons": {
         "128": "/images/128.png"
     },
 
     "browser_action": {
+        "default_icon": "/images/128.png",
+        "default_title": "Volume Scroll",
         "default_popup": "dist/popup.html"
+    },
+
+    "background": {
+        "scripts": [
+            "volumeScrollBackground.js"
+        ]
     },
 
     "content_scripts": [
