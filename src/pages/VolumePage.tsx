@@ -1,5 +1,6 @@
 import React from 'react';
 import { Settings, Pages } from '../types';
+import BackButton from '../components/BackButton';
 
 interface VolumePageInterface {
     settings: Settings,
@@ -9,7 +10,7 @@ interface VolumePageInterface {
 const VolumePage: React.FC<VolumePageInterface> = ({ settings, setPage }) => {
     return (
         <div>
-            Volume
+            <BackButton setPage={setPage}/>
         </div>
     );
 }

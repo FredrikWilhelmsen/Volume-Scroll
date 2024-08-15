@@ -1,5 +1,6 @@
 import React from 'react';
 import { Settings, Pages } from '../types';
+import BackButton from '../components/BackButton';
 
 interface OverlayPageInterface {
     settings: Settings,
@@ -9,7 +10,7 @@ interface OverlayPageInterface {
 const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, setPage }) => {
     return (
         <div>
-            Overlay
+            <BackButton setPage={setPage}/>
         </div>
     );
 }

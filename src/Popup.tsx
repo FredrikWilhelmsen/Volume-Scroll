@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import * as ReactDOM from "react-dom";
-import { Settings, Pages } from "./types";
+import { Settings, defaultSettings, Pages } from "./types";
 import LoadingPage from "./pages/LoadingPage";
 import MenuPage from "./pages/MenuPage";
 import ScrollPage from "./pages/ScrollPage";
@@ -14,9 +14,13 @@ const SettingsPopup = () => {
     const [ settings, setSettings ] = useState<Settings | null>(null);
     const [ page, setPage ] = useState<Pages>("menu");
 
+    const handleLog = () => {
+        console.log(settings);
+    }
+
     useEffect(() => {
         //Load saved settings when the component mounts
-        browser.storage.local.get("settings").then((result) => {
+        browser.storage.local.get({settings: defaultSettings}).then((result) => {
             const savedSettings = result.settings as Settings;
             setSettings(savedSettings);
         });
@@ -39,20 +43,19 @@ const SettingsPopup = () => {
         });
     };
 
-    if(settings === null) return <LoadingPage/>
+    if(settings === null) return <LoadingPage/>;
 
-    switch(page){
-        case "menu":
-            return <MenuPage settings={settings} setPage={setPage}/>;
-        case "hotkeys":
-            return <HotkeyPage settings={settings} setPage={setPage}/>;
-        case "scroll":
-            return <ScrollPage settings={settings} setPage={setPage}/>;
-        case "overlay":
-            return <OverlayPage settings={settings} setPage={setPage}/>;
-        case "volume":
-            return <VolumePage settings={settings} setPage={setPage}/>;
-    }
+    return (
+        <div className="centerWrapper" onClick={handleLog}>
+            <div className="container">
+                {page === "menu" && <MenuPage settings={settings} setPage={setPage}/>}
+                {page === "scroll" && <ScrollPage settings={settings} editSetting={handleSettingChange} setPage={setPage}/>}
+                {page === "hotkeys" && <HotkeyPage settings={settings} setPage={setPage}/>}
+                {page === "overlay" && <OverlayPage settings={settings} setPage={setPage}/>}
+                {page === "volume" && <VolumePage settings={settings} setPage={setPage}/>}
+            </div>
+        </div>
+    )
 }
 
 ReactDOM.render(<SettingsPopup />, document.getElementById("root"));

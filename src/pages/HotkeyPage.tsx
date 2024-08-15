@@ -1,5 +1,6 @@
 import React from 'react';
 import { Settings, Pages } from '../types';
+import BackButton from '../components/BackButton';
 
 interface HotkeyPageInterface {
     settings: Settings,
@@ -9,7 +10,7 @@ interface HotkeyPageInterface {
 const HotkeyPage: React.FC<HotkeyPageInterface> = ({ settings, setPage }) => {
     return (
         <div>
-            Hotkeys
+            <BackButton setPage={setPage}/>
         </div>
     );
 }
