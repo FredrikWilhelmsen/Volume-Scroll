@@ -6,7 +6,7 @@ let settings : Settings | null = null;
 
 const log = (message: String, extra?: any): void => {
     if(settings === null) return;
-    if(!settings.doLogging) return;
+    if(!settings.doDebugLog) return;
 
     if(extra){
         console.log("Volume Scroll: " + message, extra);

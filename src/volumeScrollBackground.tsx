@@ -20,7 +20,7 @@ const defaultSettings : Settings = {
     overlayXPos: 5,
     overlayYPos: 5,
 
-    doLogging: false,
+    doDebugLog: false,
     blacklist: []
 };
 

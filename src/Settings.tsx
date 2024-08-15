@@ -18,6 +18,6 @@ export interface Settings {
     overlayXPos: number,
     overlayYPos: number,
 
-    doLogging: boolean,
+    doDebugLog: boolean,
     blacklist: string[]
 };
