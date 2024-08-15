@@ -45,3 +45,5 @@ export const defaultSettings : Settings = {
     doDebugLog: false,
     blacklist: []
 };
+
+export type Pages = "menu" | "scroll" | "hotkeys" | "overlay" | "volume";

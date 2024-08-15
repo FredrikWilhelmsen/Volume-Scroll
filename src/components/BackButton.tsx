@@ -1,15 +1,19 @@
 import React from 'react';
-
-type Page = "menu" | "scroll" | "hotkeys" | "overlay" | "volume";
+import ClearOutlinedIcon from '@mui/icons-material/ClearOutlined';
+import { Pages } from "../types";
 
 interface BackButtonInterface {
-    setPage: React.Dispatch<React.SetStateAction<Page>>
+    setPage: React.Dispatch<React.SetStateAction<Pages>>
 }
 
 const BackButton: React.FC<BackButtonInterface> = ({ setPage }) => {
+    const clickHandler = () => {
+        setPage("menu");
+    }
+
     return (
-        <div>
-            Volume
+        <div id="backWrapper" onClick={clickHandler}>
+            <ClearOutlinedIcon />
         </div>
     );
 }

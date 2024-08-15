@@ -1,4 +1,4 @@
-import { Settings, defaultSettings } from './Settings';
+import { Settings, defaultSettings, Pages } from "./types";
 
 import { getVideo } from "./defaultHandler";
 

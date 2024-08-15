@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import * as ReactDOM from "react-dom";
-import { Settings } from "./Settings";
+import { Settings, Pages } from "./types";
 import LoadingPage from "./pages/LoadingPage";
 import MenuPage from "./pages/MenuPage";
 import ScrollPage from "./pages/ScrollPage";
@@ -9,12 +9,10 @@ import OverlayPage from "./pages/OverlayPage";
 import VolumePage from "./pages/VolumePage";
 import "./style/globalStyle.css";
 
-type Page = "menu" | "scroll" | "hotkeys" | "overlay" | "volume";
-
 //This is our counter component 
 const SettingsPopup = () => {
     const [ settings, setSettings ] = useState<Settings | null>(null);
-    const [ page, setPage ] = useState<Page>("menu");
+    const [ page, setPage ] = useState<Pages>("menu");
 
     useEffect(() => {
         //Load saved settings when the component mounts
@@ -47,13 +45,13 @@ const SettingsPopup = () => {
         case "menu":
             return <MenuPage settings={settings} setPage={setPage}/>;
         case "hotkeys":
-            return <HotkeyPage />;
+            return <HotkeyPage settings={settings} setPage={setPage}/>;
         case "scroll":
-            return <ScrollPage />;
+            return <ScrollPage settings={settings} setPage={setPage}/>;
         case "overlay":
-            return <OverlayPage />;
+            return <OverlayPage settings={settings} setPage={setPage}/>;
         case "volume":
-            return <VolumePage />;
+            return <VolumePage settings={settings} setPage={setPage}/>;
     }
 }
 

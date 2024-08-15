@@ -1,16 +1,14 @@
 import React from 'react';
-import { Settings } from '../Settings';
-
-type Page = "menu" | "scroll" | "hotkeys" | "overlay" | "volume";
+import { Settings, Pages } from '../types';
 
 interface MenuPageInterface {
     settings: Settings,
-    setPage: React.Dispatch<React.SetStateAction<Page>>
+    setPage: React.Dispatch<React.SetStateAction<Pages>>
 }
 
 const MenuPage: React.FC<MenuPageInterface> = ({ settings, setPage }) => {
     return (
-        <div>
+        <div className="centerWrapper">
             <div>
 
             </div>

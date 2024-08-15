@@ -1,4 +1,4 @@
-import { defaultSettings } from './Settings';
+import { defaultSettings } from './types';
 
 browser.runtime.onInstalled.addListener(() => {
     browser.storage.local.get({settings: defaultSettings})
