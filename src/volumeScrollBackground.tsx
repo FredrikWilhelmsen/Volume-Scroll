@@ -1,4 +1,6 @@
-const defaultSettings = {
+import { Settings } from './settings';
+
+const defaultSettings : Settings = {
     useDefaultVolume: false,
     defaultVolume: 20,
 
@@ -18,12 +20,13 @@ const defaultSettings = {
     overlayXPos: 5,
     overlayYPos: 5,
 
+    doLogging: false,
     blacklist: []
 };
 
 browser.runtime.onInstalled.addListener(() => {
-    browser.storage.sync.get({settings: defaultSettings})
+    browser.storage.local.get({settings: defaultSettings})
         .then((result) => {
-            browser.storage.sync.set({settings: result.settings});
+            browser.storage.local.set({settings: result.settings});
         });
 });
