@@ -1,4 +1,4 @@
-import { onScroll, onClick } from "./volumeScrollController";
+import * as controller from "./volumeScrollController";
 
-document.addEventListener("wheel", onScroll);
-document.addEventListener("click", onClick);
+document.addEventListener("wheel", controller.onScroll);
+document.addEventListener("click", controller.onClick);
