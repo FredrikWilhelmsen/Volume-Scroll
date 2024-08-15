@@ -1,11 +1,10 @@
 {
     "name": "Volume-Scroll",
-    "packageManager": "yarn@4.1.0",
+    "packageManager": "yarn@4.4.0",
     "dependencies": {
         "@types/firefox-webext-browser": "^120.0.2",
         "react": "^18.2.0",
-        "react-dom": "^18.2.0",
-        "Volume-Scroll": "file:"
+        "react-dom": "^18.2.0"
     },
     "devDependencies": {
         "@types/chrome": "^0.0.262",

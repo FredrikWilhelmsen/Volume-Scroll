@@ -1,11 +1,10 @@
-import { Settings } from './settings';
+import { Settings, defaultSettings } from './Settings';
 
 import { getVideo } from "./defaultHandler";
 
-let settings : Settings | null = null;
+let settings : Settings = defaultSettings;
 
 const log = (message: String, extra?: any): void => {
-    if(settings === null) return;
     if(!settings.doDebugLog) return;
 
     if(extra){
