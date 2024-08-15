@@ -29,3 +29,13 @@ body {
 	padding-bottom: 8px;
 	text-align: center;
 }
+
+#links {
+	color: gray;
+	padding-bottom: 8px;
+	text-align: center;
+}
+
+#links a {
+	color: #7c2eb8;
+}
