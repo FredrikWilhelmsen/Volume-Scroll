@@ -1,3 +1,31 @@
 button {
-    display: block;
+	display: block;
+}
+
+* {
+	margin: 0px;
+	user-select: none;
+}
+
+html {
+	max-height: 600px;
+	min-height: 250px;
+	height: auto;
+	display: inline-block;
+}
+
+body {
+	width: 275px;
+	max-height: 600px;
+	min-height: 250px;
+	height: auto;
+	background-color: #282A35;
+	color: white;
+	display: inline-block;
+}
+
+#links {
+	color: gray;
+	padding-bottom: 8px;
+	text-align: center;
 }

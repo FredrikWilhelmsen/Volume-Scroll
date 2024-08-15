@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import * as ReactDOM from "react-dom";
-import { Settings } from "../Settings";
-import LoadingPage from './LoadingPage';
-import MenuPage from './MenuPage';
-import ScrollPage from './ScrollPage';
-import HotkeyPage from './HotkeyPage';
-import OverlayPage from './OverlayPage';
-import VolumePage from './VolumePage';
-import "../style/globalStyle.css";
+import { Settings } from "./Settings";
+import LoadingPage from "./pages/LoadingPage";
+import MenuPage from "./pages/MenuPage";
+import ScrollPage from "./pages/ScrollPage";
+import HotkeyPage from "./pages/HotkeyPage";
+import OverlayPage from "./pages/OverlayPage";
+import VolumePage from "./pages/VolumePage";
+import "./style/globalStyle.css";
 
 type Page = "menu" | "scroll" | "hotkeys" | "overlay" | "volume";
 
