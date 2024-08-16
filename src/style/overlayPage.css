@@ -1,0 +1,23 @@
+.sliderDisplay {
+    display: inline-block;
+    width: 17px;
+    background-color: #757575;
+    padding: 4px;
+    padding-left: 6px;
+    padding-right: 6px;
+    border-radius: 2px;
+    text-align: center;
+}
+
+.sliderDisplayContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+}
+
+input[type="color"], #overlayColorPickerContainer {
+    width: 100%;
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
