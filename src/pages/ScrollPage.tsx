@@ -16,6 +16,8 @@ interface ScrollPageInterface {
 
 const ScrollPage: React.FC<ScrollPageInterface> = ({ settings, editSetting, setPage }) => {
 
+    //TODO: Add scrolling for slider
+
     const handleIncrementToggle = (_e : Event | React.SyntheticEvent, value : any) => {
         editSetting("useMouseWheelVolume", value);
     }
@@ -36,17 +38,19 @@ const ScrollPage: React.FC<ScrollPageInterface> = ({ settings, editSetting, setP
         <div>
             <BackButton setPage={setPage} title={"Scroll Settings"}/>
 
+            <hr></hr>
+
             <div className="settingsContainer">
                 <div id="scrollIncrementContainer">
                     <div id="incrementToggleContainer">
-                        <Tooltip title="Toggle scroll increment" placement="top" disableInteractive>
+                        <Tooltip title="Enable or disable Volume Scroll" placement="top" disableInteractive>
                             <FormControlLabel 
                                 onChange={handleIncrementToggle}
                                 control={
                                 <Switch 
                                     checked={settings.useMouseWheelVolume}
                                 />} 
-                                label="Scroll increment"
+                                label="Volume Scroll"
                             />
                         </Tooltip>
                         <Tooltip title="Current increment" placement="top" disableInteractive>

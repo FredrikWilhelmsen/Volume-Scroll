@@ -10,7 +10,7 @@ interface VolumePageInterface {
 const VolumePage: React.FC<VolumePageInterface> = ({ settings, setPage }) => {
     return (
         <div>
-            <BackButton setPage={setPage}/>
+            <BackButton setPage={setPage} title={"Volume Settings"}/>
         </div>
     );
 }

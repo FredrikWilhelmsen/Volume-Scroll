@@ -13,8 +13,6 @@ import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 
-
-//This is our counter component 
 const SettingsPopup = () => {
     const [ settings, setSettings ] = useState<Settings | null>(null);
     const [ page, setPage ] = useState<Pages>("menu");
@@ -55,8 +53,8 @@ const SettingsPopup = () => {
             <div className="container">
                 {page === "menu" && <MenuPage settings={settings} setPage={setPage}/>}
                 {page === "scroll" && <ScrollPage settings={settings} editSetting={handleSettingChange} setPage={setPage}/>}
-                {page === "hotkeys" && <HotkeyPage settings={settings} setPage={setPage}/>}
-                {page === "overlay" && <OverlayPage settings={settings} setPage={setPage}/>}
+                {page === "hotkeys" && <HotkeyPage settings={settings} editSetting={handleSettingChange} setPage={setPage}/>}
+                {page === "overlay" && <OverlayPage settings={settings} editSetting={handleSettingChange} setPage={setPage}/>}
                 {page === "volume" && <VolumePage settings={settings} setPage={setPage}/>}
             </div>
         </div>

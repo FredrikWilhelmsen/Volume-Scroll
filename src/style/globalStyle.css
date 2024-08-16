@@ -54,6 +54,11 @@ footer a {
 	color: white !important;
 }
 
+hr {
+	margin-top: 4px;
+	margin-bottom: 4px;
+}
+
 Button {
 	font-weight: bold;
 	border: white;
