@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import BackButton from '../components/BackButton';
 import { Settings, Pages } from "../types";
 import Tooltip from '@mui/material/Tooltip/Tooltip';
@@ -16,6 +16,8 @@ interface ScrollPageInterface {
 
 const ScrollPage: React.FC<ScrollPageInterface> = ({ settings, editSetting, setPage }) => {
 
+    const [increment, setincrement] = useState(settings.volumeIncrement);
+
     //TODO: Add scrolling for slider
 
     const handleIncrementToggle = (_e : Event | React.SyntheticEvent, value : any) => {
@@ -24,6 +26,7 @@ const ScrollPage: React.FC<ScrollPageInterface> = ({ settings, editSetting, setP
 
     const handleIncrementChange = (_e : Event | React.SyntheticEvent, value : any) => {
         editSetting("volumeIncrement", value);
+        setincrement(value);
     }
 
     const handlePreciseScrollToggle = (_e : Event | React.SyntheticEvent, value : any) => {
@@ -67,10 +70,10 @@ const ScrollPage: React.FC<ScrollPageInterface> = ({ settings, editSetting, setP
                             max={20}
                             step={1}
                             aria-label="Scroll increment"
-                            defaultValue={settings.volumeIncrement}
-                            valueLabelDisplay="auto"
+                            value={increment}
+                            valueLabelDisplay="off"
                             disabled={!settings.useMouseWheelVolume}
-                            onChangeCommitted={handleIncrementChange}
+                            onChange={handleIncrementChange}
                         />
                     </Tooltip>
                 </div>
