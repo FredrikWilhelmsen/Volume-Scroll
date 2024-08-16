@@ -10,7 +10,7 @@ interface HotkeyPageInterface {
 const HotkeyPage: React.FC<HotkeyPageInterface> = ({ settings, setPage }) => {
     return (
         <div>
-            <BackButton setPage={setPage}/>
+            <BackButton setPage={setPage} title={"Hotkey Settings"}/>
         </div>
     );
 }

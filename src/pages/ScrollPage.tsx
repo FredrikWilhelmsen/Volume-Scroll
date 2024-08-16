@@ -5,6 +5,8 @@ import Tooltip from '@mui/material/Tooltip/Tooltip';
 import Slider from '@mui/material/Slider/Slider';
 import FormControlLabel from '@mui/material/FormControlLabel/FormControlLabel';
 import Switch from '@mui/material/Switch/Switch';
+import "../style/scrollPage.css"
+import Typography from '@mui/material/Typography/Typography';
 
 interface ScrollPageInterface {
     settings: Settings,
@@ -22,16 +24,40 @@ const ScrollPage: React.FC<ScrollPageInterface> = ({ settings, editSetting, setP
         editSetting("volumeIncrement", value);
     }
 
+    const handlePreciseScrollToggle = (_e : Event | React.SyntheticEvent, value : any) => {
+        editSetting("usePreciseScroll", value);
+    }
+
+    const handleFullscreenOnlyToggle = (_e : Event | React.SyntheticEvent, value : any) => {
+        editSetting("fullscreenOnly", value);
+    }
+
     return (
         <div>
-            <BackButton setPage={setPage}/>
+            <BackButton setPage={setPage} title={"Scroll Settings"}/>
 
             <div className="settingsContainer">
                 <div id="scrollIncrementContainer">
-                    <Tooltip title="Toggle scroll increment">
-                        <FormControlLabel onChange={handleIncrementToggle} control={<Switch checked={settings.useMouseWheelVolume} />} label="Scroll increment" />
-                    </Tooltip>
-                    <Tooltip title="Set how much the volume will change per tick when scrolling">
+                    <div id="incrementToggleContainer">
+                        <Tooltip title="Toggle scroll increment" placement="top" disableInteractive>
+                            <FormControlLabel 
+                                onChange={handleIncrementToggle}
+                                control={
+                                <Switch 
+                                    checked={settings.useMouseWheelVolume}
+                                />} 
+                                label="Scroll increment"
+                            />
+                        </Tooltip>
+                        <Tooltip title="Current increment" placement="top" disableInteractive>
+                            <div id="incrementDisplay">
+                                <Typography variant="body2">
+                                    {settings.volumeIncrement}
+                                </Typography>
+                            </div>
+                        </Tooltip>
+                    </div>
+                    <Tooltip title="Set how much the volume will change per tick when scrolling" disableInteractive>
                         <Slider
                             min={1}
                             max={20}
@@ -45,10 +71,30 @@ const ScrollPage: React.FC<ScrollPageInterface> = ({ settings, editSetting, setP
                     </Tooltip>
                 </div>
                 <div id="preciseScrollContainer">
-
+                    <Tooltip title="Scroll increment changes to 1 when volume is at or below normal increment" placement="top" disableInteractive>
+                        <FormControlLabel 
+                            onChange={handlePreciseScrollToggle}
+                            control={
+                            <Switch 
+                                checked={settings.usePreciseScroll}
+                                disabled={!settings.useMouseWheelVolume}
+                            />} 
+                            label="Precise scroll"
+                        />
+                    </Tooltip>
                 </div>
                 <div id="fullscreenOnlyContainer">
-                    
+                    <Tooltip title="Volume scroll will only be enabled when video is in fullscreen mode" placement="top" disableInteractive>
+                        <FormControlLabel 
+                            onChange={handleFullscreenOnlyToggle}
+                            control={
+                            <Switch 
+                                checked={settings.fullscreenOnly}
+                                disabled={!settings.useMouseWheelVolume}
+                            />} 
+                            label="Fullscreen only"
+                        />
+                    </Tooltip>
                 </div>
             </div>
         </div>

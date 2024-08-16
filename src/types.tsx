@@ -4,6 +4,7 @@ export interface Settings {
 
     volumeIncrement: number,
     usePreciseScroll: boolean,
+    fullscreenOnly: boolean,
     useMouseWheelVolume: boolean,
     useUncappedVolume: boolean,
     modifierKey: string,
@@ -28,6 +29,7 @@ export const defaultSettings : Settings = {
 
     volumeIncrement: 5,
     usePreciseScroll: true,
+    fullscreenOnly: false,
     useMouseWheelVolume: true,
     useUncappedVolume: false,
     modifierKey: "Right Mouse",

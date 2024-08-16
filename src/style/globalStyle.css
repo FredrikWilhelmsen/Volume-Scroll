@@ -9,7 +9,7 @@ button {
 
 html {
 	max-height: 600px;
-	min-height: 250px;
+	min-height: 200px;
 	height: auto;
 	display: inline-block;
 }
@@ -17,7 +17,7 @@ html {
 body {
 	width: 275px;
 	max-height: 600px;
-	min-height: 250px;
+	min-height: 200px;
 	height: auto;
 	background-color: #282A35;
 	color: white;
@@ -35,8 +35,9 @@ body {
 }
 
 .container {
-	padding-top: 16px;
 	width: 80%;
+	padding-top: 16px;
+	padding-bottom: 16px;
 }
 
 footer {
@@ -47,6 +48,10 @@ footer {
 
 footer a {
 	color: #7c2eb8;
+}
+
+.Mui-disabled {
+	color: white !important;
 }
 
 Button {

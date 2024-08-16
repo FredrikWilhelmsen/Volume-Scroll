@@ -8,6 +8,11 @@ import HotkeyPage from "./pages/HotkeyPage";
 import OverlayPage from "./pages/OverlayPage";
 import VolumePage from "./pages/VolumePage";
 import "./style/globalStyle.css";
+import '@fontsource/roboto/300.css';
+import '@fontsource/roboto/400.css';
+import '@fontsource/roboto/500.css';
+import '@fontsource/roboto/700.css';
+
 
 //This is our counter component 
 const SettingsPopup = () => {
