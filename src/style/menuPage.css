@@ -4,3 +4,14 @@
 	align-items: flex-start;
 	justify-content: center;
 }
+
+footer {
+	color: gray;
+	padding-bottom: 8px;
+	text-align: center;
+	width: 100%;
+}
+
+footer a {
+	color: #7c2eb8;
+}

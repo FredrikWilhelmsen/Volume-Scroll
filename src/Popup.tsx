@@ -51,11 +51,11 @@ const SettingsPopup = () => {
     return (
         <div className="centerWrapper" onClick={handleLog}>
             <div className="container">
-                {page === "menu" && <MenuPage settings={settings} setPage={setPage}/>}
+                {page === "menu" && <MenuPage settings={settings} editSetting={handleSettingChange} setPage={setPage}/>}
                 {page === "scroll" && <ScrollPage settings={settings} editSetting={handleSettingChange} setPage={setPage}/>}
                 {page === "hotkeys" && <HotkeyPage settings={settings} editSetting={handleSettingChange} setPage={setPage}/>}
                 {page === "overlay" && <OverlayPage settings={settings} editSetting={handleSettingChange} setPage={setPage}/>}
-                {page === "volume" && <VolumePage settings={settings} setPage={setPage}/>}
+                {page === "volume" && <VolumePage settings={settings} editSetting={handleSettingChange} setPage={setPage}/>}
             </div>
         </div>
     )

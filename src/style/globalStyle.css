@@ -40,16 +40,6 @@ body {
 	padding-bottom: 16px;
 }
 
-footer {
-	color: gray;
-	padding-bottom: 8px;
-	text-align: center;
-}
-
-footer a {
-	color: #7c2eb8;
-}
-
 .Mui-disabled {
 	color: white !important;
 }
