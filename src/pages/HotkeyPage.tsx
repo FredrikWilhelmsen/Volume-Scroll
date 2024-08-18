@@ -5,6 +5,7 @@ import Tooltip from '@mui/material/Tooltip/Tooltip';
 import FormControlLabel from '@mui/material/FormControlLabel/FormControlLabel';
 import Switch from '@mui/material/Switch/Switch';
 import Button from '@mui/material/Button/Button';
+import "../style/hotkeyPage.css";
 
 interface HotkeyPageInterface {
     settings: Settings,
@@ -48,7 +49,7 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({ settings, editSetting, setP
                         />
                     </Tooltip>
                     <Tooltip title="Click to change hotkey" placement="top" disableInteractive>
-                        <Button variant="outlined" disabled={!settings.useMouseWheelVolume || !settings.useModifierKey}>
+                        <Button className="button" variant="outlined" sx={{color: "white"}} disabled={!settings.useMouseWheelVolume || !settings.useModifierKey}>
                             {settings.modifierKey}
                         </Button>
                     </Tooltip>
@@ -79,7 +80,7 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({ settings, editSetting, setP
                         />
                     </Tooltip>
                     <Tooltip title="Click to change hotkey" placement="top" disableInteractive>
-                        <Button variant="outlined" disabled={!settings.useMouseWheelVolume || !settings.useToggleMuteKey}>
+                        <Button className="button" variant="outlined" sx={{color: "white"}} disabled={!settings.useMouseWheelVolume || !settings.useToggleMuteKey}>
                             {settings.toggleMuteKey}
                         </Button>
                     </Tooltip>
