@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Settings, Pages } from '../types';
 import "../style/menuPage.css";
 import Typography from '@mui/material/Typography/Typography';
@@ -16,22 +16,48 @@ interface MenuPageInterface {
 
 const MenuPage: React.FC<MenuPageInterface> = ({ settings, editSetting, setPage }) => {
 
-    const handleBlacklistToggle = (_e : Event | React.SyntheticEvent, value : any) => {
-        
+    const [hostname, setHostname] = useState<string>("");
+
+    useEffect(() => {
+        const getActiveTabHostname = async () => {
+            const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+            const activeTab = tabs[0];
+            if (activeTab?.url) {
+                const url = new URL(activeTab.url);
+                setHostname(url.hostname);
+            }
+        };
+
+        getActiveTabHostname();
+    }, []);
+
+    const isBlacklisted = settings.blacklist.includes(hostname);
+
+    const handleBlacklistToggle = (_e: Event | React.SyntheticEvent, value: any) => {
+        console.log(isBlacklisted);
+        console.log(hostname);
+
+        let updatedBlacklist: string[];
+        if (value) {
+            updatedBlacklist = settings.blacklist.filter((domain) => domain !== hostname);
+        } else {
+            updatedBlacklist = [...settings.blacklist, hostname];
+        }
+
+        editSetting("blacklist", updatedBlacklist);
     }
 
     return (
         <div className="menuContainer">
             <div id="blacklistContainer">
-                <Tooltip title="Set a key that must be held down for Volume Scroll to work" placement="top" disableInteractive>
+                <Tooltip title="Enable or disable Volume Scroll for this site" placement="bottom" disableInteractive>
                     <FormControlLabel 
                         onChange={handleBlacklistToggle}
                         control={
                         <Switch 
-                            checked={settings.useModifierKey}
-                            disabled={!settings.useMouseWheelVolume}
+                            checked={!isBlacklisted}
                         />} 
-                        label="Modifier key"
+                        label={!isBlacklisted ? "Enabled on this site" : "Disabled on this site"}
                     />
                 </Tooltip>
             </div>

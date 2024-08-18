@@ -6,7 +6,8 @@
     "homepage_url": "https://github.com/FredrikWilhelmsen/Volume-Scroll/",
 
     "permissions": [
-        "storage"
+        "storage",
+        "activeTab"
     ],
 
     "icons": {
