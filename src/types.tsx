@@ -40,7 +40,7 @@ export const defaultSettings : Settings = {
 
     fontColor: "#FCB900", //Yellow
     fontSize: 40,
-    overlayPosition: "TL",
+    overlayPosition: "tl",
     overlayXPos: 5,
     overlayYPos: 5,
 

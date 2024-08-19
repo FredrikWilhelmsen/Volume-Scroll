@@ -35,7 +35,6 @@ const SettingsPopup = () => {
                 [key]: value
             };
 
-            //Save updated settings to browser storage
             browser.storage.local.set({ settings: updatedSettings });
 
             return updatedSettings;
