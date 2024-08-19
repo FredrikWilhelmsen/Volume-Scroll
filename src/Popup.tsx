@@ -17,10 +17,6 @@ const SettingsPopup = () => {
     const [ settings, setSettings ] = useState<Settings | null>(null);
     const [ page, setPage ] = useState<Pages>("menu");
 
-    const handleLog = () => {
-        console.log(settings);
-    }
-
     useEffect(() => {
         //Load saved settings when the component mounts
         browser.storage.local.get({settings: defaultSettings}).then((result) => {
@@ -49,7 +45,7 @@ const SettingsPopup = () => {
     if(settings === null) return <LoadingPage/>;
 
     return (
-        <div className="centerWrapper" onClick={handleLog}>
+        <div className="centerWrapper">
             <div className="container">
                 {page === "menu" && <MenuPage settings={settings} editSetting={handleSettingChange} setPage={setPage}/>}
                 {page === "scroll" && <ScrollPage settings={settings} editSetting={handleSettingChange} setPage={setPage}/>}
