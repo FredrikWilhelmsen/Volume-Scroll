@@ -42,6 +42,8 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
     }
 
     const handleFontSizeScroll = (e: React.WheelEvent) => {
+        if(!settings.useMouseWheelVolume) return;
+
         e.preventDefault();
 
         let newValue: number = fontSize;

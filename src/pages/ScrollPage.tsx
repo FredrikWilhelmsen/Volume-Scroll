@@ -23,6 +23,8 @@ const ScrollPage: React.FC<ScrollPageInterface> = ({ settings, editSetting, setP
     }
 
     const handleIncrementScroll = (e: React.WheelEvent) => {
+        if(!settings.useMouseWheelVolume) return;
+
         e.preventDefault();
 
         let newValue: number = increment;
