@@ -34,9 +34,6 @@ const MenuPage: React.FC<MenuPageInterface> = ({ settings, editSetting, setPage 
     const isBlacklisted = settings.blacklist.includes(hostname);
 
     const handleBlacklistToggle = (_e: Event | React.SyntheticEvent, value: any) => {
-        console.log(isBlacklisted);
-        console.log(hostname);
-
         let updatedBlacklist: string[];
         if (value) {
             updatedBlacklist = settings.blacklist.filter((domain) => domain !== hostname);
