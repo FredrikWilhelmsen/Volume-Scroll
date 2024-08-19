@@ -34,13 +34,13 @@ const VolumePage: React.FC<VolumePageInterface> = ({ settings, editSetting, setP
         let newValue: number = defaultVolume;
 
         if (e.deltaY < 0) {
-            newValue = Math.min(defaultVolume + 5, 20);
+            newValue = Math.min(defaultVolume + 5, 100);
         } else {
-            newValue = Math.max(defaultVolume - 5, 0);
+            newValue = Math.max(defaultVolume - 5, 1);
         }
 
         setDefaultVolume(newValue);
-        editSetting("volumeIncrement", newValue);
+        editSetting("defaultVolume", newValue);
     };
 
     const handleUncappedVolumeToggle = (_e : Event | React.SyntheticEvent, value : any) => {
@@ -77,7 +77,7 @@ const VolumePage: React.FC<VolumePageInterface> = ({ settings, editSetting, setP
                     <div onWheel={handleDefaultVolumeScroll}>
                         <Tooltip title="Set what volume videos should start at" disableInteractive>
                             <Slider
-                                min={1}
+                                min={0}
                                 max={100}
                                 step={5}
                                 aria-label="Default volume"
