@@ -24,7 +24,6 @@ const ScrollPage: React.FC<ScrollPageInterface> = ({ settings, editSetting, setP
 
     const handleIncrementScroll = (e: React.WheelEvent) => {
         e.preventDefault();
-        console.log("SCROLL: " + e.deltaY);
 
         let newValue: number = increment;
 

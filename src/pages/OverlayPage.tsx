@@ -18,6 +18,8 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
 
     const [xPos, setXPos] = useState(settings.overlayXPos);
     const [yPos, setYPos] = useState(settings.overlayYPos);
+    const [fontSize, setFontSize] = useState(settings.fontSize);
+    
     const [isColorpickerVisible, setIsColorpickerVisible] = useState(false);
 
     const colors : string[] = [
@@ -34,11 +36,25 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
         "#DABDAB"
       ];
 
-    //TODO: Scroll sliders
-
     const handleOverlaySizeChange = (_e: Event | React.SyntheticEvent, value: any) => {
         editSetting("fontSize", value);
+        setFontSize(value);
     }
+
+    const handleFontSizeScroll = (e: React.WheelEvent) => {
+        e.preventDefault();
+
+        let newValue: number = fontSize;
+
+        if (e.deltaY < 0) {
+            newValue = Math.min(fontSize + 5, 90);
+        } else {
+            newValue = Math.max(fontSize - 5, 10);
+        }
+
+        setFontSize(newValue);
+        editSetting("fontSize", newValue);
+    };
 
     const handleColorChange = (color: any) => {
         editSetting("fontColor", color.hex);
@@ -52,29 +68,24 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
     const handlePositionChange = (e: any) => {
         editSetting("overlayPosition", e.currentTarget.value);
 
+        const save = (x, y) => {
+            setXPos(x);
+            editSetting("overlayXPos", x);
+            setYPos(y);
+            editSetting("overlayYPos", y);
+        }
+
         if(e.currentTarget.value === "tl"){
-            setXPos(5);
-            editSetting("overlayXPos", 5);
-            setYPos(5);
-            editSetting("overlayYPos", 5);
+            save(5, 5);
         }
         else if (e.currentTarget.value === "tr"){
-            setXPos(95);
-            editSetting("overlayXPos", 95);
-            setYPos(5);
-            editSetting("overlayYPos", 5);
+            save(95, 5);
         }
         else if (e.currentTarget.value === "bl"){
-            setXPos(5);
-            editSetting("overlayXPos", 5);
-            setYPos(95);
-            editSetting("overlayYPos", 95);
+            save(5, 95);
         }
         else if (e.currentTarget.value === "br"){
-            setXPos(95);
-            editSetting("overlayXPos", 95);
-            setYPos(95);
-            editSetting("overlayYPos", 95);
+            save(95, 95);
         }
     }
 
@@ -83,10 +94,44 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
         setXPos(value);
     }
 
+    const handleHorizontalScroll = (e: React.WheelEvent) => {
+        if(!settings.useMouseWheelVolume || settings.overlayPosition != "custom") return;
+
+        e.preventDefault();
+
+        let newValue: number = xPos;
+
+        if (e.deltaY < 0) {
+            newValue = Math.min(xPos + 5, 95);
+        } else {
+            newValue = Math.max(xPos - 5, 5);
+        }
+
+        setXPos(newValue);
+        editSetting("overlayXPos", newValue);
+    };
+
     const handleYChange = (_e: Event | React.SyntheticEvent, value: any) => {
         editSetting("overlayYPos", value);
         setYPos(value);
     }
+
+    const handleVerticalScroll = (e: React.WheelEvent) => {
+        if(!settings.useMouseWheelVolume || settings.overlayPosition != "custom") return;
+
+        e.preventDefault();
+
+        let newValue: number = yPos;
+
+        if (e.deltaY < 0) {
+            newValue = Math.min(yPos + 5, 95);
+        } else {
+            newValue = Math.max(yPos - 5, 5);
+        }
+
+        setYPos(newValue);
+        editSetting("overlayYPos", newValue);
+    };
 
     return (
         <div>
@@ -108,18 +153,20 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
                             </div>
                         </Tooltip>
                     </div>
-                    <Tooltip title="Set the text size of the overlay" disableInteractive>
-                        <Slider
-                            min={10}
-                            max={100}
-                            step={1}
-                            aria-label="Overlay Size"
-                            defaultValue={settings.fontSize}
-                            valueLabelDisplay="off"
-                            disabled={!settings.useMouseWheelVolume}
-                            onChange={handleOverlaySizeChange}
-                        />
-                    </Tooltip>
+                    <div onWheel={handleFontSizeScroll}>
+                        <Tooltip title="Set the text size of the overlay" disableInteractive>
+                            <Slider
+                                min={10}
+                                max={90}
+                                step={5}
+                                aria-label="Overlay Size"
+                                value={fontSize}
+                                valueLabelDisplay="off"
+                                disabled={!settings.useMouseWheelVolume}
+                                onChange={handleOverlaySizeChange}
+                            />
+                        </Tooltip>
+                    </div>
                 </div>
                 <div id="overlayColorPickerContainer">
                     <div id="colorDisplay">
@@ -163,19 +210,21 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
                             </div>
                         </Tooltip>
                     </div>
-                    <Tooltip title="The horizontal position of the overlay" placement="bottom-start" disableInteractive>
-                        <Slider
-                            id="xSlider"
-                            min={5}
-                            max={95}
-                            step={1}
-                            aria-label="Horizontal position"
-                            value={xPos}
-                            valueLabelDisplay="off"
-                            disabled={!settings.useMouseWheelVolume || settings.overlayPosition != "custom"}
-                            onChange={handleXChange}
-                        />
-                    </Tooltip>
+                    <div onWheel={handleHorizontalScroll}>
+                        <Tooltip title="The horizontal position of the overlay" placement="bottom-start" disableInteractive>
+                            <Slider
+                                id="xSlider"
+                                min={5}
+                                max={95}
+                                step={5}
+                                aria-label="Horizontal position"
+                                value={xPos}
+                                valueLabelDisplay="off"
+                                disabled={!settings.useMouseWheelVolume || settings.overlayPosition != "custom"}
+                                onChange={handleXChange}
+                            />
+                        </Tooltip>
+                    </div>
                 </div>
                 <div id="overlayYContainer">
                     <div id="overlayYPos" className="sliderDisplayContainer">
@@ -190,19 +239,21 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
                             </div>
                         </Tooltip>
                     </div>
-                    <Tooltip title="The vertical position of the overlay" placement="bottom-start" disableInteractive>
-                        <Slider
-                            id="ySlider"
-                            min={5}
-                            max={95}
-                            step={1}
-                            aria-label="Horizontal position"
-                            value={yPos}
-                            valueLabelDisplay="off"
-                            disabled={!settings.useMouseWheelVolume || settings.overlayPosition != "custom"}
-                            onChange={handleYChange}
-                        />
-                    </Tooltip>
+                    <div onWheel={handleVerticalScroll}>
+                        <Tooltip title="The vertical position of the overlay" placement="bottom-start" disableInteractive>
+                            <Slider
+                                id="ySlider"
+                                min={5}
+                                max={95}
+                                step={5}
+                                aria-label="Horizontal position"
+                                value={yPos}
+                                valueLabelDisplay="off"
+                                disabled={!settings.useMouseWheelVolume || settings.overlayPosition != "custom"}
+                                onChange={handleYChange}
+                            />
+                        </Tooltip>
+                    </div>
                 </div>
             </div>
         </div>
