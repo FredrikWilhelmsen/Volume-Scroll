@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Settings, Pages } from '../types';
 import BackButton from '../components/BackButton';
 import Typography from '@mui/material/Typography/Typography';
@@ -16,6 +16,8 @@ interface VolumePageInterface {
 
 const VolumePage: React.FC<VolumePageInterface> = ({ settings, editSetting, setPage }) => {
 
+    const [defaultVolume, setDefaultVolume] = useState(settings.defaultVolume);
+
     const handleUseDefaultVolumeToggle = (_e : Event | React.SyntheticEvent, value : any) => {
         editSetting("useDefaultVolume", value);
     }
@@ -23,6 +25,23 @@ const VolumePage: React.FC<VolumePageInterface> = ({ settings, editSetting, setP
     const handleDefaultVolumeChange = (_e : Event | React.SyntheticEvent, value : any) => {
         editSetting("defaultVolume", value);
     }
+
+    const handleDefaultVolumeScroll = (e: React.WheelEvent) => {
+        if(!settings.useDefaultVolume) return;
+
+        e.preventDefault();
+
+        let newValue: number = defaultVolume;
+
+        if (e.deltaY < 0) {
+            newValue = Math.min(defaultVolume + 5, 20);
+        } else {
+            newValue = Math.max(defaultVolume - 5, 0);
+        }
+
+        setDefaultVolume(newValue);
+        editSetting("volumeIncrement", newValue);
+    };
 
     const handleUncappedVolumeToggle = (_e : Event | React.SyntheticEvent, value : any) => {
         editSetting("useUncappedVolume", value);
@@ -55,18 +74,20 @@ const VolumePage: React.FC<VolumePageInterface> = ({ settings, editSetting, setP
                             </div>
                         </Tooltip>
                     </div>
-                    <Tooltip title="Set what volume videos should start at" disableInteractive>
-                        <Slider
-                            min={1}
-                            max={100}
-                            step={1}
-                            aria-label="Default volume"
-                            defaultValue={settings.defaultVolume}
-                            valueLabelDisplay="off"
-                            disabled={!settings.useDefaultVolume}
-                            onChange={handleDefaultVolumeChange}
-                        />
-                    </Tooltip>
+                    <div onWheel={handleDefaultVolumeScroll}>
+                        <Tooltip title="Set what volume videos should start at" disableInteractive>
+                            <Slider
+                                min={1}
+                                max={100}
+                                step={5}
+                                aria-label="Default volume"
+                                defaultValue={settings.defaultVolume}
+                                valueLabelDisplay="off"
+                                disabled={!settings.useDefaultVolume}
+                                onChange={handleDefaultVolumeChange}
+                            />
+                        </Tooltip>
+                    </div>
                 </div>
                 <div id="uncappedVolumeContainer">
                     <Tooltip title="Enable or disable uncapped volume - Experimental, disable if you experience issues" placement="top" disableInteractive>
