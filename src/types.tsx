@@ -38,7 +38,7 @@ export const defaultSettings : Settings = {
     toggleMuteKey: "Middle Mouse",
     useToggleMuteKey: false,
 
-    fontColor: "#FFFF00", //Yellow
+    fontColor: "#FCB900", //Yellow
     fontSize: 40,
     overlayPosition: "TL",
     overlayXPos: 5,
