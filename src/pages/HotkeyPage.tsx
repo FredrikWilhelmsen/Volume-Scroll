@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Settings, Pages } from '../types';
 import BackButton from '../components/BackButton';
 import Tooltip from '@mui/material/Tooltip/Tooltip';
@@ -15,8 +15,70 @@ interface HotkeyPageInterface {
 
 const HotkeyPage: React.FC<HotkeyPageInterface> = ({ settings, editSetting, setPage }) => {
 
+    const [isSettingModifierKey, setIsSettingModifierKey] = useState(false);
+    const [isSettingMuteKey, setIsSettingMuteKey] = useState(false);
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (!isSettingModifierKey && !isSettingMuteKey) return;
+
+            e.preventDefault();
+
+            if (isSettingModifierKey) {
+                editSetting("modifierKey", e.key);
+                setIsSettingModifierKey(false);
+            } else if (isSettingMuteKey) {
+                editSetting("toggleMuteKey", e.key);
+                setIsSettingMuteKey(false);
+            }
+        };
+
+        const handleMouseDown = (e: MouseEvent) => {
+            if (!isSettingModifierKey && !isSettingMuteKey) return;
+
+            const getMouseKey = (key: number) => {
+                switch (key) {
+                    case 0: return "Left Mouse";
+                    case 1: return "Middle Mouse";
+                    case 2: return "Right Mouse";
+                    case 3: return "Mouse 4";
+                    case 4: return "Mouse 5";
+                }
+            };
+
+            if (isSettingModifierKey) {
+                editSetting("modifierKey", getMouseKey(e.button));
+                setIsSettingModifierKey(false);
+            } else if (isSettingMuteKey) {
+                editSetting("toggleMuteKey", getMouseKey(e.button));
+                setIsSettingMuteKey(false);
+            }
+        };
+
+        const handleContextMenu = (e: MouseEvent) => {
+            if (!isSettingModifierKey && !isSettingMuteKey) return;
+            e.preventDefault();
+        };
+
+        document.body.addEventListener("keydown", handleKeyDown);
+        document.body.addEventListener("mousedown", handleMouseDown);
+        document.body.addEventListener("contextmenu", handleContextMenu);
+
+        return () => {
+            document.body.removeEventListener("keydown", handleKeyDown);
+            document.body.removeEventListener("mousedown", handleMouseDown);
+            document.body.removeEventListener("contextmenu", handleContextMenu);
+        };
+    }, [isSettingModifierKey, isSettingMuteKey, editSetting]);
+
     const handleModifierKeyToggle = (_e : Event | React.SyntheticEvent, value : any) => {
         editSetting("useModifierKey", value);
+    }
+
+    const handleModifierKeyClick = (_e : Event | React.SyntheticEvent) => {
+        if(isSettingModifierKey || isSettingMuteKey) return;
+
+        setIsSettingModifierKey(true);
     }
 
     const handleInvertModifierKeyToggle = (_e : Event | React.SyntheticEvent, value : any) => {
@@ -27,7 +89,11 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({ settings, editSetting, setP
         editSetting("useToggleMuteKey", value);
     }
 
-    //TODO: Hotkey buttons
+    const handleMuteKeyClick = (_e : Event | React.SyntheticEvent) => {
+        if(isSettingModifierKey || isSettingMuteKey) return;
+
+        setIsSettingMuteKey(true);
+    }
 
     return (
         <div>
@@ -49,8 +115,14 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({ settings, editSetting, setP
                         />
                     </Tooltip>
                     <Tooltip title="Click to change hotkey" placement="top" disableInteractive>
-                        <Button className="button" variant="outlined" sx={{color: "white"}} disabled={!settings.useMouseWheelVolume || !settings.useModifierKey}>
-                            {settings.modifierKey}
+                        <Button
+                            onClick={handleModifierKeyClick}
+                            className="button"
+                            variant="outlined"
+                            sx={{color: "white"}}
+                            disabled={!settings.useMouseWheelVolume || !settings.useModifierKey}
+                        >
+                            {isSettingModifierKey ? "-----" : settings.modifierKey}
                         </Button>
                     </Tooltip>
                 </div>
@@ -80,8 +152,14 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({ settings, editSetting, setP
                         />
                     </Tooltip>
                     <Tooltip title="Click to change hotkey" placement="top" disableInteractive>
-                        <Button className="button" variant="outlined" sx={{color: "white"}} disabled={!settings.useMouseWheelVolume || !settings.useToggleMuteKey}>
-                            {settings.toggleMuteKey}
+                        <Button 
+                            onClick={handleMuteKeyClick}
+                            className="button"
+                            variant="outlined"
+                            sx={{color: "white"}}
+                            disabled={!settings.useMouseWheelVolume || !settings.useToggleMuteKey}
+                        >
+                            {isSettingMuteKey ? "-----" : settings.toggleMuteKey}
                         </Button>
                     </Tooltip>
                 </div>
