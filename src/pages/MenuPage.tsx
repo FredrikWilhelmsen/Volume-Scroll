@@ -16,6 +16,8 @@ interface MenuPageInterface {
 
 const MenuPage: React.FC<MenuPageInterface> = ({ settings, editSetting, setPage }) => {
 
+    //TODO: Secret log combo
+
     const [hostname, setHostname] = useState<string>("");
 
     useEffect(() => {

@@ -122,7 +122,7 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({ settings, editSetting, setP
                             sx={{color: "white"}}
                             disabled={!settings.useMouseWheelVolume || !settings.useModifierKey}
                         >
-                            {isSettingModifierKey ? "-----" : settings.modifierKey}
+                            {isSettingModifierKey ? "-----" : (settings.modifierKey === " " ? "Space" : settings.modifierKey)}
                         </Button>
                     </Tooltip>
                 </div>
@@ -159,7 +159,7 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({ settings, editSetting, setP
                             sx={{color: "white"}}
                             disabled={!settings.useMouseWheelVolume || !settings.useToggleMuteKey}
                         >
-                            {isSettingMuteKey ? "-----" : settings.toggleMuteKey}
+                            {isSettingMuteKey ? "-----" : (settings.toggleMuteKey === " " ? "Space" : settings.toggleMuteKey)}
                         </Button>
                     </Tooltip>
                 </div>
