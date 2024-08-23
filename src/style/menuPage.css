@@ -21,3 +21,17 @@ footer a {
 	margin-top: 8px;
 	margin-bottom: 8px;
 }
+
+#debugIcon {
+	position: absolute;
+    bottom: 0;
+    right: 0;
+    margin: 10px;
+	width: 16px;
+	height: 16px;
+	border-style: solid;
+	background-color: red;
+	border-radius: 50%;
+	border-color: grey;
+	border-width: 1px;
+}

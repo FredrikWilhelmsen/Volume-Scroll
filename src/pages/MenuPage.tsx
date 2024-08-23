@@ -33,6 +33,21 @@ const MenuPage: React.FC<MenuPageInterface> = ({ settings, editSetting, setPage 
         getActiveTabHostname();
     }, []);
 
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.ctrlKey && event.key === 'l') {
+                event.preventDefault();
+                editSetting('doDebugLog', !settings.doDebugLog);
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [settings.doDebugLog, editSetting]);
+
     const isBlacklisted = settings.blacklist.includes(hostname);
 
     const handleBlacklistToggle = (_e: Event | React.SyntheticEvent, value: any) => {
@@ -79,6 +94,7 @@ const MenuPage: React.FC<MenuPageInterface> = ({ settings, editSetting, setPage 
                     Consider leaving a <a href="https://addons.mozilla.org/en-US/firefox/addon/volume-scroll/">review</a> or buy me a <a href="https://ko-fi.com/fredrikwilhelmsen">coffee</a>
                 </Typography>
             </footer>
+            {settings.doDebugLog && <div id="debugIcon"></div>}
         </div>
     );
 }
