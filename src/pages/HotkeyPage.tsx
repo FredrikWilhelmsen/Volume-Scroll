@@ -60,14 +60,14 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({ settings, editSetting, setP
             e.preventDefault();
         };
 
-        document.body.addEventListener("keydown", handleKeyDown);
-        document.body.addEventListener("mousedown", handleMouseDown);
-        document.body.addEventListener("contextmenu", handleContextMenu);
+        window.addEventListener("contextmenu", handleContextMenu, {capture: true});
+        window.addEventListener("keydown", handleKeyDown);
+        window.addEventListener("mousedown", handleMouseDown);
 
         return () => {
-            document.body.removeEventListener("keydown", handleKeyDown);
-            document.body.removeEventListener("mousedown", handleMouseDown);
-            document.body.removeEventListener("contextmenu", handleContextMenu);
+            window.removeEventListener("contextmenu", handleContextMenu);
+            window.removeEventListener("keydown", handleKeyDown);
+            window.removeEventListener("mousedown", handleMouseDown);
         };
     }, [isSettingModifierKey, isSettingMuteKey, editSetting]);
 
