@@ -1,4 +1,8 @@
 import * as controller from "./volumeScrollController";
 
-document.addEventListener("wheel", controller.onScroll);
-document.addEventListener("click", controller.onClick);
+window.addEventListener("wheel", controller.onScroll);
+window.addEventListener("mousedown", controller.onMouseDown);
+window.addEventListener("mouseup", controller.onMouseUp);
+window.addEventListener("keydown", controller.onKeyDown);
+window.addEventListener("keyup", controller.onKeyUp);
+
