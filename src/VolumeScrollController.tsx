@@ -1,9 +1,14 @@
-import { Settings, defaultSettings } from "./types";
+import { Settings, defaultSettings, videoElements } from "./types";
 
-import * as defaultHandler from "./defaultHandler";
+import * as defaultHandler from "./handlers/default";
+import * as ytMusic from "./handlers/ytMusic";
+
+const handlers = [
+    ytMusic
+];
 
 let settings : Settings = defaultSettings;
-let isModifierKeyPressed : boolean;
+let isModifierKeyPressed : boolean = false;
 
 const debug = (message: String, extra?: any): void => {
     if(!settings.doDebugLog) return;
@@ -47,17 +52,31 @@ const doVolumeScroll = () => {
 export function onScroll(e: WheelEvent): void {
     debug("Scrolled!");
 
+    //Check settings
     if(!doVolumeScroll()) return;
 
-    //Get the scroll handler
-    //Get video
-    //Validate video
-    //Get scroll direction
-    //Modify volume
+    //Get handler
+    let handler = defaultHandler;
 
-    
+    for( const handlerCandidate of handlers ){
+        if(handlerCandidate.handlesDomain(window.location.hostname)){
+            handler = handlerCandidate;
+        }
+    }
+
+    debug("Got handler: ", handler);
+
+    //Get video
+    const video : videoElements | null = handler.getVideo();
+    debug("Got video: ", video);
+
+    if(video === null) return;
+
     const direction = e.deltaY / 100 * -1;
     debug(direction > 0 ? "UP" : "DOWN", direction);
+    
+    //Get scroll direction
+    //Modify volume
 }
 
 const getMouseKey = function (key : number) {
