@@ -51,12 +51,12 @@ export class DefaultHandler {
             overlay = createOverlay();
         }
 
-        //Update overlay text
+        // Update overlay text
         overlay.innerHTML = `${Math.round(volume)}`;
         overlay.style.color = settings.fontColor;
         overlay.style.fontSize = `${settings.fontSize}px`;
 
-        //Position the overlay
+        // Position the overlay
         if (settings.overlayPosition === "mouse") {
             overlay.style.left = window.scrollX + e.clientX - overlay.offsetWidth + "px";
             overlay.style.top = window.scrollY + e.clientY - overlay.offsetHeight + "px";
@@ -67,20 +67,42 @@ export class DefaultHandler {
             overlay.style.top = (vidPos.height / 100 * settings.overlayYPos) - (overlayPos.height / 2) + "px";
         }
 
-        //move overlay next to video in DOM
+        // Move overlay next to video in DOM
         videoGroup.display.insertAdjacentElement("beforebegin", overlay);
 
-        //Animate fade
+        // Animate fade
         let newOverlay = overlay;
         overlay.parentNode?.replaceChild(newOverlay, overlay);
         overlay.classList.add("volumeScrollOverlayFade");
+    }
+
+    private attachVolumeWatchdog(video: HTMLVideoElement, debug: (message: String, extra?: any) => void): void {
+        video.dataset.hasVolumeWatchdog = "true";
+        debug("Attached volume watchdog to video element");
+
+        video.addEventListener("volumechange", (event) => {
+            // If we don't have a custom volume set, do nothing
+            if (!video.dataset.customVolume) return;
+
+            const targetVolume = parseFloat(video.dataset.customVolume);
+            
+            // Allow for a tiny floating point margin of error (e.g. 0.5 vs 0.5000001)
+            const difference = Math.abs(video.volume - targetVolume);
+
+            if (difference > 0.001) {
+                debug(`Site tried to reset volume to ${video.volume}, forcing back to ${targetVolume}`);
+                
+                // Force it back
+                video.volume = targetVolume;
+            }
+        });
     }
 
     protected siteSpecificUpdate(volume: number): void{}
 
     private updateVolume(e: WheelEvent, settings: Settings, videoGroup: videoElements, direction: number, 
                             createOverlay: () => HTMLElement, debug: (message: String, extra?: any) => void): void {
-        const previousVolume : number = Math.round(videoGroup.video.volume * 100); //video.volume is a percentage, multiplied by 100 to get integer values
+        const previousVolume : number = Math.round(videoGroup.video.volume * 100); // video.volume is a percentage, multiplied by 100 to get integer values
         debug(`Previous volume was: ${previousVolume}`);
         let increment : number = settings.volumeIncrement;
 
@@ -97,22 +119,30 @@ export class DefaultHandler {
 
         let newVolume : number = previousVolume + ( increment * direction );
 
-        //Rounding the volume to the nearest increment, in case the original volume was not on the increment
+        // Rounding the volume to the nearest increment, in case the original volume was not on the increment
         if(newVolume > settings.volumeIncrement){
             newVolume = newVolume / settings.volumeIncrement;
             newVolume = Math.round(newVolume);
             newVolume = newVolume * settings.volumeIncrement;
         }
 
-        //Limiting the volume to between 0-100
+        // Limiting the volume to between 0-100
         newVolume = Math.max(newVolume, 0)
         newVolume = Math.min(newVolume, 100)
 
         debug(`New volume set to: ${newVolume}`)
 
-        //Set volume
+        // Set volume
+        videoGroup.video.dataset.customVolume = `${newVolume / 100}`;
+
+        if (videoGroup.video.dataset.hasVolumeWatchdog !== "true") {
+            this.attachVolumeWatchdog(videoGroup.video, debug);
+        }
+
         videoGroup.video.volume = newVolume / 100;
-        videoGroup.video.dataset.volume = `${newVolume / 100}`;
+
+        // Alert site of change
+        videoGroup.video.dispatchEvent(new Event("volumechange"));
 
         this.siteSpecificUpdate(newVolume);
 
@@ -122,7 +152,7 @@ export class DefaultHandler {
     private updateVolumeUncapped(){}
 
     public scroll(e: WheelEvent, settings: Settings, createOverlay: () => HTMLElement, debug: (message: String, extra?: any) => void): void {
-        //Get video
+        // Get video
         const videoGroup : videoElements | null = this.getVideo(e);
         debug("Got video: ", videoGroup);
 
@@ -136,14 +166,14 @@ export class DefaultHandler {
             return;
         }
 
-        //Video found, prevent default scroll behavior
+        // Video found, prevent default scroll behavior
         e.preventDefault();
 
-        //Get scroll direction
+        // Get scroll direction
         const direction = Math.round( e.deltaY / 100 * -1 );
         debug("Scroll direction: " + `${direction > 0 ? "UP" : "DOWN"}`, direction);
         
-        //Modify volume
+        //M odify volume
         this.updateVolume(e, settings, videoGroup, direction, createOverlay, debug);
     }
 }

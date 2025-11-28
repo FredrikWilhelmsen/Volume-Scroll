@@ -6,12 +6,13 @@ export class YTMusicHandler extends DefaultHandler {
         "music.youtube.com",
     ];
 
-    protected getVideo(e: MouseEvent): videoElements | null {
+    public getVideo(e: MouseEvent): videoElements | null {
         const video = document.getElementsByTagName("VIDEO")[0];
         const bar = document.getElementsByTagName("YTMUSIC-PLAYER-BAR")[0];
-        const image = document.getElementsByTagName("YTMUSIC-PLAYER")[0];
+        const image = document.getElementById("song-image");
+        const player = document.getElementsByTagName("YTMUSIC-PLAYER")[0];
     
-        if(bar.matches(":hover") || image.matches(":hover")){
+        if(bar.matches(":hover") || player.matches(":hover")){
             const videoGroup : videoElements = { 
                 display: image as HTMLBaseElement, 
                 video: video as HTMLVideoElement
