@@ -1,4 +1,4 @@
-import { Settings, defaultSettings, videoElements } from "./types";
+import { Settings, defaultSettings } from "./types";
 
 import { DefaultHandler } from "./handlers/default";
 import { YTMusicHandler } from "./handlers/ytMusic";
@@ -9,10 +9,23 @@ const handlers : DefaultHandler[] = [
     new TwitchHandler()
 ];
 
+const body = document.documentElement || document.body || document.getElementsByTagName("body")[0];
 let settings : Settings = defaultSettings;
 let isModifierKeyPressed : boolean = false;
 
-const debug = (message: String, extra?: any): void => {
+const createOverlay = function(): HTMLElement {
+    let div = document.createElement("div");
+
+    div.id = "volumeScrollOverlay";
+    div.classList.add("volumeScrollOverlay");
+    div.style.color = settings.fontColor;
+    div.style.fontSize = settings.fontSize + "px";
+    body.appendChild(div);
+
+    return div;
+}
+
+const debug = function(message: String, extra?: any): void {
     if(!settings.doDebugLog) return;
 
     if(extra){
@@ -25,8 +38,14 @@ const debug = (message: String, extra?: any): void => {
 
 browser.storage.local.get("settings")
     .then((result) => {
-        settings = result.settings;
-        debug("Settings loaded: ", result.settings);
+        if (result.settings) {
+            // Using Object spread to ensure missing keys in storage (from updates) take default values
+            settings = { ...defaultSettings, ...result.settings };
+        } else {
+            settings = defaultSettings;
+        }
+
+        debug("Settings loaded: ", settings);
 });
 
 browser.storage.onChanged.addListener((changes) => {
@@ -34,35 +53,17 @@ browser.storage.onChanged.addListener((changes) => {
     debug("Settings reapplied: ", settings);
 });
 
-let hasAudio = function(video: any): boolean {
-    if (video.audioTracks && video.audioTracks.length > 0) {
-        return true;
-    }
-
-    if (typeof video.webkitAudioDecodedByteCount !== "undefined" && video.webkitAudioDecodedByteCount > 0) {
-        return true;
-    }
-
-    if (typeof video.mozHasAudio !== "undefined" && video.mozHasAudio) {
-        return true;
-    }
-
-    //TODO: Use Web Audio API for more advanced audio analysis
-
-    return false;
-}
-
 const isFullscreen = function(): boolean {
     return document.fullscreenElement != null;
 }
 
 const doVolumeScroll = function(): boolean{
     switch (true) {
-        case settings.blacklist.includes(window.location.hostname):                             //Domain is blacklisted
-        case !settings.useMouseWheelVolume:                                                     //Volume Scroll is disabled
-        case settings.useModifierKey && !settings.invertModifierKey && !isModifierKeyPressed:   //Modifier key is enabled and not inverted, key is not held down
-        case settings.useModifierKey && settings.invertModifierKey && isModifierKeyPressed:     //Modifier key is enabled, but inverted, key is held down
-        case settings.fullscreenOnly && !isFullscreen():                                        //Fullscreen only mode is enabled, and there are no fullscreen elements
+        case settings.blacklist.includes(window.location.hostname):                             // Domain is blacklisted
+        case !settings.useMouseWheelVolume:                                                     // Volume Scroll is disabled
+        case settings.useModifierKey && !settings.invertModifierKey && !isModifierKeyPressed:   // Modifier key is enabled and not inverted, key is not held down
+        case settings.useModifierKey && settings.invertModifierKey && isModifierKeyPressed:     // Modifier key is enabled, but inverted, key is held down
+        case settings.fullscreenOnly && !isFullscreen():                                        // Fullscreen only mode is enabled, and there are no fullscreen elements
             return false;
         default:
             return true;
@@ -72,10 +73,10 @@ const doVolumeScroll = function(): boolean{
 export function onScroll(e: WheelEvent): void {
     debug("Scrolled!");
 
-    //Check settings
+    // Check settings
     if(!doVolumeScroll()) return;
 
-    //Get handler
+    // Get handler
     let handler : DefaultHandler = new DefaultHandler();
 
     for( const handlerCandidate of handlers ){
@@ -85,31 +86,9 @@ export function onScroll(e: WheelEvent): void {
         }
     }
 
-    debug("Got handler: ", handler);
+    debug("Got handler: " + typeof handler, handler);
 
-    //Get video
-    const videoGroup : videoElements | null = handler.getVideo(e);
-    debug("Got video: ", videoGroup);
-
-    if(videoGroup === null) return;
-
-    if(!hasAudio(videoGroup.video)) return;
-
-    //Get scroll direction
-    const direction = e.deltaY / 100 * -1;
-    debug(direction > 0 ? "UP" : "DOWN", direction);
-    
-    //Modify volume
-    let newVolume: number = 0;
-
-    if(settings.useUncappedVolume){
-        
-    }
-    else {
-        
-    }
-
-    handler.updateVolume(newVolume);
+    handler.scroll(e, settings, createOverlay, debug);
 }
 
 const getMouseKey = function (key : number) {

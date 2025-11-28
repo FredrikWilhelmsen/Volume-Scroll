@@ -6,7 +6,7 @@ export class YTMusicHandler extends DefaultHandler {
         "music.youtube.com",
     ];
 
-    public getVideo(e: MouseEvent): videoElements | null {
+    protected getVideo(e: MouseEvent): videoElements | null {
         const video = document.getElementsByTagName("VIDEO")[0];
         const bar = document.getElementsByTagName("YTMUSIC-PLAYER-BAR")[0];
         const image = document.getElementsByTagName("YTMUSIC-PLAYER")[0];

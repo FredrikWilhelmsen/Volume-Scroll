@@ -6,11 +6,7 @@ export class TwitchHandler extends DefaultHandler {
         "twitch.com",
     ];
 
-    public getVideo(e: MouseEvent): videoElements | null {
+    protected getVideo(e: MouseEvent): videoElements | null {
         return null;
-    }
-
-    public updateVolume(settings: Settings, video: HTMLVideoElement, direction: number): void {
-
     }
 }
