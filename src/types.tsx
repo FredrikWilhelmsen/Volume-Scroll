@@ -23,11 +23,6 @@ export interface Settings {
     blacklist: string[]
 };
 
-export interface videoElements {
-    display: HTMLBaseElement;
-    video: HTMLVideoElement;
-}
-
 export const defaultSettings : Settings = {
     useDefaultVolume: false,
     defaultVolume: 20,
@@ -54,3 +49,8 @@ export const defaultSettings : Settings = {
 };
 
 export type Pages = "menu" | "scroll" | "hotkeys" | "overlay" | "volume";
+
+export interface videoElements {
+    display: HTMLBaseElement;
+    video: HTMLVideoElement;
+}

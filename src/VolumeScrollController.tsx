@@ -1,10 +1,12 @@
 import { Settings, defaultSettings, videoElements } from "./types";
 
-import * as defaultHandler from "./handlers/default";
-import * as ytMusic from "./handlers/ytMusic";
+import { DefaultHandler } from "./handlers/default";
+import { YTMusicHandler } from "./handlers/ytMusic";
+import { TwitchHandler } from "./handlers/twitch";
 
-const handlers = [
-    ytMusic
+const handlers : DefaultHandler[] = [
+    new YTMusicHandler(),
+    new TwitchHandler()
 ];
 
 let settings : Settings = defaultSettings;
@@ -18,7 +20,7 @@ const debug = (message: String, extra?: any): void => {
     }
     else {
         console.log("Volume Scroll: " + message);
-    }   
+    }
 }
 
 browser.storage.local.get("settings")
@@ -32,11 +34,29 @@ browser.storage.onChanged.addListener((changes) => {
     debug("Settings reapplied: ", settings);
 });
 
-const isFullscreen = function(){
+let hasAudio = function(video: any): boolean {
+    if (video.audioTracks && video.audioTracks.length > 0) {
+        return true;
+    }
+
+    if (typeof video.webkitAudioDecodedByteCount !== "undefined" && video.webkitAudioDecodedByteCount > 0) {
+        return true;
+    }
+
+    if (typeof video.mozHasAudio !== "undefined" && video.mozHasAudio) {
+        return true;
+    }
+
+    //TODO: Use Web Audio API for more advanced audio analysis
+
+    return false;
+}
+
+const isFullscreen = function(): boolean {
     return document.fullscreenElement != null;
 }
 
-const doVolumeScroll = () => {
+const doVolumeScroll = function(): boolean{
     switch (true) {
         case settings.blacklist.includes(window.location.hostname):                             //Domain is blacklisted
         case !settings.useMouseWheelVolume:                                                     //Volume Scroll is disabled
@@ -56,27 +76,40 @@ export function onScroll(e: WheelEvent): void {
     if(!doVolumeScroll()) return;
 
     //Get handler
-    let handler = defaultHandler;
+    let handler : DefaultHandler = new DefaultHandler();
 
     for( const handlerCandidate of handlers ){
         if(handlerCandidate.handlesDomain(window.location.hostname)){
             handler = handlerCandidate;
+            break;
         }
     }
 
     debug("Got handler: ", handler);
 
     //Get video
-    const video : videoElements | null = handler.getVideo();
-    debug("Got video: ", video);
+    const videoGroup : videoElements | null = handler.getVideo(e);
+    debug("Got video: ", videoGroup);
 
-    if(video === null) return;
+    if(videoGroup === null) return;
 
+    if(!hasAudio(videoGroup.video)) return;
+
+    //Get scroll direction
     const direction = e.deltaY / 100 * -1;
     debug(direction > 0 ? "UP" : "DOWN", direction);
     
-    //Get scroll direction
     //Modify volume
+    let newVolume: number = 0;
+
+    if(settings.useUncappedVolume){
+        
+    }
+    else {
+        
+    }
+
+    handler.updateVolume(newVolume);
 }
 
 const getMouseKey = function (key : number) {
