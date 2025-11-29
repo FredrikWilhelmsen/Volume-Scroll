@@ -1,0 +1,28 @@
+{
+    "compilerOptions": {
+      // 1. React & Parcel settings
+      "target": "ESNext",
+      "module": "ESNext",
+      "moduleResolution": "node",
+      "lib": ["DOM", "DOM.Iterable", "ESNext"],
+      "jsx": "react-jsx", 
+      
+      // 2. Strictness & Interop
+      "strict": true,
+      "esModuleInterop": true,
+      "allowSyntheticDefaultImports": true,
+      "skipLibCheck": true,
+      "forceConsistentCasingInFileNames": true,
+  
+      // 3. TYPES CONFIGURATION
+      // We explicitly list only what we need to avoid conflicts between 
+      // Firefox globals and the Polyfill.
+      "types": [
+        "react", 
+        "react-dom", 
+        "webextension-polyfill",
+        "chrome" 
+      ]
+    },
+    "include": ["src/**/*"]
+  }

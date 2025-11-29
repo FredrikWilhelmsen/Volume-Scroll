@@ -70,7 +70,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
     const handlePositionChange = (e: any) => {
         editSetting("overlayPosition", e.currentTarget.value);
 
-        const save = (x, y) => {
+        const save = (x: number, y: number) => {
             setXPos(x);
             editSetting("overlayXPos", x);
             setYPos(y);

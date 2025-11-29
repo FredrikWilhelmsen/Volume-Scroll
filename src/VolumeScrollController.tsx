@@ -1,3 +1,5 @@
+import browser from "webextension-polyfill";
+
 import { Settings, defaultSettings } from "./types";
 
 import { DefaultHandler } from "./handlers/default";
@@ -51,7 +53,7 @@ browser.storage.local.get("settings")
 });
 
 browser.storage.onChanged.addListener((changes) => {
-    settings = changes.settings.newValue;
+    settings = changes.settings.newValue as Settings;
     debug("Settings reapplied: ", settings);
 });
 

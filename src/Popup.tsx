@@ -1,3 +1,4 @@
+import browser from "webextension-polyfill";
 import React, { useState, useEffect } from "react";
 import * as ReactDOM from "react-dom";
 import { Settings, defaultSettings, Pages } from "./types";

@@ -1,3 +1,4 @@
+import browser from "webextension-polyfill";
 import React, { useEffect, useState } from 'react';
 import { Settings, Pages } from '../types';
 import "../style/menuPage.css";
