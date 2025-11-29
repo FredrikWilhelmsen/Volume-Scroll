@@ -1,7 +1,12 @@
 import { Settings, videoElements } from "../types";
 
 export class DefaultHandler {
+    protected name: string = "DefaultHandler";
     protected domains: string[] = [];
+
+    public getName(): string {
+        return this.name;
+    }
 
     public handlesDomain(domain : string): boolean {
         return this.domains.includes(domain);
@@ -25,7 +30,7 @@ export class DefaultHandler {
         return false;
     }
 
-    protected getVideo(mouseX: number, mouseY: number): videoElements | null {
+    protected getVideo(mouseX: number, mouseY: number, debug: (message: String, extra?: any) => void): videoElements | null {
         const elements = document.elementsFromPoint(mouseX, mouseY);
         
         for (const element of elements) {
@@ -42,13 +47,25 @@ export class DefaultHandler {
         return null;
     }
 
+    private createOverlay(body: HTMLElement, settings: Settings): HTMLElement {
+        let div = document.createElement("div");
+    
+        div.id = "volumeScrollOverlay";
+        div.classList.add("volumeScrollOverlay");
+        div.style.color = settings.fontColor;
+        div.style.fontSize = settings.fontSize + "px";
+        body.appendChild(div);
+    
+        return div;
+    }
+
     private updateOverlay(e: WheelEvent, settings: Settings, videoGroup: videoElements, volume: number, 
-                            createOverlay: () => HTMLElement, debug: (message: String, extra?: any) => void): void {
+                            body: HTMLElement, debug: (message: String, extra?: any) => void): void {
         let overlay : HTMLElement | null = document.getElementById("volumeScrollOverlay");
         
         if(!overlay){
             debug("Overlay does not exist, creating a new overlay");
-            overlay = createOverlay();
+            overlay = this.createOverlay(body, settings);
         }
 
         // Update overlay text
@@ -101,7 +118,7 @@ export class DefaultHandler {
     protected siteSpecificUpdate(volume: number): void{}
 
     private updateVolume(e: WheelEvent, settings: Settings, videoGroup: videoElements, direction: number, 
-                            createOverlay: () => HTMLElement, debug: (message: String, extra?: any) => void): void {
+                            body: HTMLElement, debug: (message: String, extra?: any) => void): void {
         const previousVolume : number = Math.round(videoGroup.video.volume * 100); // video.volume is a percentage, multiplied by 100 to get integer values
         debug(`Previous volume was: ${previousVolume}`);
         let increment : number = settings.volumeIncrement;
@@ -146,15 +163,15 @@ export class DefaultHandler {
 
         this.siteSpecificUpdate(newVolume);
 
-        this.updateOverlay(e, settings, videoGroup, newVolume, createOverlay, debug);
+        this.updateOverlay(e, settings, videoGroup, newVolume, body, debug);
     }
 
     private updateVolumeUncapped(){}
 
-    public scroll(e: WheelEvent, settings: Settings, createOverlay: () => HTMLElement, debug: (message: String, extra?: any) => void): void {
+    public scroll(e: WheelEvent, settings: Settings, body: HTMLElement, debug: (message: String, extra?: any) => void): void {
         // Get video
-        const videoGroup : videoElements | null = this.getVideo(e.clientX, e.clientY);
-        debug("Got video: ", videoGroup);
+        const videoGroup : videoElements | null = this.getVideo(e.clientX, e.clientY, debug);
+        debug("Got video group: ", videoGroup);
 
         if(videoGroup === null){
             debug("Video group was null, returning");
@@ -166,19 +183,19 @@ export class DefaultHandler {
             return;
         }
 
-        // Video found, prevent default scroll behavior
+        // Video found, prevent default scroll behaviour
         e.preventDefault();
 
         // Get scroll direction
         const direction = Math.round( e.deltaY / 100 * -1 );
         debug("Scroll direction: " + `${direction > 0 ? "UP" : "DOWN"}`, direction);
         
-        //M odify volume
-        this.updateVolume(e, settings, videoGroup, direction, createOverlay, debug);
+        // Modify volume
+        this.updateVolume(e, settings, videoGroup, direction, body, debug);
     }
 
-    public toggleMute(mouseX: number, mouseY: number){
-        const videoGroup : videoElements | null = this.getVideo(mouseX, mouseY);
+    public toggleMute(mouseX: number, mouseY: number, debug: (message: String, extra?: any) => void){
+        const videoGroup : videoElements | null = this.getVideo(mouseX, mouseY, debug);
         
         if(!videoGroup) return;
 

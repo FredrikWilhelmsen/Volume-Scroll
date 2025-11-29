@@ -1,33 +1,34 @@
 import browser from "webextension-polyfill";
-
 import { Settings, defaultSettings } from "./types";
 
-import { DefaultHandler } from "./handlers/default";
-import { YTMusicHandler } from "./handlers/ytMusic";
-import { TwitchHandler } from "./handlers/twitch";
+import { DefaultHandler } from "./handlers/Default";
+import { YTMusicHandler } from "./handlers/YTMusic";
+import { TwitchHandler } from "./handlers/Twitch";
 
 const handlers : DefaultHandler[] = [
     new YTMusicHandler(),
     new TwitchHandler()
 ];
 
+const getHandler = function(): DefaultHandler {
+    let handler : DefaultHandler = new DefaultHandler();
+
+    for( const handlerCandidate of handlers ){
+        if(handlerCandidate.handlesDomain(window.location.hostname)){
+            handler = handlerCandidate;
+            break;
+        }
+    }
+
+    return handler;
+}
+
+const handler = getHandler();
 const body = document.documentElement || document.body || document.getElementsByTagName("body")[0];
 let settings : Settings = defaultSettings;
 let isModifierKeyPressed : boolean = false;
 let mouseX : number = 0;
 let mouseY : number = 0;
-
-const createOverlay = function(): HTMLElement {
-    let div = document.createElement("div");
-
-    div.id = "volumeScrollOverlay";
-    div.classList.add("volumeScrollOverlay");
-    div.style.color = settings.fontColor;
-    div.style.fontSize = settings.fontSize + "px";
-    body.appendChild(div);
-
-    return div;
-}
 
 const debug = function(message: String, extra?: any): void {
     if(!settings.doDebugLog) return;
@@ -74,31 +75,16 @@ const doVolumeScroll = function(): boolean{
     }
 }
 
-const getHandler = function(): DefaultHandler {
-    let handler : DefaultHandler = new DefaultHandler();
-
-    for( const handlerCandidate of handlers ){
-        if(handlerCandidate.handlesDomain(window.location.hostname)){
-            handler = handlerCandidate;
-            break;
-        }
-    }
-
-    return handler;
-}
-
 export function onScroll(e: WheelEvent): void {
     debug("Scrolled!");
 
     // Check settings
     if(!doVolumeScroll()) return;
 
-    // Get handler
-    const handler = getHandler();
+    debug("Got handler: " + handler.getName(), handler);
+    debug("Hostname: " + window.location.hostname);
 
-    debug("Got handler: " + typeof handler, handler);
-
-    handler.scroll(e, settings, createOverlay, debug);
+    handler.scroll(e, settings, body, debug);
 }
 
 const getMouseKey = function (key : number) {
@@ -127,8 +113,7 @@ export function onMouseDown(e: MouseEvent): void {
 
     if(settings.toggleMuteKey === getMouseKey(e.button) && settings.useToggleMuteKey){
         e.preventDefault();
-        const handler = getHandler();
-        handler.toggleMute(e.clientX, e.clientY);
+        handler.toggleMute(e.clientX, e.clientY, debug);
         debug("Toggle mute key pressed");
     }
 }
@@ -154,8 +139,7 @@ export function onKeyDown(e: KeyboardEvent): void {
 
     if(settings.toggleMuteKey === e.key && settings.useToggleMuteKey){
         e.preventDefault();
-        const handler = getHandler();
-        handler.toggleMute(mouseX, mouseY);
+        handler.toggleMute(mouseX, mouseY, debug);
         debug("Toggle mute key pressed");
     }
 }
