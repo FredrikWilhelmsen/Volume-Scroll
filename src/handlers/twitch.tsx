@@ -6,7 +6,7 @@ export class TwitchHandler extends DefaultHandler {
         "twitch.tv",
     ];
 
-    protected getVideo(e: MouseEvent): videoElements | null {
+    protected getVideo(mouseX: number, mouseY: number): videoElements | null {
         return null;
     }
 }

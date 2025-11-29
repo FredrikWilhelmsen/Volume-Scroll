@@ -96,6 +96,7 @@ const VolumePage: React.FC<VolumePageInterface> = ({ settings, editSetting, setP
                             control={
                             <Switch 
                                 checked={settings.useUncappedVolume}
+                                disabled
                             />} 
                             label={settings.useUncappedVolume ? "Volume is uncapped" : "Volume is capped"}
                         />

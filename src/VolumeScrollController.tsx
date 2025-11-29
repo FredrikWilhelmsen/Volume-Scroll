@@ -12,6 +12,8 @@ const handlers : DefaultHandler[] = [
 const body = document.documentElement || document.body || document.getElementsByTagName("body")[0];
 let settings : Settings = defaultSettings;
 let isModifierKeyPressed : boolean = false;
+let mouseX : number = 0;
+let mouseY : number = 0;
 
 const createOverlay = function(): HTMLElement {
     let div = document.createElement("div");
@@ -70,13 +72,7 @@ const doVolumeScroll = function(): boolean{
     }
 }
 
-export function onScroll(e: WheelEvent): void {
-    debug("Scrolled!");
-
-    // Check settings
-    if(!doVolumeScroll()) return;
-
-    // Get handler
+const getHandler = function(): DefaultHandler {
     let handler : DefaultHandler = new DefaultHandler();
 
     for( const handlerCandidate of handlers ){
@@ -85,6 +81,18 @@ export function onScroll(e: WheelEvent): void {
             break;
         }
     }
+
+    return handler;
+}
+
+export function onScroll(e: WheelEvent): void {
+    debug("Scrolled!");
+
+    // Check settings
+    if(!doVolumeScroll()) return;
+
+    // Get handler
+    const handler = getHandler();
 
     debug("Got handler: " + typeof handler, handler);
 
@@ -112,7 +120,14 @@ export function onMouseDown(e: MouseEvent): void {
     if(settings.modifierKey === getMouseKey(e.button) && settings.useModifierKey){
         e.preventDefault();
         isModifierKeyPressed = true;
-        debug("Modifier key pressed down");
+        debug("Modifier key pressed");
+    }
+
+    if(settings.toggleMuteKey === getMouseKey(e.button) && settings.useToggleMuteKey){
+        e.preventDefault();
+        const handler = getHandler();
+        handler.toggleMute(e.clientX, e.clientY);
+        debug("Toggle mute key pressed");
     }
 }
 
@@ -132,7 +147,14 @@ export function onKeyDown(e: KeyboardEvent): void {
     if(settings.modifierKey === e.key && settings.useModifierKey){
         e.preventDefault();
         isModifierKeyPressed = true;
-        debug("Modifier key pressed down");
+        debug("Modifier key pressed");
+    }
+
+    if(settings.toggleMuteKey === e.key && settings.useToggleMuteKey){
+        e.preventDefault();
+        const handler = getHandler();
+        handler.toggleMute(mouseX, mouseY);
+        debug("Toggle mute key pressed");
     }
 }
 
@@ -144,4 +166,9 @@ export function onKeyUp(e: KeyboardEvent): void {
         isModifierKeyPressed = false;
         debug("Modifier key released");
     }
+}
+
+export function onMouseMove(e: MouseEvent){
+    mouseX = e.clientX;
+    mouseY = e.clientY;
 }

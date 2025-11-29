@@ -25,8 +25,8 @@ export class DefaultHandler {
         return false;
     }
 
-    protected getVideo(e: MouseEvent): videoElements | null {
-        const elements = document.elementsFromPoint(e.clientX, e.clientY);
+    protected getVideo(mouseX: number, mouseY: number): videoElements | null {
+        const elements = document.elementsFromPoint(mouseX, mouseY);
         
         for (const element of elements) {
             if (element.tagName === "VIDEO") {
@@ -153,7 +153,7 @@ export class DefaultHandler {
 
     public scroll(e: WheelEvent, settings: Settings, createOverlay: () => HTMLElement, debug: (message: String, extra?: any) => void): void {
         // Get video
-        const videoGroup : videoElements | null = this.getVideo(e);
+        const videoGroup : videoElements | null = this.getVideo(e.clientX, e.clientY);
         debug("Got video: ", videoGroup);
 
         if(videoGroup === null){
@@ -162,7 +162,7 @@ export class DefaultHandler {
         }
 
         if(!this.hasAudio(videoGroup.video)){
-            debug("Video has no audio track, returning")
+            debug("Video has no audio track, returning");
             return;
         }
 
@@ -175,5 +175,13 @@ export class DefaultHandler {
         
         //M odify volume
         this.updateVolume(e, settings, videoGroup, direction, createOverlay, debug);
+    }
+
+    public toggleMute(mouseX: number, mouseY: number){
+        const videoGroup : videoElements | null = this.getVideo(mouseX, mouseY);
+        
+        if(!videoGroup) return;
+
+        videoGroup.video.muted = !videoGroup.video.muted;
     }
 }
