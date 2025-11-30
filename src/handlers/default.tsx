@@ -157,6 +157,7 @@ export class DefaultHandler {
         }
 
         videoGroup.video.volume = newVolume / 100;
+        videoGroup.video.muted = newVolume <= 0;
 
         // Alert site of change
         videoGroup.video.dispatchEvent(new Event("volumechange"));
