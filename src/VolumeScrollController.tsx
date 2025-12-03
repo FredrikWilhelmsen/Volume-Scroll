@@ -4,10 +4,12 @@ import { Settings, defaultSettings } from "./types";
 import { DefaultHandler } from "./handlers/Default";
 import { YTMusicHandler } from "./handlers/YTMusic";
 import { TwitchHandler } from "./handlers/Twitch";
+import { RedditHandler } from "./handlers/Reddit";
 
 const handlers: DefaultHandler[] = [
     new YTMusicHandler(),
-    new TwitchHandler()
+    new TwitchHandler(),
+    new RedditHandler()
 ];
 
 const getHandler = function (): DefaultHandler {

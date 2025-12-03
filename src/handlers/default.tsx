@@ -6,6 +6,9 @@ export class DefaultHandler {
     private observer: MutationObserver | null = null;
     private settings: Settings = defaultSettings;
 
+    private volumeTargets = new WeakMap<HTMLVideoElement, number>();
+    private watchdogs = new WeakSet<HTMLVideoElement>();
+
     public updateSettings(newSettings: Settings): void {
         this.settings = newSettings;
     }
@@ -69,7 +72,7 @@ export class DefaultHandler {
         return div;
     }
 
-    private updateOverlay(e: WheelEvent, videoGroup: videoElements, volume: number,
+    private updateOverlay(e: WheelEvent, display: HTMLElement, volume: number,
         body: HTMLElement, debug: (message: String, extra?: any) => void): void {
         let overlay: HTMLElement | null = document.getElementById("volumeScrollOverlay");
 
@@ -88,14 +91,14 @@ export class DefaultHandler {
             overlay.style.left = window.scrollX + e.clientX - overlay.offsetWidth + "px";
             overlay.style.top = window.scrollY + e.clientY - overlay.offsetHeight + "px";
         } else {
-            let vidPos = videoGroup.display.getBoundingClientRect();
+            let vidPos = display.getBoundingClientRect();
             let overlayPos = overlay.getBoundingClientRect();
             overlay.style.left = (vidPos.width / 100 * this.settings.overlayXPos) - (overlayPos.width / 2) + "px";
             overlay.style.top = (vidPos.height / 100 * this.settings.overlayYPos) - (overlayPos.height / 2) + "px";
         }
 
         // Move overlay next to video in DOM
-        videoGroup.display.insertAdjacentElement("beforebegin", overlay);
+        display.insertAdjacentElement("beforebegin", overlay);
 
         // Animate fade
         let newOverlay = overlay;
@@ -104,23 +107,24 @@ export class DefaultHandler {
     }
 
     private attachVolumeWatchdog(video: HTMLVideoElement, debug: (message: String, extra?: any) => void): void {
-        video.dataset.hasVolumeWatchdog = "true";
+        this.watchdogs.add(video);
         debug("Attached volume watchdog");
 
         video.addEventListener("volumechange", () => {
+            const targetVolume: number | undefined = this.volumeTargets.get(video);
+            
             // If we don't have a custom volume set, do nothing
-            if (!video.dataset.customVolume) return;
-
-            const targetVolume = parseFloat(video.dataset.customVolume);
+            if (targetVolume === undefined) return;
 
             // Allow for a tiny floating point margin of error
             const difference = Math.abs(video.volume - targetVolume);
 
             if (difference > 0.001) {
-                debug(`Site tried to reset volume to ${video.volume}, forcing back to ${targetVolume}`);
+                debug(`Site tried to reset volume to ${video.volume}, forcing back to ${targetVolume}`, video);
 
                 // Force it back
                 video.volume = targetVolume;
+                video.muted = targetVolume <= 0;
             }
         });
     }
@@ -129,14 +133,14 @@ export class DefaultHandler {
         debug(`New volume set to: ${volume}`)
 
         // Set volume
-        video.dataset.customVolume = `${volume / 100}`;
-
-        if (video.dataset.hasVolumeWatchdog !== "true") {
-            this.attachVolumeWatchdog(video, debug);
-        }
+        this.volumeTargets.set(video, volume / 100);
 
         video.volume = volume / 100;
         video.muted = volume <= 0;
+
+        if (!this.watchdogs.has(video)) {
+            this.attachVolumeWatchdog(video, debug);
+        }
 
         // Alert site of change
         video.dispatchEvent(new Event("volumechange"));
@@ -178,7 +182,7 @@ export class DefaultHandler {
 
         this.siteSpecificUpdate(newVolume);
 
-        this.updateOverlay(e, videoGroup, newVolume, body, debug);
+        this.updateOverlay(e, videoGroup.display, newVolume, body, debug);
     }
 
     private updateVolumeUncapped() { }
@@ -200,6 +204,8 @@ export class DefaultHandler {
 
         // Video found, prevent default scroll behaviour
         e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
 
         // Get scroll direction
         const direction: number = Math.round(e.deltaY / 100 * -1);
