@@ -8,62 +8,66 @@ export class DefaultHandler {
         return this.name;
     }
 
-    public handlesDomain(domain : string): boolean {
+    public handlesDomain(domain: string): boolean {
         return this.domains.includes(domain);
     }
-    
+
     private hasAudio(video: any): boolean {
         if (video.audioTracks && video.audioTracks.length > 0) {
             return true;
         }
-    
+
         if (typeof video.webkitAudioDecodedByteCount !== "undefined" && video.webkitAudioDecodedByteCount > 0) {
             return true;
         }
-    
+
         if (typeof video.mozHasAudio !== "undefined" && video.mozHasAudio) {
             return true;
         }
-    
+
         //TODO: Look into Web Audio API
-    
+
         return false;
     }
 
     protected getVideo(mouseX: number, mouseY: number, debug: (message: String, extra?: any) => void): videoElements | null {
         const elements = document.elementsFromPoint(mouseX, mouseY);
-        
+
         for (const element of elements) {
             if (element.tagName === "VIDEO") {
-                const videoGroup : videoElements = { 
-                    display: element as HTMLBaseElement, 
+                const videoGroup: videoElements = {
+                    display: element as HTMLBaseElement,
                     video: element as HTMLVideoElement
-                }; 
-    
+                };
+
                 return videoGroup;
             }
         }
-    
+
         return null;
+    }
+
+    private getAllVideos(): HTMLCollectionOf<Element> {
+        return document.getElementsByTagName("VIDEO");
     }
 
     private createOverlay(body: HTMLElement, settings: Settings): HTMLElement {
         let div = document.createElement("div");
-    
+
         div.id = "volumeScrollOverlay";
         div.classList.add("volumeScrollOverlay");
         div.style.color = settings.fontColor;
         div.style.fontSize = settings.fontSize + "px";
         body.appendChild(div);
-    
+
         return div;
     }
 
-    private updateOverlay(e: WheelEvent, settings: Settings, videoGroup: videoElements, volume: number, 
-                            body: HTMLElement, debug: (message: String, extra?: any) => void): void {
-        let overlay : HTMLElement | null = document.getElementById("volumeScrollOverlay");
-        
-        if(!overlay){
+    private updateOverlay(e: WheelEvent, settings: Settings, videoGroup: videoElements, volume: number,
+        body: HTMLElement, debug: (message: String, extra?: any) => void): void {
+        let overlay: HTMLElement | null = document.getElementById("volumeScrollOverlay");
+
+        if (!overlay) {
             debug("Overlay does not exist, creating a new overlay");
             overlay = this.createOverlay(body, settings);
         }
@@ -102,84 +106,88 @@ export class DefaultHandler {
             if (!video.dataset.customVolume) return;
 
             const targetVolume = parseFloat(video.dataset.customVolume);
-            
-            // Allow for a tiny floating point margin of error (e.g. 0.5 vs 0.5000001)
+
+            // Allow for a tiny floating point margin of error
             const difference = Math.abs(video.volume - targetVolume);
 
             if (difference > 0.001) {
                 debug(`Site tried to reset volume to ${video.volume}, forcing back to ${targetVolume}`);
-                
+
                 // Force it back
                 video.volume = targetVolume;
             }
         });
     }
 
-    protected siteSpecificUpdate(volume: number): void{}
+    private setVolume(volume: number, video: HTMLVideoElement, debug: (message: String, extra?: any) => void){
+        debug(`New volume set to: ${volume}`)
 
-    private updateVolume(e: WheelEvent, settings: Settings, videoGroup: videoElements, direction: number, 
-                            body: HTMLElement, debug: (message: String, extra?: any) => void): void {
-        const previousVolume : number = Math.round(videoGroup.video.volume * 100); // video.volume is a percentage, multiplied by 100 to get integer values
+        // Set volume
+        video.dataset.customVolume = `${volume / 100}`;
+
+        if (video.dataset.hasVolumeWatchdog !== "true") {
+            this.attachVolumeWatchdog(video, debug);
+        }
+
+        video.volume = volume / 100;
+        video.muted = volume <= 0;
+
+        // Alert site of change
+        video.dispatchEvent(new Event("volumechange"));
+    }
+
+    protected siteSpecificUpdate(volume: number): void { }
+
+    private updateVolume(e: WheelEvent, settings: Settings, videoGroup: videoElements, direction: number,
+        body: HTMLElement, debug: (message: String, extra?: any) => void): void {
+        const previousVolume: number = Math.round(videoGroup.video.volume * 100); // video.volume is a percentage, multiplied by 100 to get integer values
         debug(`Previous volume was: ${previousVolume}`);
-        let increment : number = settings.volumeIncrement;
+        let increment: number = settings.volumeIncrement;
 
-        if(settings.usePreciseScroll){
-            if(direction === -1 && previousVolume <= settings.volumeIncrement){
+        if (settings.usePreciseScroll) {
+            if (direction === -1 && previousVolume <= settings.volumeIncrement) {
                 increment = 1;
             }
-            else if(direction === 1 && previousVolume < settings.volumeIncrement){
+            else if (direction === 1 && previousVolume < settings.volumeIncrement) {
                 increment = 1;
             }
         }
 
         debug(`Increment set to: ${increment}`);
 
-        let newVolume : number = previousVolume + ( increment * direction );
+        let newVolume: number = previousVolume + (increment * direction);
 
         // Rounding the volume to the nearest increment, in case the original volume was not on the increment
-        if(newVolume > settings.volumeIncrement){
+        if (newVolume > settings.volumeIncrement) {
             newVolume = newVolume / settings.volumeIncrement;
             newVolume = Math.round(newVolume);
             newVolume = newVolume * settings.volumeIncrement;
         }
 
         // Limiting the volume to between 0-100
-        newVolume = Math.max(newVolume, 0)
-        newVolume = Math.min(newVolume, 100)
+        newVolume = Math.max(newVolume, 0);
+        newVolume = Math.min(newVolume, 100);
 
-        debug(`New volume set to: ${newVolume}`)
-
-        // Set volume
-        videoGroup.video.dataset.customVolume = `${newVolume / 100}`;
-
-        if (videoGroup.video.dataset.hasVolumeWatchdog !== "true") {
-            this.attachVolumeWatchdog(videoGroup.video, debug);
-        }
-
-        videoGroup.video.volume = newVolume / 100;
-        videoGroup.video.muted = newVolume <= 0;
-
-        // Alert site of change
-        videoGroup.video.dispatchEvent(new Event("volumechange"));
+        this.setVolume(newVolume, videoGroup.video, debug);
 
         this.siteSpecificUpdate(newVolume);
 
         this.updateOverlay(e, settings, videoGroup, newVolume, body, debug);
     }
 
-    private updateVolumeUncapped(){}
+    private updateVolumeUncapped() { }
 
     public scroll(e: WheelEvent, settings: Settings, body: HTMLElement, debug: (message: String, extra?: any) => void): void {
         // Get video
-        const videoGroup : videoElements | null = this.getVideo(e.clientX, e.clientY, debug);
+        const videoGroup: videoElements | null = this.getVideo(e.clientX, e.clientY, debug);
         debug("Got video group: ", videoGroup);
 
-        if(videoGroup === null){
+        if (videoGroup === null) {
             debug("Video group was null, returning");
             return;
         }
 
-        if(!this.hasAudio(videoGroup.video)){
+        if (!this.hasAudio(videoGroup.video)) {
             debug("Video has no audio track, returning");
             return;
         }
@@ -188,17 +196,28 @@ export class DefaultHandler {
         e.preventDefault();
 
         // Get scroll direction
-        const direction = Math.round( e.deltaY / 100 * -1 );
+        const direction: number = Math.round(e.deltaY / 100 * -1);
         debug("Scroll direction: " + `${direction > 0 ? "UP" : "DOWN"}`, direction);
-        
+
         // Modify volume
         this.updateVolume(e, settings, videoGroup, direction, body, debug);
     }
 
-    public toggleMute(mouseX: number, mouseY: number, debug: (message: String, extra?: any) => void){
-        const videoGroup : videoElements | null = this.getVideo(mouseX, mouseY, debug);
-        
-        if(!videoGroup) return;
+    public setDefaultVolume(settings: Settings, debug: (message: String, extra?: any) => void) {
+        const videoCollection: HTMLCollectionOf<Element> = this.getAllVideos();
+        debug("Settings default volume for: ", videoCollection);
+
+        for (let tag of videoCollection){
+            let video = tag as HTMLVideoElement;
+            this.setVolume(settings.defaultVolume, video, debug);
+        }
+
+    }
+
+    public toggleMute(mouseX: number, mouseY: number, debug: (message: String, extra?: any) => void) {
+        const videoGroup: videoElements | null = this.getVideo(mouseX, mouseY, debug);
+
+        if (!videoGroup) return;
 
         videoGroup.video.muted = !videoGroup.video.muted;
     }

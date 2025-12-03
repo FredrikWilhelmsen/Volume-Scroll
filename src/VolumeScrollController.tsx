@@ -41,17 +41,24 @@ const debug = function(message: String, extra?: any): void {
     }
 }
 
-browser.storage.local.get("settings")
-    .then((result) => {
-        if (result.settings) {
-            // Using Object spread to ensure missing keys in storage (from updates) take default values
-            settings = { ...defaultSettings, ...result.settings };
-        } else {
-            settings = defaultSettings;
-        }
+export const init = () => {
+    browser.storage.local.get("settings")
+        .then((result) => {
+            if (result.settings) {
+                settings = { ...defaultSettings, ...result.settings };
+            } else {
+                settings = defaultSettings;
+            }
+            debug("Settings loaded: ", settings);
 
-        debug("Settings loaded: ", settings);
-});
+            // NOW that settings are ready, perform the Page Load check
+            if (document.readyState === "complete") {
+                onPageLoad();
+            } else {
+                window.addEventListener("load", onPageLoad);
+            }
+        });
+};
 
 browser.storage.onChanged.addListener((changes) => {
     settings = changes.settings.newValue as Settings;
@@ -157,4 +164,10 @@ export function onKeyUp(e: KeyboardEvent): void {
 export function onMouseMove(e: MouseEvent){
     mouseX = e.clientX;
     mouseY = e.clientY;
+}
+
+export function onPageLoad(){
+    if(!settings.useDefaultVolume) return;
+    debug("Setting default volumes");
+    handler.setDefaultVolume(settings, debug);
 }
