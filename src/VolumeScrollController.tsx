@@ -5,16 +5,16 @@ import { DefaultHandler } from "./handlers/Default";
 import { YTMusicHandler } from "./handlers/YTMusic";
 import { TwitchHandler } from "./handlers/Twitch";
 
-const handlers : DefaultHandler[] = [
+const handlers: DefaultHandler[] = [
     new YTMusicHandler(),
     new TwitchHandler()
 ];
 
-const getHandler = function(): DefaultHandler {
-    let handler : DefaultHandler = new DefaultHandler();
+const getHandler = function (): DefaultHandler {
+    let handler: DefaultHandler = new DefaultHandler();
 
-    for( const handlerCandidate of handlers ){
-        if(handlerCandidate.handlesDomain(window.location.hostname)){
+    for (const handlerCandidate of handlers) {
+        if (handlerCandidate.handlesDomain(window.location.hostname)) {
             handler = handlerCandidate;
             break;
         }
@@ -23,17 +23,17 @@ const getHandler = function(): DefaultHandler {
     return handler;
 }
 
-const handler = getHandler();
-const body = document.documentElement || document.body || document.getElementsByTagName("body")[0];
-let settings : Settings = defaultSettings;
-let isModifierKeyPressed : boolean = false;
-let mouseX : number = 0;
-let mouseY : number = 0;
+const handler: DefaultHandler = getHandler();
+const body: HTMLElement = document.documentElement || document.body || document.getElementsByTagName("body")[0];
+let settings: Settings = defaultSettings;
+let isModifierKeyPressed: boolean = false;
+let mouseX: number = 0;
+let mouseY: number = 0;
 
-const debug = function(message: String, extra?: any): void {
-    if(!settings.doDebugLog) return;
+const debug = function (message: String, extra?: any): void {
+    if (!settings.doDebugLog) return;
 
-    if(extra){
+    if (extra) {
         console.log("Volume Scroll: " + message, extra);
     }
     else {
@@ -53,7 +53,7 @@ export const init = () => {
             debug("Settings loaded: ", settings);
             handler.updateSettings(settings);
 
-            // NOW that settings are ready, perform the Page Load check
+            // Now that settings are ready, perform the Page Load check
             if (document.readyState === "complete") {
                 onPageLoad();
             } else {
@@ -68,11 +68,11 @@ browser.storage.onChanged.addListener((changes) => {
     debug("Settings reapplied: ", settings);
 });
 
-const isFullscreen = function(): boolean {
+const isFullscreen = function (): boolean {
     return document.fullscreenElement != null;
 }
 
-const doVolumeScroll = function(): boolean{
+const doVolumeScroll = function (): boolean {
     switch (true) {
         case settings.blacklist.includes(window.location.hostname):                             // Domain is blacklisted
         case !settings.useMouseWheelVolume:                                                     // Volume Scroll is disabled
@@ -89,7 +89,7 @@ export function onScroll(e: WheelEvent): void {
     debug("Scrolled!");
 
     // Check settings
-    if(!doVolumeScroll()) return;
+    if (!doVolumeScroll()) return;
 
     debug("Got handler: " + handler.getName(), handler);
     debug("Hostname: " + window.location.hostname);
@@ -97,7 +97,7 @@ export function onScroll(e: WheelEvent): void {
     handler.scroll(e, body, debug);
 }
 
-const getMouseKey = function (key : number) {
+const getMouseKey = function (key: number) {
     switch (key) {
         case 0:
             return "Left Mouse";
@@ -115,13 +115,13 @@ const getMouseKey = function (key : number) {
 export function onMouseDown(e: MouseEvent): void {
     debug("Mouse down!");
 
-    if(settings.modifierKey === getMouseKey(e.button) && settings.useModifierKey){
+    if (settings.modifierKey === getMouseKey(e.button) && settings.useModifierKey) {
         e.preventDefault();
         isModifierKeyPressed = true;
         debug("Modifier key pressed");
     }
 
-    if(settings.toggleMuteKey === getMouseKey(e.button) && settings.useToggleMuteKey){
+    if (settings.toggleMuteKey === getMouseKey(e.button) && settings.useToggleMuteKey) {
         e.preventDefault();
         handler.toggleMute(e.clientX, e.clientY, debug);
         debug("Toggle mute key pressed");
@@ -131,7 +131,7 @@ export function onMouseDown(e: MouseEvent): void {
 export function onMouseUp(e: MouseEvent): void {
     debug("Mouse up!");
 
-    if(settings.modifierKey === getMouseKey(e.button) && settings.useModifierKey){
+    if (settings.modifierKey === getMouseKey(e.button) && settings.useModifierKey) {
         e.preventDefault();
         isModifierKeyPressed = false;
         debug("Modifier key released");
@@ -141,13 +141,13 @@ export function onMouseUp(e: MouseEvent): void {
 export function onKeyDown(e: KeyboardEvent): void {
     debug("Key down!");
 
-    if(settings.modifierKey === e.key && settings.useModifierKey){
+    if (settings.modifierKey === e.key && settings.useModifierKey) {
         e.preventDefault();
         isModifierKeyPressed = true;
         debug("Modifier key pressed");
     }
 
-    if(settings.toggleMuteKey === e.key && settings.useToggleMuteKey){
+    if (settings.toggleMuteKey === e.key && settings.useToggleMuteKey) {
         e.preventDefault();
         handler.toggleMute(mouseX, mouseY, debug);
         debug("Toggle mute key pressed");
@@ -157,19 +157,19 @@ export function onKeyDown(e: KeyboardEvent): void {
 export function onKeyUp(e: KeyboardEvent): void {
     debug("Key up!");
 
-    if(settings.modifierKey === e.key && settings.useModifierKey){
+    if (settings.modifierKey === e.key && settings.useModifierKey) {
         e.preventDefault();
         isModifierKeyPressed = false;
         debug("Modifier key released");
     }
 }
 
-export function onMouseMove(e: MouseEvent){
+export function onMouseMove(e: MouseEvent) {
     mouseX = e.clientX;
     mouseY = e.clientY;
 }
 
-export function onPageLoad(){
-    if(!settings.useDefaultVolume) return;
+export function onPageLoad() {
+    if (!settings.useDefaultVolume) return;
     handler.setDefaultVolume(body, debug);
 }

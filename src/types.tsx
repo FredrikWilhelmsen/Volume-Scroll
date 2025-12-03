@@ -23,7 +23,7 @@ export interface Settings {
     blacklist: string[]
 };
 
-export const defaultSettings : Settings = {
+export const defaultSettings: Settings = {
     useDefaultVolume: false,
     defaultVolume: 20,
 

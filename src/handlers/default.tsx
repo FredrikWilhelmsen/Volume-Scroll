@@ -125,7 +125,7 @@ export class DefaultHandler {
         });
     }
 
-    private setVolume(volume: number, video: HTMLVideoElement, debug: (message: String, extra?: any) => void){
+    private setVolume(volume: number, video: HTMLVideoElement, debug: (message: String, extra?: any) => void) {
         debug(`New volume set to: ${volume}`)
 
         // Set volume
@@ -225,7 +225,7 @@ export class DefaultHandler {
                             debug("New video found: ", node);
                             debug("Default volume set to: ", this.settings.defaultVolume);
                             this.setVolume(this.settings.defaultVolume, node as HTMLVideoElement, debug);
-                        } 
+                        }
                         // 2. Check if the added node contains videos (e.g. a div with a video inside)
                         else {
                             const nestedVideos = node.getElementsByTagName("VIDEO");
@@ -248,7 +248,7 @@ export class DefaultHandler {
         const videoCollection: HTMLCollectionOf<Element> = this.getAllVideos();
         debug("Setting default volume for: ", videoCollection);
 
-        for (let tag of videoCollection){
+        for (let tag of videoCollection) {
             let video = tag as HTMLVideoElement;
             this.setVolume(this.settings.defaultVolume, video, debug);
         }
