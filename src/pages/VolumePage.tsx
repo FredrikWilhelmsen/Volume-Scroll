@@ -23,6 +23,7 @@ const VolumePage: React.FC<VolumePageInterface> = ({ settings, editSetting, setP
     }
 
     const handleDefaultVolumeChange = (_e : Event | React.SyntheticEvent, value : any) => {
+        setDefaultVolume(value);
         editSetting("defaultVolume", value);
     }
 
