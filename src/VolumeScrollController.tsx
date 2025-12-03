@@ -49,7 +49,9 @@ export const init = () => {
             } else {
                 settings = defaultSettings;
             }
+
             debug("Settings loaded: ", settings);
+            handler.updateSettings(settings);
 
             // NOW that settings are ready, perform the Page Load check
             if (document.readyState === "complete") {
@@ -62,6 +64,7 @@ export const init = () => {
 
 browser.storage.onChanged.addListener((changes) => {
     settings = changes.settings.newValue as Settings;
+    handler.updateSettings(settings);
     debug("Settings reapplied: ", settings);
 });
 
@@ -91,7 +94,7 @@ export function onScroll(e: WheelEvent): void {
     debug("Got handler: " + handler.getName(), handler);
     debug("Hostname: " + window.location.hostname);
 
-    handler.scroll(e, settings, body, debug);
+    handler.scroll(e, body, debug);
 }
 
 const getMouseKey = function (key : number) {
@@ -168,6 +171,5 @@ export function onMouseMove(e: MouseEvent){
 
 export function onPageLoad(){
     if(!settings.useDefaultVolume) return;
-    debug("Setting default volumes");
-    handler.setDefaultVolume(settings, debug);
+    handler.setDefaultVolume(body, debug);
 }
