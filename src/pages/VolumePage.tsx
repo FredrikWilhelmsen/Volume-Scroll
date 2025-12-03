@@ -42,7 +42,7 @@ const VolumePage: React.FC<VolumePageInterface> = ({ settings, editSetting, setP
 
         setDefaultVolume(newValue);
         editSetting("defaultVolume", newValue);
-    };
+    }
 
     const handleUncappedVolumeToggle = (_e : Event | React.SyntheticEvent, value : any) => {
         editSetting("useUncappedVolume", value);
