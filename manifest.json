@@ -5,19 +5,26 @@
     "description": "Scrollable volume for any video on the internet",
     "homepage_url": "https://github.com/FredrikWilhelmsen/Volume-Scroll/",
 
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "volumeScroll@zeph.no",
+            "strict_min_version": "109.0"
+        }
+    },
+
     "permissions": [
         "storage",
         "activeTab"
     ],
 
     "icons": {
-        "128": "/images/128.png"
+        "128": "images/128.png"
     },
 
     "action": {
-        "default_icon": "/images/128.png",
+        "default_icon": "images/128.png",
         "default_title": "Volume Scroll",
-        "default_popup": "dist/popup.html"
+        "default_popup": "popup.html"
     },
 
     "background": {
@@ -34,10 +41,10 @@
             "all_frames": true,
             "run_at": "document_start",
             "css": [
-                "dist/volumeScroll.css"
+                "volumeScroll.css"
             ],
             "js": [
-                "dist/volumeScroll.js"
+                "volumeScroll.js"
             ]
         }
     ]

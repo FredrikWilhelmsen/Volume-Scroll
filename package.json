@@ -20,10 +20,11 @@
         "@types/webextension-polyfill": "^0.12.4",
         "parcel": "^2.11.0",
         "process": "^0.11.10",
+        "shx": "^0.4.0",
         "typescript": "^5.3.3"
     },
     "scripts": {
         "dev": "parcel watch src/popup.html src/volumeScroll.tsx src/volumeScrollBackground.tsx --public-url=./",
-        "build": "parcel build src/popup.html src/volumeScroll.tsx src/volumeScrollBackground.tsx --public-url=./"
+        "build": "parcel build src/popup.html src/volumeScroll.tsx src/volumeScrollBackground.tsx --public-url=./ --no-content-hash --no-source-maps && shx cp manifest.json dist/manifest.json && shx cp -r images dist/images && shx cp src/volumeScroll.css dist/volumeScroll.css"
     }
 }
