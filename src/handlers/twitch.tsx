@@ -24,4 +24,4 @@ export class TwitchHandler extends DefaultHandler {
     }
 }
 
-// TODO: Fix twitch video grabber, add reddit explicit support. Manifest v3 for chrome. Two branches on github.
+// TODO: Fix twitch video grabber. Manifest v3 for chrome. Two branches on github.

@@ -3,11 +3,11 @@ import { Settings, videoElements, defaultSettings } from "../types";
 export class DefaultHandler {
     protected name: string = "DefaultHandler";
     protected domains: string[] = [];
-    private observer: MutationObserver | null = null;
-    private settings: Settings = defaultSettings;
+    protected observer: MutationObserver | null = null;
+    protected settings: Settings = defaultSettings;
 
-    private volumeTargets = new WeakMap<HTMLVideoElement, number>();
-    private watchdogs = new WeakSet<HTMLVideoElement>();
+    protected volumeTargets = new WeakMap<HTMLVideoElement, number>();
+    protected watchdogs = new WeakSet<HTMLVideoElement>();
 
     public updateSettings(newSettings: Settings): void {
         this.settings = newSettings;
@@ -56,7 +56,7 @@ export class DefaultHandler {
         return null;
     }
 
-    private getAllVideos(): HTMLCollectionOf<Element> {
+    protected getAllVideos(): HTMLCollectionOf<Element> | HTMLVideoElement[] {
         return document.getElementsByTagName("VIDEO");
     }
 
@@ -106,6 +106,12 @@ export class DefaultHandler {
         overlay.classList.add("volumeScrollOverlayFade");
     }
 
+    protected shouldRevertVolume(video: HTMLVideoElement, currentVolume: number, targetVolume: number): boolean {
+        // Default behavior: strict enforcement. Revert if diff > 0.001
+        const difference = Math.abs(currentVolume - targetVolume);
+        return difference > 0.001;
+    }
+
     private attachVolumeWatchdog(video: HTMLVideoElement, debug: (message: String, extra?: any) => void): void {
         this.watchdogs.add(video);
         debug("Attached volume watchdog");
@@ -113,13 +119,9 @@ export class DefaultHandler {
         video.addEventListener("volumechange", () => {
             const targetVolume: number | undefined = this.volumeTargets.get(video);
             
-            // If we don't have a custom volume set, do nothing
             if (targetVolume === undefined) return;
 
-            // Allow for a tiny floating point margin of error
-            const difference = Math.abs(video.volume - targetVolume);
-
-            if (difference > 0.001) {
+            if (this.shouldRevertVolume(video, video.volume, targetVolume)) {
                 debug(`Site tried to reset volume to ${video.volume}, forcing back to ${targetVolume}`, video);
 
                 // Force it back
@@ -129,7 +131,7 @@ export class DefaultHandler {
         });
     }
 
-    private setVolume(volume: number, video: HTMLVideoElement, debug: (message: String, extra?: any) => void) {
+    protected setVolume(volume: number, video: HTMLVideoElement, debug: (message: String, extra?: any) => void) {
         debug(`New volume set to: ${volume}`)
 
         // Set volume
@@ -146,7 +148,7 @@ export class DefaultHandler {
         video.dispatchEvent(new Event("volumechange"));
     }
 
-    protected siteSpecificUpdate(volume: number): void { }
+    protected siteSpecificUpdate(volume: number, debug: (message: String, extra?: any) => void): void { }
 
     private updateVolume(e: WheelEvent, videoGroup: videoElements, direction: number,
         body: HTMLElement, debug: (message: String, extra?: any) => void): void {
@@ -180,7 +182,7 @@ export class DefaultHandler {
 
         this.setVolume(newVolume, videoGroup.video, debug);
 
-        this.siteSpecificUpdate(newVolume);
+        this.siteSpecificUpdate(newVolume, debug);
 
         this.updateOverlay(e, videoGroup.display, newVolume, body, debug);
     }
@@ -215,7 +217,7 @@ export class DefaultHandler {
         this.updateVolume(e, videoGroup, direction, body, debug);
     }
 
-    private startVideoObserver(body: HTMLElement, debug: (message: String, extra?: any) => void) {
+    protected startVideoObserver(body: HTMLElement, debug: (message: String, extra?: any) => void) {
         if (this.observer) return; // Observer already running
 
         debug("Starting MutationObserver");
@@ -251,7 +253,7 @@ export class DefaultHandler {
     }
 
     public setDefaultVolume(body: HTMLElement, debug: (message: String, extra?: any) => void) {
-        const videoCollection: HTMLCollectionOf<Element> = this.getAllVideos();
+        const videoCollection: HTMLVideoElement[] = this.getAllVideos() as HTMLVideoElement[];
         debug("Setting default volume for: ", videoCollection);
 
         for (let tag of videoCollection) {

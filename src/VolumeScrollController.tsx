@@ -93,7 +93,7 @@ export function onScroll(e: WheelEvent): void {
     // Check settings
     if (!doVolumeScroll()) return;
 
-    debug("Got handler: " + handler.getName(), handler);
+    debug("Using handler: " + handler.getName(), handler);
     debug("Hostname: " + window.location.hostname);
 
     handler.scroll(e, body, debug);
