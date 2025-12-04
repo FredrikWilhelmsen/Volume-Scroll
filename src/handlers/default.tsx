@@ -74,6 +74,9 @@ export class DefaultHandler {
 
     private updateOverlay(e: WheelEvent, display: HTMLElement, volume: number,
         body: HTMLElement, debug: (message: String, extra?: any) => void): void {
+        
+        if (!this.settings.useOverlay) return;
+
         let overlay: HTMLElement | null = document.getElementById("volumeScrollOverlay");
 
         if (!overlay) {

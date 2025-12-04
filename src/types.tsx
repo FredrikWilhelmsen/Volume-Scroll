@@ -15,6 +15,7 @@ export interface Settings {
 
     fontColor: string,
     fontSize: number,
+    useOverlay: boolean,
     overlayPosition: string,
     overlayXPos: number,
     overlayYPos: number,
@@ -40,6 +41,7 @@ export const defaultSettings: Settings = {
 
     fontColor: "#FCB900",
     fontSize: 40,
+    useOverlay: true,
     overlayPosition: "tl",
     overlayXPos: 5,
     overlayYPos: 5,

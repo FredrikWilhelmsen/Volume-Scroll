@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Settings, Pages } from '../types';
 import BackButton from '../components/BackButton';
 import Tooltip from '@mui/material/Tooltip/Tooltip';
+import FormControlLabel from '@mui/material/FormControlLabel/FormControlLabel';
+import Switch from '@mui/material/Switch/Switch';
 import Typography from '@mui/material/Typography/Typography';
 import "../style/overlayPage.css";
 import Slider from '@mui/material/Slider/Slider';
@@ -19,10 +21,10 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
     const [xPos, setXPos] = useState(settings.overlayXPos);
     const [yPos, setYPos] = useState(settings.overlayYPos);
     const [fontSize, setFontSize] = useState(settings.fontSize);
-    
+
     const [isColorpickerVisible, setIsColorpickerVisible] = useState(false);
 
-    const colors : string[] = [
+    const colors: string[] = [
         "#FF6900",
         "#FCB900",
         "#7BDCB5",
@@ -34,7 +36,11 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
         "#F78DA7",
         "#9900EF",
         "#DABDAB"
-      ];
+    ];
+
+    const handleUseOverlayToggle = (_e: Event | React.SyntheticEvent, value: any) => {
+        editSetting("useOverlay", value);
+    }
 
     const handleOverlaySizeChange = (_e: Event | React.SyntheticEvent, value: any) => {
         editSetting("fontSize", value);
@@ -42,7 +48,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
     }
 
     const handleFontSizeScroll = (e: React.WheelEvent) => {
-        if(!settings.useMouseWheelVolume) return;
+        if (!settings.useMouseWheelVolume) return;
 
         e.preventDefault();
 
@@ -77,16 +83,16 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
             editSetting("overlayYPos", y);
         }
 
-        if(e.currentTarget.value === "tl"){
+        if (e.currentTarget.value === "tl") {
             save(5, 5);
         }
-        else if (e.currentTarget.value === "tr"){
+        else if (e.currentTarget.value === "tr") {
             save(95, 5);
         }
-        else if (e.currentTarget.value === "bl"){
+        else if (e.currentTarget.value === "bl") {
             save(5, 95);
         }
-        else if (e.currentTarget.value === "br"){
+        else if (e.currentTarget.value === "br") {
             save(95, 95);
         }
     }
@@ -97,7 +103,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
     }
 
     const handleHorizontalScroll = (e: React.WheelEvent) => {
-        if(!settings.useMouseWheelVolume || settings.overlayPosition != "custom") return;
+        if (!settings.useMouseWheelVolume || settings.overlayPosition != "custom") return;
 
         e.preventDefault();
 
@@ -119,7 +125,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
     }
 
     const handleVerticalScroll = (e: React.WheelEvent) => {
-        if(!settings.useMouseWheelVolume || settings.overlayPosition != "custom") return;
+        if (!settings.useMouseWheelVolume || settings.overlayPosition != "custom") return;
 
         e.preventDefault();
 
@@ -142,6 +148,18 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
             <hr></hr>
 
             <div className="settingsContainer">
+                <div id="useOverlayContainer">
+                    <Tooltip title="Enable or disable the overlay" placement="top" disableInteractive>
+                        <FormControlLabel 
+                            onChange={handleUseOverlayToggle}
+                            control={
+                            <Switch 
+                                checked={settings.useOverlay}
+                            />} 
+                            label="Overlay"
+                        />
+                    </Tooltip>
+                </div>
                 <div id="overlayFontSizeContainer">
                     <div id="overlayFontSizeDisplay" className="sliderDisplayContainer">
                         <Typography variant="body1">
@@ -164,7 +182,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
                                 aria-label="Overlay Size"
                                 value={fontSize}
                                 valueLabelDisplay="off"
-                                disabled={!settings.useMouseWheelVolume}
+                                disabled={!settings.useMouseWheelVolume || !settings.useOverlay}
                                 onChange={handleOverlaySizeChange}
                             />
                         </Tooltip>
@@ -175,14 +193,14 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
                         <Paper elevation={2} sx={
                             { bgcolor: settings.fontColor, width: 40, height: 20, mr: 1 }
                         }
-                        onClick={handleColorPickerClick}
+                            onClick={handleColorPickerClick}
                         />
                         <Typography variant="body1">
                             Overlay color
                         </Typography>
                     </div>
-                    
-                    {isColorpickerVisible && <TwitterPicker colors={colors} color={settings.fontColor} onChange={handleColorChange} width="220px"/>}
+
+                    {isColorpickerVisible && <TwitterPicker colors={colors} color={settings.fontColor} onChange={handleColorChange} width="220px" />}
                 </div>
                 <div id="overlayPositionDropdownContainer">
                     <Tooltip title="Set overlay position">
@@ -222,7 +240,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
                                 aria-label="Horizontal position"
                                 value={xPos}
                                 valueLabelDisplay="off"
-                                disabled={!settings.useMouseWheelVolume || settings.overlayPosition != "custom"}
+                                disabled={!settings.useMouseWheelVolume || settings.overlayPosition !== "custom" || !settings.useOverlay}
                                 onChange={handleXChange}
                             />
                         </Tooltip>
@@ -251,7 +269,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
                                 aria-label="Horizontal position"
                                 value={yPos}
                                 valueLabelDisplay="off"
-                                disabled={!settings.useMouseWheelVolume || settings.overlayPosition != "custom"}
+                                disabled={!settings.useMouseWheelVolume || settings.overlayPosition !== "custom" || !settings.useOverlay}
                                 onChange={handleYChange}
                             />
                         </Tooltip>
