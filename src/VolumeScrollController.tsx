@@ -55,6 +55,34 @@ export const init = () => {
             debug("Settings loaded: ", settings);
             handler.updateSettings(settings);
 
+            window.addEventListener("message", (event) => {
+                if (!event.data) return;
+                // Ensure we are the top window (the player), not another nested iframe
+                if (window.top === window.self) {
+                    
+                    // Security check: ensure the data object exists and is ours
+                    if (event.data.type === "VOLUME_SCROLL_RELAY") {
+                        debug("Received direct postMessage relay", event.data);
+
+                        // Construct synthetic event
+                        const syntheticEvent = {
+                            deltaY: event.data.deltaY,
+                            clientX: mouseX, 
+                            clientY: mouseY,
+                            preventDefault: () => {},
+                            stopPropagation: () => {}
+                        } as any as WheelEvent;
+
+                        onScroll(syntheticEvent);
+                    }
+
+                    if (event.data.type === "VOLUME_MUTE_RELAY") {
+                        debug("Received Mute Relay");
+                        handler.toggleMute(mouseX, mouseY, debug);
+                    }
+                }
+            });
+
             // Now that settings are ready, perform the Page Load check
             if (document.readyState === "complete") {
                 onPageLoad();
@@ -93,6 +121,27 @@ export function onScroll(e: WheelEvent): void {
     // Check settings
     if (!doVolumeScroll()) return;
 
+    // If we are inside an iframe
+    if (window.self !== window.top) {
+        const localVideo = document.getElementsByTagName("video")[0];
+
+        // If no video here, assume we are an overlay and shout to the parent
+        if (!localVideo) {
+            debug("In iframe without video, posting message to parent");
+
+            e.preventDefault(); 
+            e.stopPropagation(); 
+            
+            // "*" allows communication even if the iframe is cross-origin (common with Twitch extensions)
+            window.parent.postMessage({
+                type: "VOLUME_SCROLL_RELAY",
+                deltaY: e.deltaY
+            }, "*");
+            
+            return;
+        }
+    }
+
     debug("Using handler: " + handler.getName(), handler);
     debug("Hostname: " + window.location.hostname);
 
@@ -124,6 +173,19 @@ export function onMouseDown(e: MouseEvent): void {
     }
 
     if (settings.toggleMuteKey === getMouseKey(e.button) && settings.useToggleMuteKey) {
+
+        if (window.self !== window.top) {
+            const localVideo = document.getElementsByTagName("video")[0];
+            if (!localVideo) {
+                debug("In iframe, relaying Mute Toggle to parent");
+                e.preventDefault();
+                e.stopPropagation();
+                
+                window.parent.postMessage({ type: "VOLUME_MUTE_RELAY" }, "*");
+                return;
+            }
+       }
+
         e.preventDefault();
         handler.toggleMute(e.clientX, e.clientY, debug);
         debug("Toggle mute key pressed");
@@ -150,6 +212,19 @@ export function onKeyDown(e: KeyboardEvent): void {
     }
 
     if (settings.toggleMuteKey === e.key && settings.useToggleMuteKey) {
+
+        if (window.self !== window.top) {
+            const localVideo = document.getElementsByTagName("video")[0];
+            if (!localVideo) {
+                debug("In iframe, relaying Mute Toggle to parent");
+                e.preventDefault();
+                e.stopPropagation();
+                
+                window.parent.postMessage({ type: "VOLUME_MUTE_RELAY" }, "*");
+                return;
+            }
+       }
+
         e.preventDefault();
         handler.toggleMute(mouseX, mouseY, debug);
         debug("Toggle mute key pressed");

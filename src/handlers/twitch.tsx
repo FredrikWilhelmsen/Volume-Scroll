@@ -7,6 +7,8 @@ export class TwitchHandler extends DefaultHandler {
         "www.twitch.tv"
     ];
 
+    private previousVolume: number = 0;
+
     protected getVideo(mouseX: number, mouseY: number, debug: (message: String, extra?: any) => void): videoElements | null {
         const video = document.getElementsByTagName("VIDEO")[0];
         debug("Got video: ", video);
@@ -22,6 +24,24 @@ export class TwitchHandler extends DefaultHandler {
 
         return null;
     }
-}
 
-// TODO: Fix twitch video grabber. Manifest v3 for chrome. Two branches on github.
+    public toggleMute(mouseX: number, mouseY: number, debug: (message: String, extra?: any) => void) {
+        const videoGroup: videoElements | null = this.getVideo(mouseX, mouseY, debug);
+
+        if (!videoGroup) return;
+
+        const video: HTMLVideoElement = videoGroup?.video as HTMLVideoElement;
+
+        if(video.muted){
+            this.volumeTargets.set(video, this.previousVolume);
+            video.volume = this.previousVolume;
+            video.muted = false;
+        }
+        else {
+            this.volumeTargets.set(video, 0);
+            this.previousVolume = video.volume;
+            video.volume = 0;
+            video.muted = true;
+        }
+    }
+}

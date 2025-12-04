@@ -117,6 +117,11 @@ export class DefaultHandler {
         debug("Attached volume watchdog");
 
         video.addEventListener("volumechange", () => {
+            if (!navigator.userActivation.hasBeenActive){
+                debug("User has not interacted with the page yet, ignoring volume change");
+                return;
+            }
+
             const targetVolume: number | undefined = this.volumeTargets.get(video);
             
             if (targetVolume === undefined) return;
@@ -136,6 +141,11 @@ export class DefaultHandler {
 
         // Set volume
         this.volumeTargets.set(video, volume / 100);
+
+        if (!navigator.userActivation.hasBeenActive){
+            debug("User has not interacted with the page yet, ignoring setVolume call");
+            return;
+        }
 
         video.volume = volume / 100;
         video.muted = volume <= 0;
@@ -206,8 +216,6 @@ export class DefaultHandler {
 
         // Video found, prevent default scroll behaviour
         e.preventDefault();
-        e.stopPropagation();
-        e.stopImmediatePropagation();
 
         // Get scroll direction
         const direction: number = Math.round(e.deltaY / 100 * -1);
@@ -228,13 +236,13 @@ export class DefaultHandler {
                 // Check added nodes
                 for (const node of mutation.addedNodes) {
                     if (node instanceof HTMLElement) {
-                        // 1. Check if the added node is itself a video
+                        // Check if the added node is itself a video
                         if (node.tagName === "VIDEO") {
                             debug("New video found: ", node);
                             debug("Default volume set to: ", this.settings.defaultVolume);
                             this.setVolume(this.settings.defaultVolume, node as HTMLVideoElement, debug);
                         }
-                        // 2. Check if the added node contains videos (e.g. a div with a video inside)
+                        // Check if the added node contains videos (e.g. a div with a video inside)
                         else {
                             const nestedVideos = node.getElementsByTagName("VIDEO");
                             for (let video of nestedVideos) {
@@ -257,7 +265,7 @@ export class DefaultHandler {
         debug("Setting default volume for: ", videoCollection);
 
         for (let tag of videoCollection) {
-            let video = tag as HTMLVideoElement;
+            let video: HTMLVideoElement = tag as HTMLVideoElement;
             this.setVolume(this.settings.defaultVolume, video, debug);
         }
 
