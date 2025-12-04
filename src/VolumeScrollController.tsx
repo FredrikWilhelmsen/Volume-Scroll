@@ -31,6 +31,7 @@ let settings: Settings = defaultSettings;
 let isModifierKeyPressed: boolean = false;
 let mouseX: number = 0;
 let mouseY: number = 0;
+let preventContextMenu: boolean = false; 
 
 const debug = function (message: String, extra?: any): void {
     if (!settings.doDebugLog) return;
@@ -118,6 +119,11 @@ const doVolumeScroll = function (): boolean {
 export function onScroll(e: WheelEvent): void {
     debug("Scrolled!");
 
+    // Check if we utilized the Right Mouse button as a modifier for this scroll
+    if (settings.useModifierKey && settings.modifierKey === "Right Mouse" && isModifierKeyPressed) {
+        preventContextMenu = true;
+    }
+
     // Check settings
     if (!doVolumeScroll()) return;
 
@@ -166,6 +172,11 @@ const getMouseKey = function (key: number) {
 export function onMouseDown(e: MouseEvent): void {
     debug("Mouse down!");
 
+    // Reset context menu prevention on new click.
+    if (getMouseKey(e.button) === "Right Mouse") {
+        preventContextMenu = false;
+    }
+
     if (settings.modifierKey === getMouseKey(e.button) && settings.useModifierKey) {
         e.preventDefault();
         isModifierKeyPressed = true;
@@ -187,8 +198,12 @@ export function onMouseDown(e: MouseEvent): void {
        }
 
         e.preventDefault();
-        handler.toggleMute(e.clientX, e.clientY, debug);
+        const result: boolean = handler.toggleMute(e.clientX, e.clientY, debug);
         debug("Toggle mute key pressed");
+
+        if (getMouseKey(e.button) === "Right Mouse") {
+            preventContextMenu = result;
+        }
     }
 }
 
@@ -241,12 +256,25 @@ export function onKeyUp(e: KeyboardEvent): void {
     }
 }
 
-export function onMouseMove(e: MouseEvent) {
+export function onMouseMove(e: MouseEvent): void {
     mouseX = e.clientX;
     mouseY = e.clientY;
 }
 
-export function onPageLoad() {
+export function onPageLoad(): void {
     if (!settings.useDefaultVolume) return;
     handler.setDefaultVolume(body, debug);
+}
+
+export function onContextMenu(e: MouseEvent): void {
+    // If the flag was set during Scroll or Mute actions, block the menu
+    if (preventContextMenu) {
+        debug("Context menu blocked due to volume scroll/mute action");
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Reset flag immediately after blocking
+        preventContextMenu = false;
+        return;
+    }
 }

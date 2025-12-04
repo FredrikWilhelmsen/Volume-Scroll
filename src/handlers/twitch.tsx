@@ -25,10 +25,10 @@ export class TwitchHandler extends DefaultHandler {
         return null;
     }
 
-    public toggleMute(mouseX: number, mouseY: number, debug: (message: String, extra?: any) => void) {
+    public toggleMute(mouseX: number, mouseY: number, debug: (message: String, extra?: any) => void): boolean {
         const videoGroup: videoElements | null = this.getVideo(mouseX, mouseY, debug);
 
-        if (!videoGroup) return;
+        if (!videoGroup) return false;
 
         const video: HTMLVideoElement = videoGroup?.video as HTMLVideoElement;
 
@@ -43,5 +43,7 @@ export class TwitchHandler extends DefaultHandler {
             video.volume = 0;
             video.muted = true;
         }
+
+        return true;
     }
 }

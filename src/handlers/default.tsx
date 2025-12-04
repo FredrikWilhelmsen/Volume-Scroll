@@ -275,11 +275,13 @@ export class DefaultHandler {
         this.startVideoObserver(body, debug);
     }
 
-    public toggleMute(mouseX: number, mouseY: number, debug: (message: String, extra?: any) => void) {
+    public toggleMute(mouseX: number, mouseY: number, debug: (message: String, extra?: any) => void): boolean {
         const videoGroup: videoElements | null = this.getVideo(mouseX, mouseY, debug);
 
-        if (!videoGroup) return;
+        if (!videoGroup) return false;
 
         videoGroup.video.muted = !videoGroup.video.muted;
+
+        return true;
     }
 }
