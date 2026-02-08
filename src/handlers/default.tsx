@@ -161,11 +161,15 @@ export class DefaultHandler {
         video.dispatchEvent(new Event("volumechange"));
     }
 
-    protected siteSpecificUpdate(volume: number, debug: (message: String, extra?: any) => void): void { }
-
     private updateVolume(e: WheelEvent, videoGroup: videoElements, direction: number,
         body: HTMLElement, debug: (message: String, extra?: any) => void): void {
-        const previousVolume: number = Math.round(videoGroup.video.volume * 100); // video.volume is a percentage, multiplied by 100 to get integer values
+
+        let previousVolume: number | undefined = this.volumeTargets.get(videoGroup.video);
+
+        if (!previousVolume){
+            previousVolume = Math.round(videoGroup.video.volume * 100); // video.volume is a percentage, multiplied by 100 to get integer values - Maybe grab this.volumetarget
+        }
+        
         debug(`Previous volume was: ${previousVolume}`);
         let increment: number = this.settings.volumeIncrement;
 
@@ -194,8 +198,6 @@ export class DefaultHandler {
         newVolume = Math.min(newVolume, 100);
 
         this.setVolume(newVolume, videoGroup.video, debug);
-
-        this.siteSpecificUpdate(newVolume, debug);
 
         this.updateOverlay(e, videoGroup.display, newVolume, body, debug);
     }
