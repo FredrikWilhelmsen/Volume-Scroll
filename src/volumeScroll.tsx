@@ -1,4 +1,4 @@
-import * as controller from "./volumeScrollController";
+import * as controller from "./VolumeScrollController";
 
 window.addEventListener("wheel", controller.onScroll, { passive: false, capture: true });
 window.addEventListener("mousedown", controller.onMouseDown, { passive: false });
