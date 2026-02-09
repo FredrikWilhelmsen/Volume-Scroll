@@ -164,12 +164,16 @@ export class DefaultHandler {
     private updateVolume(e: WheelEvent, videoGroup: videoElements, direction: number,
         body: HTMLElement, debug: (message: String, extra?: any) => void): void {
 
-        let previousVolume: number | undefined = this.volumeTargets.get(videoGroup.video);
+        // Retrieve stored previous volume
+        const previousVolumeRaw: number | undefined = this.volumeTargets.get(videoGroup.video);
+        let previousVolume: number = 0;
 
-        if (!previousVolume){
-            previousVolume = Math.round(videoGroup.video.volume * 100); // video.volume is a percentage, multiplied by 100 to get integer values - Maybe grab this.volumetarget
+        if (previousVolumeRaw) {
+            previousVolume = Math.round(previousVolumeRaw * 100);
+        } else {
+            previousVolume = Math.round(videoGroup.video.volume * 100);
         }
-        
+
         debug(`Previous volume was: ${previousVolume}`);
         let increment: number = this.settings.volumeIncrement;
 
@@ -236,7 +240,7 @@ export class DefaultHandler {
         debug("Starting MutationObserver");
 
         this.observer = new MutationObserver((mutations) => {
-            debug("Change to DOM detected");
+            //debug("Change to DOM detected");
             for (const mutation of mutations) {
                 // Check added nodes
                 for (const node of mutation.addedNodes) {
