@@ -15,9 +15,12 @@ interface MenuPageInterface {
     setPage: React.Dispatch<React.SetStateAction<Pages>>
 }
 
-const MenuPage: React.FC<MenuPageInterface> = ({ settings, editSetting, setPage }) => {
+const isFirefox = navigator.userAgent.toLowerCase().includes('firefox');
+const reviewLink = isFirefox 
+    ? "https://addons.mozilla.org/en-GB/firefox/addon/volume-scroll/reviews/2585522/" 
+    : "https://chromewebstore.google.com/detail/volume-scroll/gkmagiadkkhdilnaicdnngcjhmhaeaoh/reviews";
 
-    //TODO: Secret log combo
+const MenuPage: React.FC<MenuPageInterface> = ({ settings, editSetting, setPage }) => {
 
     const [hostname, setHostname] = useState<string>("");
 
@@ -92,7 +95,7 @@ const MenuPage: React.FC<MenuPageInterface> = ({ settings, editSetting, setPage 
             <footer>
                 <Typography variant="body2" sx={{ fontSize: '11px' }}>
                     Want to show support? <br />
-                    Consider leaving a <a href="https://addons.mozilla.org/en-US/firefox/addon/volume-scroll/">review</a> or buy me a <a href="https://ko-fi.com/fredrikwilhelmsen">coffee</a>
+                    Consider leaving a <a href={reviewLink} target="_blank" rel="noreferrer">review</a> or buy me a <a href="https://ko-fi.com/fredrikwilhelmsen" target="_blank" rel="noreferrer">coffee</a>
                 </Typography>
             </footer>
             {settings.doDebugLog && <div id="debugIcon"></div>}
