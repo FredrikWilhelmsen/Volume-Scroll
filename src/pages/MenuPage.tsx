@@ -52,17 +52,10 @@ const MenuPage: React.FC<MenuPageInterface> = ({ settings, editSetting, setPage 
         };
     }, [settings.doDebugLog, editSetting]);
 
-    const isBlacklisted = settings.blacklist.includes(hostname);
+    const isEnabled = settings.domainList?.[hostname] ?? settings.enableDefault;
 
-    const handleBlacklistToggle = (_e: Event | React.SyntheticEvent, value: any) => {
-        let updatedBlacklist: string[];
-        if (value) {
-            updatedBlacklist = settings.blacklist.filter((domain) => domain !== hostname);
-        } else {
-            updatedBlacklist = [...settings.blacklist, hostname];
-        }
-
-        editSetting("blacklist", updatedBlacklist);
+    const handleEnableToggle = (_e: Event | React.SyntheticEvent, value: any) => {
+        editSetting("domainList", {...settings.domainList, [hostname]: value});
     }
 
     return (
@@ -70,12 +63,12 @@ const MenuPage: React.FC<MenuPageInterface> = ({ settings, editSetting, setPage 
             <div id="blacklistContainer">
                 <Tooltip title="Enable or disable Volume Scroll for this site" placement="bottom" disableInteractive>
                     <FormControlLabel 
-                        onChange={handleBlacklistToggle}
+                        onChange={handleEnableToggle}
                         control={
                         <Switch 
-                            checked={!isBlacklisted}
+                            checked={isEnabled}
                         />} 
-                        label={!isBlacklisted ? "Enabled on this site" : "Disabled on this site"}
+                        label={isEnabled ? "Enabled on this site" : "Disabled on this site"}
                     />
                 </Tooltip>
             </div>

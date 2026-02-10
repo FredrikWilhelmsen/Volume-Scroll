@@ -20,8 +20,10 @@ export interface Settings {
     overlayXPos: number,
     overlayYPos: number,
 
-    doDebugLog: boolean,
-    blacklist: string[]
+    domainList: Record<string, boolean>,
+    enableDefault: boolean,
+
+    doDebugLog: boolean
 };
 
 export const defaultSettings: Settings = {
@@ -46,8 +48,10 @@ export const defaultSettings: Settings = {
     overlayXPos: 5,
     overlayYPos: 5,
 
-    doDebugLog: false,
-    blacklist: []
+    domainList: {},
+    enableDefault: true,
+
+    doDebugLog: false
 };
 
 export type Pages = "menu" | "scroll" | "hotkeys" | "overlay" | "volume";

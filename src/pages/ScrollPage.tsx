@@ -52,6 +52,10 @@ const ScrollPage: React.FC<ScrollPageInterface> = ({ settings, editSetting, setP
         editSetting("fullscreenOnly", value);
     }
 
+    const handleEnableToggle = (_e: Event | React.SyntheticEvent, value: any) => {
+        editSetting("enableDefault", value);
+    }
+
     return (
         <div>
             <BackButton setPage={setPage} title={"Scroll Settings"} />
@@ -118,6 +122,22 @@ const ScrollPage: React.FC<ScrollPageInterface> = ({ settings, editSetting, setP
                                     disabled={!settings.useMouseWheelVolume}
                                 />}
                             label="Fullscreen only"
+                        />
+                    </Tooltip>
+                </div>
+                <div id="blacklistContainer">
+                    <Tooltip title={
+                        settings.enableDefault 
+                        ? "VolumeScroll will be enabled by default for every page" 
+                        : "VolumeScroll will be disabled by default for every page"
+                        } placement="top" disableInteractive>
+                        <FormControlLabel
+                            onChange={handleEnableToggle}
+                            control={
+                                <Switch
+                                    checked={settings.enableDefault}
+                                />}
+                            label={settings.enableDefault ? "Enabled by default" : "Disabled by default"}
                         />
                     </Tooltip>
                 </div>

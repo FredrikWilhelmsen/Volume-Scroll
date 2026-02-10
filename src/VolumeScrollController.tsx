@@ -103,9 +103,15 @@ const isFullscreen = function (): boolean {
     return document.fullscreenElement != null;
 }
 
+const isDisabledOnSite = function(): boolean {
+    // Returns default value if domain is not in the map, otherwise returns the domain-specific value
+    // Inverted to return whether Volume Scroll is disabled, not enabled
+    return !(settings.domainList?.[window.location.hostname] ?? settings.enableDefault);
+}
+
 const doVolumeScroll = function (): boolean {
     switch (true) {
-        case settings.blacklist.includes(window.location.hostname):                             // Domain is blacklisted
+        case isDisabledOnSite():                                                                // Domain is disabled
         case !settings.useMouseWheelVolume:                                                     // Volume Scroll is disabled
         case settings.useModifierKey && !settings.invertModifierKey && !isModifierKeyPressed:   // Modifier key is enabled and not inverted, key is not held down
         case settings.useModifierKey && settings.invertModifierKey && isModifierKeyPressed:     // Modifier key is enabled, but inverted, key is held down

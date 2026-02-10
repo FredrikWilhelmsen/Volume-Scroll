@@ -28,9 +28,9 @@
     },
 
     "background": {
-        "scripts": [
-            "volumeScrollBackground.js"
-        ]
+        "scripts": ["volumeScrollBackground.tsx"],
+        "service_worker": "volumeScrollBackground.tsx",
+        "type": "module" 
     },
 
     "content_scripts": [
@@ -44,7 +44,7 @@
                 "volumeScroll.css"
             ],
             "js": [
-                "volumeScroll.js"
+                "volumeScroll.tsx"
             ]
         }
     ]
