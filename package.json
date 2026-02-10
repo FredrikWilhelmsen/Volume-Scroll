@@ -25,7 +25,20 @@
         "typescript": "^5.3.3"
     },
     "scripts": {
-        "dev": "parcel watch src/manifest.json --host localhost --dist-dir dist --no-hmr",
+        "dev": "parcel watch src/manifest.json --host localhost --dist-dir dist --no-hmr --no-content-hash",
         "build": "parcel build src/manifest.json --dist-dir dist --no-content-hash --no-source-maps"
-    }
+    },
+
+    "targets": {
+        "default": {
+            "sourceMap": {
+                "inline": false,
+                "inlineSources": true
+            }
+        }
+    },
+
+    "browserslist": [
+        "Firefox >= 109"
+    ]
 }
