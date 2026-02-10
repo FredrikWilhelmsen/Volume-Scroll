@@ -29,7 +29,7 @@
 
     "background": {
         "scripts": [
-            "volumeScrollBackground.js"
+            "volumeScrollBackground.tsx"
         ]
     },
 
@@ -44,7 +44,7 @@
                 "volumeScroll.css"
             ],
             "js": [
-                "volumeScroll.js"
+                "volumeScroll.tsx"
             ]
         }
     ]
