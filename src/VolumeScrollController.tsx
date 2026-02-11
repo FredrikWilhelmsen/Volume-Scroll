@@ -1,5 +1,5 @@
 import browser from "webextension-polyfill";
-import { Settings, defaultSettings } from "./types";
+import { Settings, defaultSettings, logElement } from "./types";
 
 import { DefaultHandler } from "./handlers/Default";
 import { YTMusicHandler } from "./handlers/YTMusic";
@@ -31,9 +31,11 @@ let settings: Settings = defaultSettings;
 let isModifierKeyPressed: boolean = false;
 let mouseX: number = 0;
 let mouseY: number = 0;
-let preventContextMenu: boolean = false; 
+let preventContextMenu: boolean = false;
+let logList: logElement[] = []; 
 
 const debug = function (message: String, extra?: any): void {
+    logList.push({ text: message, extra: extra });
     if (!settings.doDebugLog) return;
 
     if (extra) {
@@ -154,9 +156,6 @@ export function onScroll(e: WheelEvent): void {
         }
     }
 
-    debug("Using handler: " + handler.getName(), handler);
-    debug("Hostname: " + window.location.hostname);
-
     handler.scroll(e, body, debug);
 }
 
@@ -226,6 +225,21 @@ export function onMouseUp(e: MouseEvent): void {
 export function onKeyDown(e: KeyboardEvent): void {
     debug("Key down!");
 
+    if (e.ctrlKey && e.key === 'l') {
+        e.preventDefault();
+
+        debug("Debug hotkey pressed, logs copied to clipboard");
+
+        // Debug hotkey pressed, copy logs to clipboard as json string
+        const debugData = {
+            settings: settings,
+            logs: logList
+        };
+        navigator.clipboard.writeText(JSON.stringify(debugData, null, 2));
+
+        return;
+    }
+
     if (settings.modifierKey === e.key && settings.useModifierKey) {
         e.preventDefault();
         isModifierKeyPressed = true;
@@ -269,6 +283,8 @@ export function onMouseMove(e: MouseEvent): void {
 
 export function onPageLoad(): void {
     if (!settings.useDefaultVolume) return;
+    debug("Using handler: " + handler.getName());
+    debug("Hostname: " + window.location.hostname);
     handler.setDefaultVolume(body, debug);
 }
 

@@ -240,7 +240,7 @@ export class DefaultHandler {
         debug("Starting MutationObserver");
 
         this.observer = new MutationObserver((mutations) => {
-            //debug("Change to DOM detected");
+            // debug("Change to DOM detected");
             for (const mutation of mutations) {
                 // Check added nodes
                 for (const node of mutation.addedNodes) {
