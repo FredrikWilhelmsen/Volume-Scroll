@@ -60,3 +60,8 @@ export interface videoElements {
     display: HTMLBaseElement;
     video: HTMLVideoElement;
 }
+
+export interface logElement {
+    text: String;
+    extra?: any;
+}
