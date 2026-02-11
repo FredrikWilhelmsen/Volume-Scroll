@@ -88,10 +88,14 @@ const MenuPage: React.FC<MenuPageInterface> = ({ settings, editSetting, setPage 
             <footer>
                 <Typography variant="body2" sx={{ fontSize: '11px' }}>
                     Want to show support? <br />
-                    Consider leaving a <a href={reviewLink} target="_blank" rel="noreferrer">review</a> or buy me a <a href="https://ko-fi.com/fredrikwilhelmsen" target="_blank" rel="noreferrer">coffee</a>
+                    Consider leaving a <a href={reviewLink} target="_blank" rel="noreferrer">review</a><br/>or buy me a <a href="https://ko-fi.com/fredrikwilhelmsen" target="_blank" rel="noreferrer">coffee</a>
                 </Typography>
             </footer>
-            {settings.doDebugLog && <div id="debugIcon"></div>}
+            <Tooltip title="Debug logging enabled" placement="top-start" disableInteractive>
+                <div>
+                    {settings.doDebugLog && <div id="debugIcon"></div>}
+                </div>
+            </Tooltip>
         </div>
     );
 }
