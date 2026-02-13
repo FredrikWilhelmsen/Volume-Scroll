@@ -9,6 +9,15 @@ export class DefaultHandler {
     protected volumeTargets = new WeakMap<HTMLVideoElement, number>();
     protected watchdogs = new WeakSet<HTMLVideoElement>();
 
+    // Web Audio API
+    protected audioCtx: AudioContext | null = null;
+    protected gainNodes = new WeakMap<HTMLVideoElement, GainNode>();
+    protected sourceNodes = new WeakMap<HTMLVideoElement, MediaElementAudioSourceNode>();
+
+    protected invalidDomains: string[] = [
+        "clips.twitch.tv"
+    ];
+
     public updateSettings(newSettings: Settings): void {
         this.settings = newSettings;
     }
@@ -19,6 +28,75 @@ export class DefaultHandler {
 
     public handlesDomain(domain: string): boolean {
         return this.domains.includes(domain);
+    }
+
+    protected initAudioContext(): void {
+        if (!this.audioCtx) {
+            this.audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        }
+    }
+
+    protected getGainNode(video: HTMLVideoElement, debug: (message: String, extra?: any) => void): GainNode | null {
+        // Check invalid domains
+        if (this.invalidDomains.some(d => window.location.hostname.includes(d))) {
+            debug("Current domain is in invalidDomains list, skipping Web Audio API");
+            return null;
+        }
+
+        this.initAudioContext();
+
+        if (!this.audioCtx) {
+            debug("AudioContext failed to initialize");
+            return null;
+        }
+
+        if (this.audioCtx.state === 'suspended') {
+            this.audioCtx.resume();
+        }
+
+        // Runtime CORS check:
+        // If the video is cross-origin and does not have crossorigin="anonymous" (or similar),
+        // createMediaElementSource will output silence. We must abort in that case.
+        if (video.currentSrc && !video.currentSrc.startsWith("blob:")) {
+            try {
+                const videoUrl = new URL(video.currentSrc);
+                const isSameOrigin = videoUrl.origin === window.location.origin;
+
+                if (!isSameOrigin && !video.crossOrigin) {
+                    debug("Video is cross-origin and lacks CORS attribute. Web Audio API would be silent. Aborting boost.");
+                    return null;
+                }
+            } catch (e) {
+                // Invalid URL or other issue, proceed with caution or abort.
+                // Mostly safe to ignore error and try, or fail safe.
+                // Let's debug and fail safe if we can't determine.
+                debug("Could not parse video URL for CORS check", e);
+            }
+        }
+
+        let gainNode = this.gainNodes.get(video);
+        if (!gainNode) {
+            try {
+                // Check if we already have a source node for this video
+                let source = this.sourceNodes.get(video);
+                if (!source) {
+                    source = this.audioCtx.createMediaElementSource(video);
+                    this.sourceNodes.set(video, source);
+                }
+
+                gainNode = this.audioCtx.createGain();
+                source.connect(gainNode);
+                gainNode.connect(this.audioCtx.destination);
+                this.gainNodes.set(video, gainNode);
+
+                debug("Created new GainNode for video", video);
+            } catch (e) {
+                debug("Error creating GainNode (likely CORS)", e);
+                return null;
+            }
+        }
+
+        return gainNode;
     }
 
     private hasAudio(video: any): boolean {
@@ -74,7 +152,7 @@ export class DefaultHandler {
 
     private updateOverlay(e: WheelEvent, display: HTMLElement, volume: number,
         body: HTMLElement, debug: (message: String, extra?: any) => void): void {
-        
+
         if (!this.settings.useOverlay) return;
 
         let overlay: HTMLElement | null = document.getElementById("volumeScrollOverlay");
@@ -111,7 +189,12 @@ export class DefaultHandler {
 
     protected shouldRevertVolume(video: HTMLVideoElement, currentVolume: number, targetVolume: number): boolean {
         // Default behavior: strict enforcement. Revert if diff > 0.001
-        const difference = Math.abs(currentVolume - targetVolume);
+        let expectedVolume = targetVolume;
+        if (targetVolume > 1) {
+            expectedVolume = 1;
+        }
+
+        const difference = Math.abs(currentVolume - expectedVolume);
         return difference > 0.001;
     }
 
@@ -120,38 +203,101 @@ export class DefaultHandler {
         debug("Attached volume watchdog");
 
         video.addEventListener("volumechange", () => {
-            if (!navigator.userActivation.hasBeenActive){
+            if (!navigator.userActivation.hasBeenActive) {
                 debug("User has not interacted with the page yet, ignoring volume change");
                 return;
             }
 
             const targetVolume: number | undefined = this.volumeTargets.get(video);
-            
+
             if (targetVolume === undefined) return;
 
             if (this.shouldRevertVolume(video, video.volume, targetVolume)) {
-                debug(`Site tried to reset volume to ${video.volume}, forcing back to ${targetVolume}`, video);
+                debug(`Site tried to reset volume to ${video.volume}, forcing back to ${targetVolume} (Effective: ${targetVolume > 1 ? "1.0 + Gain" : targetVolume})`, video);
 
                 // Force it back
-                video.volume = targetVolume;
-                video.muted = targetVolume <= 0;
+                if (targetVolume > 1) {
+                    video.volume = 1;
+                    video.muted = false;
+                    // Ensure gain is correct (re-apply boost)
+                    const gainNode = this.getGainNode(video, debug);
+                    if (gainNode) {
+                        gainNode.gain.value = targetVolume;
+                    }
+                } else {
+                    video.volume = targetVolume;
+                    video.muted = targetVolume <= 0;
+
+                    // Reset gain if exists
+                    const gainNode = this.gainNodes.get(video);
+                    if (gainNode) {
+                        gainNode.gain.value = 1;
+                    }
+                }
             }
         });
     }
 
-    protected setVolume(volume: number, video: HTMLVideoElement, debug: (message: String, extra?: any) => void) {
+    protected setVolume(volume: number, video: HTMLVideoElement, debug: (message: String, extra?: any) => void): number {
         debug(`New volume set to: ${volume}`)
 
-        // Set volume
+        // Set volume initially
         this.volumeTargets.set(video, volume / 100);
 
-        if (!navigator.userActivation.hasBeenActive){
+        if (!navigator.userActivation.hasBeenActive) {
             debug("User has not interacted with the page yet, ignoring setVolume call");
-            return;
+            return volume;
         }
 
-        video.volume = volume / 100;
-        video.muted = volume <= 0;
+        let effectiveVolume = volume;
+
+        if (volume > 100) {
+            // Uncapped volume logic
+            const gainNode = this.getGainNode(video, debug);
+
+            if (gainNode) {
+                // We can boost
+                video.volume = 1; // Max out the actual video element
+                video.muted = false;
+
+                // 100 = 1x gain. 500 = 5x gain.
+                const gainValue = volume / 100;
+
+                // Use setValueAtTime for immediate and precise application
+                if (this.audioCtx) {
+                    gainNode.gain.cancelScheduledValues(this.audioCtx.currentTime);
+                    gainNode.gain.setValueAtTime(gainValue, this.audioCtx.currentTime);
+                } else {
+                    gainNode.gain.value = gainValue;
+                }
+
+                debug(`Set GainNode value to ${gainValue} for ${video.currentSrc}`, gainNode);
+            } else {
+                // Fallback if boosting fails (CORS, etc)
+                debug("Boosting failed or not allowed, capping at 100%");
+                video.volume = 1;
+                video.muted = false;
+
+                // Correct the target since we failed to boost
+                this.volumeTargets.set(video, 1);
+                effectiveVolume = 100;
+            }
+        } else {
+            // Normal volume logic
+            video.volume = volume / 100;
+            video.muted = volume <= 0;
+
+            // Reset gain if it exists
+            const gainNode = this.gainNodes.get(video);
+            if (gainNode) {
+                if (this.audioCtx) {
+                    gainNode.gain.cancelScheduledValues(this.audioCtx.currentTime);
+                    gainNode.gain.setValueAtTime(1, this.audioCtx.currentTime);
+                } else {
+                    gainNode.gain.value = 1;
+                }
+            }
+        }
 
         if (!this.watchdogs.has(video)) {
             this.attachVolumeWatchdog(video, debug);
@@ -159,6 +305,8 @@ export class DefaultHandler {
 
         // Alert site of change
         video.dispatchEvent(new Event("volumechange"));
+
+        return effectiveVolume;
     }
 
     private updateVolume(e: WheelEvent, videoGroup: videoElements, direction: number,
@@ -168,10 +316,14 @@ export class DefaultHandler {
         const previousVolumeRaw: number | undefined = this.volumeTargets.get(videoGroup.video);
         let previousVolume: number = 0;
 
-        if (previousVolumeRaw) {
+        if (previousVolumeRaw !== undefined && !isNaN(previousVolumeRaw)) {
             previousVolume = Math.round(previousVolumeRaw * 100);
         } else {
             previousVolume = Math.round(videoGroup.video.volume * 100);
+        }
+
+        if (isNaN(previousVolume)) {
+            previousVolume = 0;
         }
 
         debug(`Previous volume was: ${previousVolume}`);
@@ -199,11 +351,22 @@ export class DefaultHandler {
 
         // Limiting the volume to between 0-100
         newVolume = Math.max(newVolume, 0);
-        newVolume = Math.min(newVolume, 100);
 
-        this.setVolume(newVolume, videoGroup.video, debug);
+        let maxVolume = 100;
+        if (this.settings.useUncappedVolume) {
+            maxVolume = 500; // Hard cap at 500%
+        }
 
-        this.updateOverlay(e, videoGroup.display, newVolume, body, debug);
+        newVolume = Math.min(newVolume, maxVolume);
+
+        let effectiveVolume = this.setVolume(newVolume, videoGroup.video, debug);
+
+        // Defensive check: if setVolume returns undefined/NaN (e.g. build issue), fallback to newVolume
+        if (effectiveVolume === undefined || isNaN(effectiveVolume)) {
+            effectiveVolume = newVolume;
+        }
+
+        this.updateOverlay(e, videoGroup.display, effectiveVolume, body, debug);
     }
 
     private updateVolumeUncapped() { }

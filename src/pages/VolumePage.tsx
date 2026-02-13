@@ -18,17 +18,17 @@ const VolumePage: React.FC<VolumePageInterface> = ({ settings, editSetting, setP
 
     const [defaultVolume, setDefaultVolume] = useState(settings.defaultVolume);
 
-    const handleUseDefaultVolumeToggle = (_e : Event | React.SyntheticEvent, value : any) => {
+    const handleUseDefaultVolumeToggle = (_e: Event | React.SyntheticEvent, value: any) => {
         editSetting("useDefaultVolume", value);
     }
 
-    const handleDefaultVolumeChange = (_e : Event | React.SyntheticEvent, value : any) => {
+    const handleDefaultVolumeChange = (_e: Event | React.SyntheticEvent, value: any) => {
         setDefaultVolume(value);
         editSetting("defaultVolume", value);
     }
 
     const handleDefaultVolumeScroll = (e: React.WheelEvent) => {
-        if(!settings.useDefaultVolume) return;
+        if (!settings.useDefaultVolume) return;
 
         e.preventDefault();
 
@@ -44,13 +44,13 @@ const VolumePage: React.FC<VolumePageInterface> = ({ settings, editSetting, setP
         editSetting("defaultVolume", newValue);
     }
 
-    const handleUncappedVolumeToggle = (_e : Event | React.SyntheticEvent, value : any) => {
+    const handleUncappedVolumeToggle = (_e: Event | React.SyntheticEvent, value: any) => {
         editSetting("useUncappedVolume", value);
     }
 
     return (
         <div>
-            <BackButton setPage={setPage} title={"Volume Settings"}/>
+            <BackButton setPage={setPage} title={"Volume Settings"} />
 
             <hr></hr>
 
@@ -58,12 +58,12 @@ const VolumePage: React.FC<VolumePageInterface> = ({ settings, editSetting, setP
                 <div id="defaultVolumeContainer">
                     <div id="defaultVolumeToggleContainer">
                         <Tooltip title="Enable or disable default volume" placement="top" disableInteractive>
-                            <FormControlLabel 
+                            <FormControlLabel
                                 onChange={handleUseDefaultVolumeToggle}
                                 control={
-                                <Switch 
-                                    checked={settings.useDefaultVolume}
-                                />} 
+                                    <Switch
+                                        checked={settings.useDefaultVolume}
+                                    />}
                                 label="Default volume"
                             />
                         </Tooltip>
@@ -92,13 +92,12 @@ const VolumePage: React.FC<VolumePageInterface> = ({ settings, editSetting, setP
                 </div>
                 <div id="uncappedVolumeContainer">
                     <Tooltip title="Enable or disable uncapped volume - Experimental, disable if you experience issues" placement="top" disableInteractive>
-                        <FormControlLabel 
+                        <FormControlLabel
                             onChange={handleUncappedVolumeToggle}
                             control={
-                            <Switch 
-                                checked={settings.useUncappedVolume}
-                                disabled
-                            />} 
+                                <Switch
+                                    checked={settings.useUncappedVolume}
+                                />}
                             label={settings.useUncappedVolume ? "Volume is uncapped" : "Volume is capped"}
                         />
                     </Tooltip>
