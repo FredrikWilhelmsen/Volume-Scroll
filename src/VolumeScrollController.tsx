@@ -32,7 +32,7 @@ let isModifierKeyPressed: boolean = false;
 let mouseX: number = 0;
 let mouseY: number = 0;
 let preventContextMenu: boolean = false;
-let logList: logElement[] = []; 
+let logList: logElement[] = [];
 
 const debug = function (message: String, extra?: any): void {
     logList.push({ text: message, extra: extra });
@@ -62,7 +62,7 @@ export const init = () => {
                 if (!event.data) return;
                 // Ensure we are the top window (the player), not another nested iframe
                 if (window.top === window.self) {
-                    
+
                     // Security check: ensure the data object exists and is ours
                     if (event.data.type === "VOLUME_SCROLL_RELAY") {
                         debug("Received direct postMessage relay", event.data);
@@ -70,10 +70,10 @@ export const init = () => {
                         // Construct synthetic event
                         const syntheticEvent = {
                             deltaY: event.data.deltaY,
-                            clientX: mouseX, 
+                            clientX: mouseX,
                             clientY: mouseY,
-                            preventDefault: () => {},
-                            stopPropagation: () => {}
+                            preventDefault: () => { },
+                            stopPropagation: () => { }
                         } as any as WheelEvent;
 
                         onScroll(syntheticEvent);
@@ -105,10 +105,32 @@ const isFullscreen = function (): boolean {
     return document.fullscreenElement != null;
 }
 
-const isDisabledOnSite = function(): boolean {
+const isDisabledOnSite = function (): boolean {
     // Returns default value if domain is not in the map, otherwise returns the domain-specific value
+    // If in an iframe, we also want to respect the parent domain's setting if the iframe domain is not explicitly set
+    let enabled = settings.domainList?.[window.location.hostname];
+
+    if (enabled === undefined && window.self !== window.top) {
+        try {
+            // Try to get the top frame's hostname
+            if (window.top?.location.hostname) {
+                enabled = settings.domainList?.[window.top.location.hostname];
+            }
+        } catch (e) {
+            // Cross-origin access denied. Fallback to referrer.
+            if (document.referrer) {
+                try {
+                    const referrerHostname = new URL(document.referrer).hostname;
+                    enabled = settings.domainList?.[referrerHostname];
+                } catch (refErr) {
+                    // Invalid referrer URL, ignore
+                }
+            }
+        }
+    }
+
     // Inverted to return whether Volume Scroll is disabled, not enabled
-    return !(settings.domainList?.[window.location.hostname] ?? settings.enableDefault);
+    return !(enabled ?? settings.enableDefault);
 }
 
 const doVolumeScroll = function (): boolean {
@@ -143,15 +165,15 @@ export function onScroll(e: WheelEvent): void {
         if (!localVideo) {
             debug("In iframe without video, posting message to parent");
 
-            e.preventDefault(); 
-            e.stopPropagation(); 
-            
+            e.preventDefault();
+            e.stopPropagation();
+
             // "*" allows communication even if the iframe is cross-origin (common with Twitch extensions)
             window.parent.postMessage({
                 type: "VOLUME_SCROLL_RELAY",
                 deltaY: e.deltaY
             }, "*");
-            
+
             return;
         }
     }
@@ -196,11 +218,11 @@ export function onMouseDown(e: MouseEvent): void {
                 debug("In iframe, relaying Mute Toggle to parent");
                 e.preventDefault();
                 e.stopPropagation();
-                
+
                 window.parent.postMessage({ type: "VOLUME_MUTE_RELAY" }, "*");
                 return;
             }
-       }
+        }
 
         e.preventDefault();
         const result: boolean = handler.toggleMute(e.clientX, e.clientY, debug);
@@ -254,11 +276,11 @@ export function onKeyDown(e: KeyboardEvent): void {
                 debug("In iframe, relaying Mute Toggle to parent");
                 e.preventDefault();
                 e.stopPropagation();
-                
+
                 window.parent.postMessage({ type: "VOLUME_MUTE_RELAY" }, "*");
                 return;
             }
-       }
+        }
 
         e.preventDefault();
         handler.toggleMute(mouseX, mouseY, debug);
@@ -294,7 +316,7 @@ export function onContextMenu(e: MouseEvent): void {
         debug("Context menu blocked due to volume scroll/mute action");
         e.preventDefault();
         e.stopPropagation();
-        
+
         // Reset flag immediately after blocking
         preventContextMenu = false;
         return;
