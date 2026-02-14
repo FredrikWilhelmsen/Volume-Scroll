@@ -9,33 +9,65 @@ export class RedditHandler extends DefaultHandler {
 
     private lastUserSetVolume: number | null = null;
 
-    protected setVolume(volume: number, video: HTMLVideoElement, debug: (message: String, extra?: any) => void) {
-        super.setVolume(volume, video, debug);
-        this.lastUserSetVolume = volume / 100;
-        debug("Last user set volume: " + volume);
+    protected setVolume(volume: number, video: HTMLVideoElement, debug: (message: String, extra?: any) => void): number {
+        let effectiveVolume = super.setVolume(volume, video, debug);
+
+        // Defensive check
+        if (effectiveVolume === undefined || isNaN(effectiveVolume)) {
+            effectiveVolume = volume;
+        }
+
+        this.lastUserSetVolume = effectiveVolume / 100;
+        debug("Last user set volume: " + effectiveVolume);
+        return effectiveVolume;
     }
 
     // Override the watchdog logic
     protected shouldRevertVolume(video: HTMLVideoElement, currentVolume: number, targetVolume: number): boolean {
-        const difference: number = Math.abs(currentVolume - targetVolume);
-
-        // If volumes match, no action needed
-        if (difference <= 0.001) return false;
-
         // CHECK: Is the 'wrong' volume actually what the user just set on a neighbouring video?
         if (this.lastUserSetVolume !== null) {
-            const syncDiff = Math.abs(currentVolume - this.lastUserSetVolume);
 
-            // If the site changed this video to match the last one we scrolled...
-            if (syncDiff <= 0.001) {
-                // ... then accept the sync Update our internal target to match.
-                this.volumeTargets.set(video, this.lastUserSetVolume);
-                return false;
+            // Case 1: Master is boosted (> 1). Sync sets video to 1.0.
+            if (this.lastUserSetVolume > 1) {
+                // If the current volume is at 100% (1.0), it matches the "video element" part of the boost.
+                // We accept this as a sync.
+                if (Math.abs(currentVolume - 1) <= 0.001) {
+                    // Update internal target to match the boosted volume
+                    this.volumeTargets.set(video, this.lastUserSetVolume);
+
+                    // Apply the boost to this video too
+                    // We need to use getGainNode. Since we are in an override, we have access to it.
+                    // We'll pass a no-op debug function since we don't have access to the original one easily here.
+                    const gainNode = this.getGainNode(video, () => { });
+                    if (gainNode) {
+                        gainNode.gain.value = this.lastUserSetVolume;
+                    }
+
+                    return false;
+                }
+            }
+            // Case 2: Standard sync (0.0 - 1.0)
+            else {
+                const syncDiff = Math.abs(currentVolume - this.lastUserSetVolume);
+
+                // If the site changed this video to match the last one we scrolled...
+                if (syncDiff <= 0.001) {
+                    // ... then accept the sync Update our internal target to match.
+                    this.volumeTargets.set(video, this.lastUserSetVolume);
+
+                    // Reset gain for this video if it exists (since we are not boosted)
+                    const gainNode = this.gainNodes.get(video);
+                    if (gainNode) {
+                        gainNode.gain.value = 1;
+                    }
+
+                    return false;
+                }
             }
         }
 
-        // Otherwise, it's a random site reset (ads, auto-mute, etc)
-        return true;
+        // Default logic from parent (checks against targetVolume)
+        return super.shouldRevertVolume(video, currentVolume, targetVolume);
     }
 
     protected startVideoObserver(body: HTMLElement, debug: (message: String, extra?: any) => void) {
