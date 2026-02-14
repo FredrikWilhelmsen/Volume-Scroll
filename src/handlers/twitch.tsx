@@ -7,7 +7,38 @@ export class TwitchHandler extends DefaultHandler {
         "www.twitch.tv"
     ];
 
+    // Track the "main" video (the stream)
+    private mainVideo: HTMLVideoElement | null = null;
+
     private previousVolume: number = 0;
+
+    protected setVolume(volume: number, video: HTMLVideoElement, debug: (message: String, extra?: any) => void): number {
+        // VISIBILITY CHECK:
+        // Twitch hides the backup player (or the stream during ads) often.
+        // If the video is hidden (no dimensions), do not unmute it.
+        if (video.offsetWidth === 0 && video.offsetHeight === 0) {
+            debug("Video is hidden (0 dimensions), ignoring setVolume/unmute", video);
+            return 0;
+        }
+
+        // DUPLICATE/AD CHECK
+        // If we don't have a main video content yet, or the previous one was removed from DOM, claim this one.
+        if (!this.mainVideo || !this.mainVideo.isConnected) {
+            this.mainVideo = video;
+            debug("Main video assigned:", video);
+        }
+
+        // If this video is NOT the main video, it's a secondary player (likely Ad).
+        // Force mute it.
+        if (video !== this.mainVideo) {
+            debug("Secondary video detected (Ad?), muting.", video);
+            video.muted = true;
+            video.volume = 0;
+            return 0;
+        }
+
+        return super.setVolume(volume, video, debug);
+    }
 
     protected getVideo(mouseX: number, mouseY: number, debug: (message: String, extra?: any) => void): videoElements | null {
         const video = document.getElementsByTagName("VIDEO")[0];
@@ -32,7 +63,7 @@ export class TwitchHandler extends DefaultHandler {
 
         const video: HTMLVideoElement = videoGroup?.video as HTMLVideoElement;
 
-        if(video.muted){
+        if (video.muted) {
             this.volumeTargets.set(video, this.previousVolume);
             video.volume = this.previousVolume;
             video.muted = false;
