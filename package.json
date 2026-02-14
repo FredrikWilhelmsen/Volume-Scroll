@@ -25,10 +25,12 @@
         "typescript": "^5.3.3"
     },
     "scripts": {
-        "dev": "parcel watch src/manifest.json --host localhost --dist-dir dist --no-hmr --no-content-hash",
-        "build": "parcel build src/manifest.json --dist-dir dist --no-content-hash --no-source-maps"
+        "dev": "shx cp src/manifest.firefox.json src/manifest.json && parcel watch src/manifest.json --host localhost --dist-dir dist-firefox --no-hmr --no-content-hash",
+        "dev:chrome": "shx cp src/manifest.chrome.json src/manifest.json && parcel watch src/manifest.json --host localhost --dist-dir dist-chrome --no-hmr --no-content-hash",
+        "build": "yarn build:firefox && yarn build:chrome",
+        "build:firefox": "shx cp src/manifest.firefox.json src/manifest.json && parcel build src/manifest.json --dist-dir dist-firefox --no-content-hash --no-source-maps",
+        "build:chrome": "shx cp src/manifest.chrome.json src/manifest.json && parcel build src/manifest.json --dist-dir dist-chrome --no-content-hash --no-source-maps"
     },
-
     "targets": {
         "default": {
             "sourceMap": {
@@ -37,7 +39,6 @@
             }
         }
     },
-
     "browserslist": [
         "Firefox >= 109"
     ]
