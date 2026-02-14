@@ -154,9 +154,6 @@ export function onScroll(e: WheelEvent): void {
         preventContextMenu = true;
     }
 
-    // Check settings
-    if (!doVolumeScroll()) return;
-
     // If we are inside an iframe
     if (window.self !== window.top) {
         const localVideo = document.getElementsByTagName("video")[0];
@@ -168,7 +165,7 @@ export function onScroll(e: WheelEvent): void {
             e.preventDefault();
             e.stopPropagation();
 
-            // "*" allows communication even if the iframe is cross-origin (common with Twitch extensions)
+            // "*" allows communication even if the iframe is cross-origin
             window.parent.postMessage({
                 type: "VOLUME_SCROLL_RELAY",
                 deltaY: e.deltaY
@@ -177,6 +174,9 @@ export function onScroll(e: WheelEvent): void {
             return;
         }
     }
+
+    // Check settings
+    if (!doVolumeScroll()) return;
 
     handler.scroll(e, body, debug);
 }
