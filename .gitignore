@@ -14,4 +14,7 @@ package-lock.json
 .parcel-cache/data.mdb
 .parcel-cache/lock.mdb
 dist/*
+dist-firefox/*
+dist-chrome/*
 .parcel-cache/*
+src/manifest.json
