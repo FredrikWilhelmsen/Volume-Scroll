@@ -18,4 +18,4 @@ To build the extension, run:
 - yarn build
 
 ### Output
-The final extension files will be generated in the `dist/` folder.
+The final extension files will be generated in the `dist-firefox/` and `dist-chrome/` folders.
