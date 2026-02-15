@@ -34,8 +34,45 @@ let mouseY: number = 0;
 let preventContextMenu: boolean = false;
 let logList: logElement[] = [];
 
+const deepSanitize = (obj: any): any => {
+    if (obj === null || typeof obj !== "object") {
+        return obj;
+    }
+
+    if (obj instanceof HTMLElement) {
+        return `<${obj.tagName.toLowerCase()}${obj.id ? ` id="${obj.id}"` : ""}${obj.className ? ` class="${obj.className}"` : ""}>`;
+    }
+
+    if (obj instanceof Event) {
+        return `Event: ${obj.type}`;
+    }
+
+    if (Array.isArray(obj)) {
+        return obj.map(deepSanitize);
+    }
+
+    const sanitizedObj: any = {};
+    for (const key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+            sanitizedObj[key] = deepSanitize(obj[key]);
+        }
+    }
+    return sanitizedObj;
+};
+
 const debug = function (message: String, extra?: any): void {
-    logList.push({ text: message, extra: extra });
+    const sanitizedExtra = deepSanitize(extra);
+
+    logList.push({ text: message, extra: sanitizedExtra });
+
+    // If we are in an iframe, relay the log to the parent
+    if (window.self !== window.top) {
+        window.parent.postMessage({
+            type: "VOLUME_LOG_RELAY",
+            log: { text: `[Frame: ${window.location.hostname}] ${message}`, extra: sanitizedExtra }
+        }, "*");
+    }
+
     if (!settings.doDebugLog) return;
 
     if (extra) {
@@ -60,9 +97,7 @@ export const init = () => {
 
             window.addEventListener("message", (event) => {
                 if (!event.data) return;
-                // Ensure we are the top window (the player), not another nested iframe
                 if (window.top === window.self) {
-
                     // Security check: ensure the data object exists and is ours
                     if (event.data.type === "VOLUME_SCROLL_RELAY") {
                         debug("Received direct postMessage relay", event.data);
@@ -84,6 +119,17 @@ export const init = () => {
                         handler.toggleMute(mouseX, mouseY, debug);
                     }
                 }
+
+                // VOLUME_LOG_RELAY must be handled by EVERY frame to ensure it bubbles up to the top
+                if (event.data.type === "VOLUME_LOG_RELAY") {
+                    if (window.top === window.self) {
+                        // We are at the top, aggregate it
+                        logList.push(event.data.log);
+                    } else {
+                        // Relay it to the next parent
+                        window.parent.postMessage(event.data, "*");
+                    }
+                }
             });
 
             // Now that settings are ready, perform the Page Load check
@@ -99,6 +145,21 @@ browser.storage.onChanged.addListener((changes) => {
     settings = changes.settings.newValue as Settings;
     handler.updateSettings(settings);
     debug("Settings reapplied: ", settings);
+});
+
+browser.runtime.onMessage.addListener((message: any) => {
+    if (message.type === "GET_DEBUG_LOGS") {
+        // Only the top-level frame should respond to avoid multiple conflicting responses
+        if (window.top !== window.self) return;
+
+        debug("Received GET_DEBUG_LOGS message");
+        const debugData = {
+            settings: settings,
+            logs: logList
+        };
+
+        return Promise.resolve(debugData);
+    }
 });
 
 const isFullscreen = function (): boolean {
@@ -161,9 +222,10 @@ export function onScroll(e: WheelEvent): void {
         // If no video here, assume we are an overlay and shout to the parent
         if (!localVideo) {
             debug("In iframe without video, posting message to parent");
-
-            e.preventDefault();
-            e.stopPropagation();
+            if (!isDisabledOnSite()) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
 
             // "*" allows communication even if the iframe is cross-origin
             window.parent.postMessage({
@@ -246,21 +308,6 @@ export function onMouseUp(e: MouseEvent): void {
 
 export function onKeyDown(e: KeyboardEvent): void {
     debug("Key down!");
-
-    if (e.ctrlKey && e.key === 'l') {
-        e.preventDefault();
-
-        debug("Debug hotkey pressed, logs copied to clipboard");
-
-        // Debug hotkey pressed, copy logs to clipboard as json string
-        const debugData = {
-            settings: settings,
-            logs: logList
-        };
-        navigator.clipboard.writeText(JSON.stringify(debugData, null, 2));
-
-        return;
-    }
 
     if (settings.modifierKey === e.key && settings.useModifierKey) {
         e.preventDefault();
