@@ -64,6 +64,15 @@ const debug = function (message: String, extra?: any): void {
     const sanitizedExtra = deepSanitize(extra);
 
     logList.push({ text: message, extra: sanitizedExtra });
+
+    // If we are in an iframe, relay the log to the parent
+    if (window.self !== window.top) {
+        window.parent.postMessage({
+            type: "VOLUME_LOG_RELAY",
+            log: { text: `[Frame: ${window.location.hostname}] ${message}`, extra: sanitizedExtra }
+        }, "*");
+    }
+
     if (!settings.doDebugLog) return;
 
     if (extra) {
@@ -88,9 +97,7 @@ export const init = () => {
 
             window.addEventListener("message", (event) => {
                 if (!event.data) return;
-                // Ensure we are the top window (the player), not another nested iframe
                 if (window.top === window.self) {
-
                     // Security check: ensure the data object exists and is ours
                     if (event.data.type === "VOLUME_SCROLL_RELAY") {
                         debug("Received direct postMessage relay", event.data);
@@ -112,6 +119,17 @@ export const init = () => {
                         handler.toggleMute(mouseX, mouseY, debug);
                     }
                 }
+
+                // VOLUME_LOG_RELAY must be handled by EVERY frame to ensure it bubbles up to the top
+                if (event.data.type === "VOLUME_LOG_RELAY") {
+                    if (window.top === window.self) {
+                        // We are at the top, aggregate it
+                        logList.push(event.data.log);
+                    } else {
+                        // Relay it to the next parent
+                        window.parent.postMessage(event.data, "*");
+                    }
+                }
             });
 
             // Now that settings are ready, perform the Page Load check
@@ -131,6 +149,9 @@ browser.storage.onChanged.addListener((changes) => {
 
 browser.runtime.onMessage.addListener((message: any) => {
     if (message.type === "GET_DEBUG_LOGS") {
+        // Only the top-level frame should respond to avoid multiple conflicting responses
+        if (window.top !== window.self) return;
+
         debug("Received GET_DEBUG_LOGS message");
         const debugData = {
             settings: settings,
