@@ -34,8 +34,36 @@ let mouseY: number = 0;
 let preventContextMenu: boolean = false;
 let logList: logElement[] = [];
 
+const deepSanitize = (obj: any): any => {
+    if (obj === null || typeof obj !== "object") {
+        return obj;
+    }
+
+    if (obj instanceof HTMLElement) {
+        return `<${obj.tagName.toLowerCase()}${obj.id ? ` id="${obj.id}"` : ""}${obj.className ? ` class="${obj.className}"` : ""}>`;
+    }
+
+    if (obj instanceof Event) {
+        return `Event: ${obj.type}`;
+    }
+
+    if (Array.isArray(obj)) {
+        return obj.map(deepSanitize);
+    }
+
+    const sanitizedObj: any = {};
+    for (const key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+            sanitizedObj[key] = deepSanitize(obj[key]);
+        }
+    }
+    return sanitizedObj;
+};
+
 const debug = function (message: String, extra?: any): void {
-    logList.push({ text: message, extra: extra });
+    const sanitizedExtra = deepSanitize(extra);
+
+    logList.push({ text: message, extra: sanitizedExtra });
     if (!settings.doDebugLog) return;
 
     if (extra) {
@@ -99,6 +127,18 @@ browser.storage.onChanged.addListener((changes) => {
     settings = changes.settings.newValue as Settings;
     handler.updateSettings(settings);
     debug("Settings reapplied: ", settings);
+});
+
+browser.runtime.onMessage.addListener((message: any) => {
+    if (message.type === "GET_DEBUG_LOGS") {
+        debug("Received GET_DEBUG_LOGS message");
+        const debugData = {
+            settings: settings,
+            logs: logList
+        };
+
+        return Promise.resolve(debugData);
+    }
 });
 
 const isFullscreen = function (): boolean {
@@ -246,21 +286,6 @@ export function onMouseUp(e: MouseEvent): void {
 
 export function onKeyDown(e: KeyboardEvent): void {
     debug("Key down!");
-
-    if (e.ctrlKey && e.key === 'l') {
-        e.preventDefault();
-
-        debug("Debug hotkey pressed, logs copied to clipboard");
-
-        // Debug hotkey pressed, copy logs to clipboard as json string
-        const debugData = {
-            settings: settings,
-            logs: logList
-        };
-        navigator.clipboard.writeText(JSON.stringify(debugData, null, 2));
-
-        return;
-    }
 
     if (settings.modifierKey === e.key && settings.useModifierKey) {
         e.preventDefault();
