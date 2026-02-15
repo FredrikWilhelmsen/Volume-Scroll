@@ -1,5 +1,5 @@
 # Volume-Scroll
-Chrome and Firefox extension for changing video volume by scrolling
+[Chrome](https://chromewebstore.google.com/detail/volume-scroll/gkmagiadkkhdilnaicdnngcjhmhaeaoh) and [Firefox](https://addons.mozilla.org/en-US/firefox/addon/volume-scroll/) extension for changing video volume by scrolling
 
 
 ### The project was built using
