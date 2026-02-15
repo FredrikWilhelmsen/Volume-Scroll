@@ -201,9 +201,10 @@ export function onScroll(e: WheelEvent): void {
         // If no video here, assume we are an overlay and shout to the parent
         if (!localVideo) {
             debug("In iframe without video, posting message to parent");
-
-            e.preventDefault();
-            e.stopPropagation();
+            if (!isDisabledOnSite()) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
 
             // "*" allows communication even if the iframe is cross-origin
             window.parent.postMessage({
