@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Volume Scroll",
-    "version": "3.1.2",
+    "version": "3.1.3",
     "description": "Scrollable volume for any video on the internet",
     "homepage_url": "https://github.com/FredrikWilhelmsen/Volume-Scroll/",
     "permissions": [
