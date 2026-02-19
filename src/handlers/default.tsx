@@ -203,11 +203,6 @@ export class DefaultHandler {
         debug("Attached volume watchdog");
 
         video.addEventListener("volumechange", () => {
-            if (!navigator.userActivation.hasBeenActive) {
-                debug("User has not interacted with the page yet, ignoring volume change");
-                return;
-            }
-
             const targetVolume: number | undefined = this.volumeTargets.get(video);
 
             if (targetVolume === undefined) return;
@@ -243,11 +238,6 @@ export class DefaultHandler {
 
         // Set volume initially
         this.volumeTargets.set(video, volume / 100);
-
-        if (!navigator.userActivation.hasBeenActive) {
-            debug("User has not interacted with the page yet, ignoring setVolume call");
-            return volume;
-        }
 
         let effectiveVolume = volume;
 
