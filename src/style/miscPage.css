@@ -1,5 +1,6 @@
 #defaultVolumeDisplay,
-#boostVolumeDisplay {
+#boostVolumeDisplay,
+#alternateIncrementDisplay {
     display: inline-block;
     min-width: 17px;
     background-color: #757575;
@@ -11,7 +12,8 @@
 }
 
 #defaultVolumeToggleContainer,
-#boostVolumeToggleContainer {
+#boostVolumeToggleContainer,
+#alternateIncrementToggleContainer {
     display: flex;
     justify-content: space-between;
     align-items: center;
