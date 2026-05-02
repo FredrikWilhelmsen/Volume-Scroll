@@ -346,13 +346,15 @@ export class DefaultHandler {
             newVolume = newVolume * this.settings.volumeIncrement;
         }
 
-        // Limiting the volume to between 0-100
+        // Limiting the volume to between 0 - max volume
         newVolume = Math.max(newVolume, 0);
 
-        let maxVolume = 100;
-        if (this.settings.useUncappedVolume) {
-            maxVolume = 500; // Hard cap at 500%
+        let maxVolume: number = 100;
+        if (this.settings.doBoostVolume) {
+            maxVolume = this.settings.volumeBoostAmount;
         }
+
+        debug(`Max volume is: ${maxVolume}`);
 
         newVolume = Math.min(newVolume, maxVolume);
 
@@ -365,8 +367,6 @@ export class DefaultHandler {
 
         this.updateOverlay(e, videoGroup.display, effectiveVolume, body, debug);
     }
-
-    private updateVolumeUncapped() { }
 
     public scroll(e: WheelEvent, body: HTMLElement, debug: (message: String, extra?: any) => void): void {
         // Get video
