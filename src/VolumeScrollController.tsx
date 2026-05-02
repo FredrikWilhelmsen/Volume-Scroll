@@ -32,6 +32,7 @@ let isModifierKeyPressed: boolean = false;
 let mouseX: number = 0;
 let mouseY: number = 0;
 let preventContextMenu: boolean = false;
+let preventMiddleClick: boolean = false;
 let logList: logElement[] = [];
 
 const deepSanitize = (obj: any): any => {
@@ -295,12 +296,20 @@ export function onMouseDown(e: MouseEvent): void {
 
         if (getMouseKey(e.button) === "Right Mouse") {
             preventContextMenu = result;
+        } else if (getMouseKey(e.button) === "Middle Mouse") {
+            preventMiddleClick = result;
         }
     }
 }
 
 export function onMouseUp(e: MouseEvent): void {
     debug("Mouse up!");
+
+    if (preventMiddleClick && getMouseKey(e.button) === "Middle Mouse") {
+        debug("Mouseup blocked due to volume mute action");
+        e.preventDefault();
+        e.stopPropagation();
+    }
 
     if (settings.modifierKey === getMouseKey(e.button) && settings.useModifierKey) {
         e.preventDefault();
@@ -369,6 +378,19 @@ export function onContextMenu(e: MouseEvent): void {
 
         // Reset flag immediately after blocking
         preventContextMenu = false;
+        return;
+    }
+}
+
+export function onAuxClick(e: MouseEvent): void {
+    // If the flag was set during Mute actions, block the auxclick (middle click)
+    if (preventMiddleClick && getMouseKey(e.button) === "Middle Mouse") {
+        debug("Auxclick blocked due to volume mute action");
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Reset flag immediately after blocking
+        preventMiddleClick = false;
         return;
     }
 }
