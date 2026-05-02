@@ -4,6 +4,8 @@ export interface Settings {
 
     volumeIncrement: number,
     usePreciseScroll: boolean,
+    useCustomPreciseScrollThreshold: boolean,
+    customPreciseScrollThreshold: number,
     fullscreenOnly: boolean,
     useMouseWheelVolume: boolean,
     useUncappedVolume: boolean,
@@ -32,6 +34,8 @@ export const defaultSettings: Settings = {
 
     volumeIncrement: 5,
     usePreciseScroll: true,
+    useCustomPreciseScrollThreshold: false,
+    customPreciseScrollThreshold: 10,
     fullscreenOnly: false,
     useMouseWheelVolume: true,
     useUncappedVolume: false,

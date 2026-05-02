@@ -1,4 +1,5 @@
-#incrementDisplay {
+#incrementDisplay,
+#customPreciseScrollThresholdDisplay {
     display: inline-block;
     width: 17px;
     background-color: #757575;
@@ -9,7 +10,8 @@
     text-align: center;
 }
 
-#incrementToggleContainer {
+#incrementToggleContainer,
+#customPreciseScrollThresholdToggleContainer {
     display: flex;
     justify-content: space-between;
     align-items: center;

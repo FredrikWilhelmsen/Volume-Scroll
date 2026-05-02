@@ -318,12 +318,19 @@ export class DefaultHandler {
 
         debug(`Previous volume was: ${previousVolume}`);
         let increment: number = this.settings.volumeIncrement;
+        let threshold: number = this.settings.volumeIncrement;
 
         if (this.settings.usePreciseScroll) {
-            if (direction === -1 && previousVolume <= this.settings.volumeIncrement) {
+            if (this.settings.useCustomPreciseScrollThreshold) {
+                threshold = this.settings.customPreciseScrollThreshold;
+            }
+
+            debug(`Threshold set to: ${threshold}`);
+
+            if (direction === -1 && previousVolume <= threshold) {
                 increment = 1;
             }
-            else if (direction === 1 && previousVolume < this.settings.volumeIncrement) {
+            else if (direction === 1 && previousVolume < threshold) {
                 increment = 1;
             }
         }
@@ -333,7 +340,7 @@ export class DefaultHandler {
         let newVolume: number = previousVolume + (increment * direction);
 
         // Rounding the volume to the nearest increment, in case the original volume was not on the increment
-        if (newVolume > this.settings.volumeIncrement) {
+        if (newVolume > threshold) {
             newVolume = newVolume / this.settings.volumeIncrement;
             newVolume = Math.round(newVolume);
             newVolume = newVolume * this.settings.volumeIncrement;

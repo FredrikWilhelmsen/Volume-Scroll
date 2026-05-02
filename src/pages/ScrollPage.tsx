@@ -17,13 +17,14 @@ interface ScrollPageInterface {
 const ScrollPage: React.FC<ScrollPageInterface> = ({ settings, editSetting, setPage }) => {
 
     const [increment, setincrement] = useState(settings.volumeIncrement);
+    const [customPreciseScrollThreshold, setCustomPreciseScrollThreshold] = useState(settings.customPreciseScrollThreshold);
 
     const handleIncrementToggle = (_e: Event | React.SyntheticEvent, value: any) => {
         editSetting("useMouseWheelVolume", value);
     }
 
     const handleIncrementScroll = (e: React.WheelEvent) => {
-        if(!settings.useMouseWheelVolume) return;
+        if (!settings.useMouseWheelVolume) return;
 
         e.preventDefault();
 
@@ -46,6 +47,32 @@ const ScrollPage: React.FC<ScrollPageInterface> = ({ settings, editSetting, setP
 
     const handlePreciseScrollToggle = (_e: Event | React.SyntheticEvent, value: any) => {
         editSetting("usePreciseScroll", value);
+    }
+
+    const handleCustomPreciseScrollThresholdToggle = (_e: Event | React.SyntheticEvent, value: any) => {
+        editSetting("useCustomPreciseScrollThreshold", value);
+    }
+
+    const handleCustomPreciseScrollThresholdChange = (_e: Event | React.SyntheticEvent, value: any) => {
+        setCustomPreciseScrollThreshold(value);
+        editSetting("customPreciseScrollThreshold", value);
+    }
+
+    const handleCustomPreciseScrollThresholdScroll = (e: React.WheelEvent) => {
+        if (!settings.useCustomPreciseScrollThreshold || !settings.usePreciseScroll) return;
+
+        e.preventDefault();
+
+        let newValue: number = customPreciseScrollThreshold;
+
+        if (e.deltaY < 0) {
+            newValue = Math.min(customPreciseScrollThreshold + 1, 100);
+        } else {
+            newValue = Math.max(customPreciseScrollThreshold - 1, 0);
+        }
+
+        setCustomPreciseScrollThreshold(newValue);
+        editSetting("customPreciseScrollThreshold", newValue);
     }
 
     const handleFullscreenOnlyToggle = (_e: Event | React.SyntheticEvent, value: any) => {
@@ -112,6 +139,42 @@ const ScrollPage: React.FC<ScrollPageInterface> = ({ settings, editSetting, setP
                         />
                     </Tooltip>
                 </div>
+                <div id="customPreciseScrollContainer">
+                    <div id="customPreciseScrollThresholdToggleContainer">
+                        <Tooltip title="Precise scroll will start at this volume threshold" placement="top" disableInteractive>
+                            <FormControlLabel
+                                onChange={handleCustomPreciseScrollThresholdToggle}
+                                control={
+                                    <Switch
+                                        checked={settings.useCustomPreciseScrollThreshold}
+                                        disabled={!settings.usePreciseScroll}
+                                    />}
+                                label="Precision start"
+                            />
+                        </Tooltip>
+                        <Tooltip title="Current threshold" placement="top" disableInteractive>
+                            <div id="customPreciseScrollThresholdDisplay">
+                                <Typography variant="body2">
+                                    {settings.customPreciseScrollThreshold}
+                                </Typography>
+                            </div>
+                        </Tooltip>
+                    </div>
+                    <div onWheel={handleCustomPreciseScrollThresholdScroll}>
+                        <Tooltip title="Set the threshold for precise scroll" disableInteractive>
+                            <Slider
+                                min={0}
+                                max={100}
+                                step={1}
+                                aria-label="Custom precise scroll threshold"
+                                value={customPreciseScrollThreshold}
+                                valueLabelDisplay="off"
+                                disabled={!settings.usePreciseScroll || !settings.useCustomPreciseScrollThreshold}
+                                onChange={handleCustomPreciseScrollThresholdChange}
+                            />
+                        </Tooltip>
+                    </div>
+                </div>
                 <div id="fullscreenOnlyContainer">
                     <Tooltip title="Volume scroll will only be enabled when video is in fullscreen mode" placement="top" disableInteractive>
                         <FormControlLabel
@@ -127,10 +190,10 @@ const ScrollPage: React.FC<ScrollPageInterface> = ({ settings, editSetting, setP
                 </div>
                 <div id="blacklistContainer">
                     <Tooltip title={
-                        settings.enableDefault 
-                        ? "VolumeScroll will be enabled by default for every page" 
-                        : "VolumeScroll will be disabled by default for every page"
-                        } placement="top" disableInteractive>
+                        settings.enableDefault
+                            ? "VolumeScroll will be enabled by default for every page"
+                            : "VolumeScroll will be disabled by default for every page"
+                    } placement="top" disableInteractive>
                         <FormControlLabel
                             onChange={handleEnableToggle}
                             control={
