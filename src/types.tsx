@@ -2,19 +2,27 @@ export interface Settings {
     useDefaultVolume: boolean,
     defaultVolume: number,
 
+    useMouseWheelVolume: boolean,
     volumeIncrement: number,
+    useAlternateVolumeIncrement: boolean,
+    alternateVolumeIncrement: number,
+    alternateVolumeIncrementHotkey: string,
+
     usePreciseScroll: boolean,
     useCustomPreciseScrollThreshold: boolean,
     customPreciseScrollThreshold: number,
-    fullscreenOnly: boolean,
-    useMouseWheelVolume: boolean,
+
     doBoostVolume: boolean,
     volumeBoostAmount: number,
+
     modifierKey: string,
     useModifierKey: boolean,
     invertModifierKey: boolean,
+
     toggleMuteKey: string,
     useToggleMuteKey: boolean,
+
+    fullscreenOnly: boolean,
 
     fontColor: string,
     fontSize: number,
@@ -33,19 +41,27 @@ export const defaultSettings: Settings = {
     useDefaultVolume: false,
     defaultVolume: 20,
 
+    useMouseWheelVolume: true,
     volumeIncrement: 5,
+    useAlternateVolumeIncrement: false,
+    alternateVolumeIncrement: 10,
+    alternateVolumeIncrementHotkey: "Shift",
+
     usePreciseScroll: true,
     useCustomPreciseScrollThreshold: false,
     customPreciseScrollThreshold: 10,
-    fullscreenOnly: false,
-    useMouseWheelVolume: true,
+
     doBoostVolume: false,
     volumeBoostAmount: 200,
+
     modifierKey: "Right Mouse",
     useModifierKey: false,
     invertModifierKey: false,
+
     toggleMuteKey: "Middle Mouse",
     useToggleMuteKey: false,
+
+    fullscreenOnly: false,
 
     fontColor: "#FCB900",
     fontSize: 40,
@@ -60,7 +76,7 @@ export const defaultSettings: Settings = {
     doDebugLog: false
 };
 
-export type Pages = "menu" | "scroll" | "hotkeys" | "overlay" | "volume";
+export type Pages = "menu" | "scroll" | "hotkeys" | "overlay" | "misc";
 
 export interface videoElements {
     display: HTMLBaseElement;

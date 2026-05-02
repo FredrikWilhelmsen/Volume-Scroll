@@ -300,7 +300,7 @@ export class DefaultHandler {
     }
 
     private updateVolume(e: WheelEvent, videoGroup: videoElements, direction: number,
-        body: HTMLElement, debug: (message: String, extra?: any) => void): void {
+        body: HTMLElement, isAltVolumeKeyPressed: boolean, debug: (message: String, extra?: any) => void): void {
 
         // Retrieve stored previous volume
         const previousVolumeRaw: number | undefined = this.volumeTargets.get(videoGroup.video);
@@ -319,6 +319,11 @@ export class DefaultHandler {
         debug(`Previous volume was: ${previousVolume}`);
         let increment: number = this.settings.volumeIncrement;
         let threshold: number = this.settings.volumeIncrement;
+
+        if (this.settings.useAlternateVolumeIncrement && isAltVolumeKeyPressed) {
+            increment = this.settings.alternateVolumeIncrement;
+            threshold = this.settings.alternateVolumeIncrement;
+        }
 
         if (this.settings.usePreciseScroll) {
             if (this.settings.useCustomPreciseScrollThreshold) {
@@ -368,7 +373,7 @@ export class DefaultHandler {
         this.updateOverlay(e, videoGroup.display, effectiveVolume, body, debug);
     }
 
-    public scroll(e: WheelEvent, body: HTMLElement, debug: (message: String, extra?: any) => void): void {
+    public scroll(e: WheelEvent, body: HTMLElement, isAltVolumeKeyPressed: boolean, debug: (message: String, extra?: any) => void): void {
         // Get video
         const videoGroup: videoElements | null = this.getVideo(e.clientX, e.clientY, debug);
         debug("Got video group: ", videoGroup);
@@ -391,7 +396,7 @@ export class DefaultHandler {
         debug("Scroll direction: " + `${direction > 0 ? "UP" : "DOWN"}`, direction);
 
         // Modify volume
-        this.updateVolume(e, videoGroup, direction, body, debug);
+        this.updateVolume(e, videoGroup, direction, body, isAltVolumeKeyPressed, debug);
     }
 
     protected startVideoObserver(body: HTMLElement, debug: (message: String, extra?: any) => void) {
