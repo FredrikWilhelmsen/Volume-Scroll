@@ -17,6 +17,7 @@ interface VolumePageInterface {
 const VolumePage: React.FC<VolumePageInterface> = ({ settings, editSetting, setPage }) => {
 
     const [defaultVolume, setDefaultVolume] = useState(settings.defaultVolume);
+    const [volumeBoostAmount, setVolumeBoostAmount] = useState(settings.volumeBoostAmount);
 
     const handleUseDefaultVolumeToggle = (_e: Event | React.SyntheticEvent, value: any) => {
         editSetting("useDefaultVolume", value);
@@ -44,8 +45,30 @@ const VolumePage: React.FC<VolumePageInterface> = ({ settings, editSetting, setP
         editSetting("defaultVolume", newValue);
     }
 
-    const handleUncappedVolumeToggle = (_e: Event | React.SyntheticEvent, value: any) => {
-        editSetting("useUncappedVolume", value);
+    const handleBoostVolumeToggle = (_e: Event | React.SyntheticEvent, value: any) => {
+        editSetting("doBoostVolume", value);
+    }
+
+    const handleBoostVolumeChange = (_e: Event | React.SyntheticEvent, value: any) => {
+        setVolumeBoostAmount(value);
+        editSetting("volumeBoostAmount", value);
+    }
+
+    const handleBoostVolumeScroll = (e: React.WheelEvent) => {
+        if (!settings.doBoostVolume) return;
+
+        e.preventDefault();
+
+        let newValue: number = volumeBoostAmount;
+
+        if (e.deltaY < 0) {
+            newValue = Math.min(volumeBoostAmount + 5, 500);
+        } else {
+            newValue = Math.max(volumeBoostAmount - 5, 100);
+        }
+
+        setVolumeBoostAmount(newValue);
+        editSetting("volumeBoostAmount", newValue);
     }
 
     return (
@@ -90,17 +113,40 @@ const VolumePage: React.FC<VolumePageInterface> = ({ settings, editSetting, setP
                         </Tooltip>
                     </div>
                 </div>
-                <div id="uncappedVolumeContainer">
-                    <Tooltip title="Enable or disable uncapped volume - Experimental, disable if you experience issues" placement="top" disableInteractive>
-                        <FormControlLabel
-                            onChange={handleUncappedVolumeToggle}
-                            control={
-                                <Switch
-                                    checked={settings.useUncappedVolume}
-                                />}
-                            label={settings.useUncappedVolume ? "Volume is uncapped" : "Volume is capped"}
-                        />
-                    </Tooltip>
+                <div id="boostVolumeContainer">
+                    <div id="boostVolumeToggleContainer">
+                        <Tooltip title="Increase volume limit past 100% - Experimental, disable if you experience issues" placement="top" disableInteractive>
+                            <FormControlLabel
+                                onChange={handleBoostVolumeToggle}
+                                control={
+                                    <Switch
+                                        checked={settings.doBoostVolume}
+                                    />}
+                                label="Boost volume"
+                            />
+                        </Tooltip>
+                        <Tooltip title="Current volume limit" placement="top" disableInteractive>
+                            <div id="boostVolumeDisplay">
+                                <Typography variant="body2">
+                                    {settings.volumeBoostAmount}
+                                </Typography>
+                            </div>
+                        </Tooltip>
+                    </div>
+                    <div onWheel={handleBoostVolumeScroll}>
+                        <Tooltip title="Current volume limit" disableInteractive>
+                            <Slider
+                                min={100}
+                                max={500}
+                                step={5}
+                                aria-label="Volume boost"
+                                value={volumeBoostAmount}
+                                valueLabelDisplay="off"
+                                disabled={!settings.doBoostVolume}
+                                onChange={handleBoostVolumeChange}
+                            />
+                        </Tooltip>
+                    </div>
                 </div>
             </div>
         </div>
