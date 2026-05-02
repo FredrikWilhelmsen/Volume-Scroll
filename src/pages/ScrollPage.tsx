@@ -59,7 +59,7 @@ const ScrollPage: React.FC<ScrollPageInterface> = ({ settings, editSetting, setP
     }
 
     const handleCustomPreciseScrollThresholdScroll = (e: React.WheelEvent) => {
-        if (!settings.useCustomPreciseScrollThreshold) return;
+        if (!settings.useCustomPreciseScrollThreshold || !settings.usePreciseScroll) return;
 
         e.preventDefault();
 
