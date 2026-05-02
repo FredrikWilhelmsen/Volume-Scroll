@@ -75,10 +75,6 @@ const ScrollPage: React.FC<ScrollPageInterface> = ({ settings, editSetting, setP
         editSetting("customPreciseScrollThreshold", newValue);
     }
 
-    const handleFullscreenOnlyToggle = (_e: Event | React.SyntheticEvent, value: any) => {
-        editSetting("fullscreenOnly", value);
-    }
-
     const handleEnableToggle = (_e: Event | React.SyntheticEvent, value: any) => {
         editSetting("enableDefault", value);
     }
@@ -105,13 +101,13 @@ const ScrollPage: React.FC<ScrollPageInterface> = ({ settings, editSetting, setP
                         <Tooltip title="Current increment" placement="top" disableInteractive>
                             <div id="incrementDisplay">
                                 <Typography variant="body2">
-                                    {settings.volumeIncrement}
+                                    {increment}
                                 </Typography>
                             </div>
                         </Tooltip>
                     </div>
                     <div onWheel={handleIncrementScroll}>
-                        <Tooltip title="Set how much the volume will change per tick when scrolling" disableInteractive>
+                        <Tooltip title="Set how much the volume will change per step when scrolling" disableInteractive>
                             <Slider
                                 min={1}
                                 max={20}
@@ -121,7 +117,6 @@ const ScrollPage: React.FC<ScrollPageInterface> = ({ settings, editSetting, setP
                                 valueLabelDisplay="off"
                                 disabled={!settings.useMouseWheelVolume}
                                 onChange={handleIncrementChange}
-
                             />
                         </Tooltip>
                     </div>
@@ -174,19 +169,6 @@ const ScrollPage: React.FC<ScrollPageInterface> = ({ settings, editSetting, setP
                             />
                         </Tooltip>
                     </div>
-                </div>
-                <div id="fullscreenOnlyContainer">
-                    <Tooltip title="Volume scroll will only be enabled when video is in fullscreen mode" placement="top" disableInteractive>
-                        <FormControlLabel
-                            onChange={handleFullscreenOnlyToggle}
-                            control={
-                                <Switch
-                                    checked={settings.fullscreenOnly}
-                                    disabled={!settings.useMouseWheelVolume}
-                                />}
-                            label="Fullscreen only"
-                        />
-                    </Tooltip>
                 </div>
                 <div id="blacklistContainer">
                     <Tooltip title={
