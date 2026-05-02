@@ -1,6 +1,7 @@
-#defaultVolumeDisplay {
+#defaultVolumeDisplay,
+#boostVolumeDisplay {
     display: inline-block;
-    width: 17px;
+    min-width: 17px;
     background-color: #757575;
     padding: 4px;
     padding-left: 6px;
@@ -9,7 +10,8 @@
     text-align: center;
 }
 
-#defaultVolumeToggleContainer {
+#defaultVolumeToggleContainer,
+#boostVolumeToggleContainer {
     display: flex;
     justify-content: space-between;
     align-items: center;
