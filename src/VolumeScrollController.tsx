@@ -29,6 +29,7 @@ const handler: DefaultHandler = getHandler();
 const body: HTMLElement = document.documentElement || document.body || document.getElementsByTagName("body")[0];
 let settings: Settings = defaultSettings;
 let isModifierKeyPressed: boolean = false;
+let isAltVolumeKeyPressed: boolean = false;
 let mouseX: number = 0;
 let mouseY: number = 0;
 let preventContextMenu: boolean = false;
@@ -219,6 +220,19 @@ export function onScroll(e: WheelEvent): void {
         preventContextMenu = true;
     }
 
+    // Check if we utilized the Right Mouse button as an alternate increment hotkey for this scroll
+    if (settings.useAlternateVolumeIncrement && settings.alternateVolumeIncrementHotkey === "Right Mouse" && isAltVolumeKeyPressed) {
+        preventContextMenu = true;
+    }
+
+    // Check if we utilized the Middle Mouse button for this scroll
+    if (settings.useModifierKey && settings.modifierKey === "Middle Mouse" && isModifierKeyPressed) {
+        preventMiddleClick = true;
+    }
+    if (settings.useAlternateVolumeIncrement && settings.alternateVolumeIncrementHotkey === "Middle Mouse" && isAltVolumeKeyPressed) {
+        preventMiddleClick = true;
+    }
+
     // If we are inside an iframe
     if (window.self !== window.top) {
         const localVideo = document.getElementsByTagName("video")[0];
@@ -244,7 +258,7 @@ export function onScroll(e: WheelEvent): void {
     // Check settings
     if (!doVolumeScroll()) return;
 
-    handler.scroll(e, body, debug);
+    handler.scroll(e, body, isAltVolumeKeyPressed, debug);
 }
 
 const getMouseKey = function (key: number) {
@@ -268,6 +282,12 @@ export function onMouseDown(e: MouseEvent): void {
     // Reset context menu prevention on new click.
     if (getMouseKey(e.button) === "Right Mouse") {
         preventContextMenu = false;
+    }
+
+    if (settings.alternateVolumeIncrementHotkey === getMouseKey(e.button) && settings.useAlternateVolumeIncrement) {
+        e.preventDefault();
+        isAltVolumeKeyPressed = true;
+        debug("Alternate volume increment key pressed");
     }
 
     if (settings.modifierKey === getMouseKey(e.button) && settings.useModifierKey) {
@@ -305,6 +325,12 @@ export function onMouseDown(e: MouseEvent): void {
 export function onMouseUp(e: MouseEvent): void {
     debug("Mouse up!");
 
+    if (settings.alternateVolumeIncrementHotkey === getMouseKey(e.button) && settings.useAlternateVolumeIncrement) {
+        e.preventDefault();
+        isAltVolumeKeyPressed = false;
+        debug("Alternate volume increment key released");
+    }
+
     if (preventMiddleClick && getMouseKey(e.button) === "Middle Mouse") {
         debug("Mouseup blocked due to volume mute action");
         e.preventDefault();
@@ -320,6 +346,12 @@ export function onMouseUp(e: MouseEvent): void {
 
 export function onKeyDown(e: KeyboardEvent): void {
     debug("Key down!");
+
+    if (settings.alternateVolumeIncrementHotkey === e.key && settings.useAlternateVolumeIncrement) {
+        e.preventDefault();
+        isAltVolumeKeyPressed = true;
+        debug("Alternate volume increment key pressed");
+    }
 
     if (settings.modifierKey === e.key && settings.useModifierKey) {
         e.preventDefault();
@@ -349,6 +381,12 @@ export function onKeyDown(e: KeyboardEvent): void {
 
 export function onKeyUp(e: KeyboardEvent): void {
     debug("Key up!");
+
+    if (settings.alternateVolumeIncrementHotkey === e.key && settings.useAlternateVolumeIncrement) {
+        e.preventDefault();
+        isAltVolumeKeyPressed = false;
+        debug("Alternate volume increment key released");
+    }
 
     if (settings.modifierKey === e.key && settings.useModifierKey) {
         e.preventDefault();
