@@ -149,7 +149,7 @@ const ScrollPage: React.FC<ScrollPageInterface> = ({ settings, editSetting, setP
                                         checked={settings.useCustomPreciseScrollThreshold}
                                         disabled={!settings.usePreciseScroll}
                                     />}
-                                label="Precision threshold"
+                                label="Precision start"
                             />
                         </Tooltip>
                         <Tooltip title="Current threshold" placement="top" disableInteractive>
