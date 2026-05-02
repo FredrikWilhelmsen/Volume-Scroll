@@ -7,7 +7,7 @@ import MenuPage from "./pages/MenuPage";
 import ScrollPage from "./pages/ScrollPage";
 import HotkeyPage from "./pages/HotkeyPage";
 import OverlayPage from "./pages/OverlayPage";
-import VolumePage from "./pages/VolumePage";
+import VolumePage from "./pages/MiscPage";
 import "./style/globalStyle.css";
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
@@ -15,14 +15,14 @@ import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 
 const SettingsPopup = () => {
-    const [ settings, setSettings ] = useState<Settings | null>(null);
-    const [ page, setPage ] = useState<Pages>("menu");
+    const [settings, setSettings] = useState<Settings | null>(null);
+    const [page, setPage] = useState<Pages>("menu");
 
     useEffect(() => {
         //Load saved settings when the component mounts
-        browser.storage.local.get({settings: defaultSettings}).then((result) => {
+        browser.storage.local.get({ settings: defaultSettings }).then((result) => {
             const savedSettings = result.settings as Settings;
-            setSettings(savedSettings);
+            setSettings({ ...defaultSettings, ...savedSettings });
         });
     }, []);
 
@@ -42,16 +42,16 @@ const SettingsPopup = () => {
         });
     };
 
-    if(settings === null) return <LoadingPage/>;
+    if (settings === null) return <LoadingPage />;
 
     return (
         <div className="centerWrapper">
             <div className="container">
-                {page === "menu" && <MenuPage settings={settings} editSetting={handleSettingChange} setPage={setPage}/>}
-                {page === "scroll" && <ScrollPage settings={settings} editSetting={handleSettingChange} setPage={setPage}/>}
-                {page === "hotkeys" && <HotkeyPage settings={settings} editSetting={handleSettingChange} setPage={setPage}/>}
-                {page === "overlay" && <OverlayPage settings={settings} editSetting={handleSettingChange} setPage={setPage}/>}
-                {page === "volume" && <VolumePage settings={settings} editSetting={handleSettingChange} setPage={setPage}/>}
+                {page === "menu" && <MenuPage settings={settings} editSetting={handleSettingChange} setPage={setPage} />}
+                {page === "scroll" && <ScrollPage settings={settings} editSetting={handleSettingChange} setPage={setPage} />}
+                {page === "hotkeys" && <HotkeyPage settings={settings} editSetting={handleSettingChange} setPage={setPage} />}
+                {page === "overlay" && <OverlayPage settings={settings} editSetting={handleSettingChange} setPage={setPage} />}
+                {page === "misc" && <VolumePage settings={settings} editSetting={handleSettingChange} setPage={setPage} />}
             </div>
         </div>
     )
