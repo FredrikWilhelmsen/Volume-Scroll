@@ -92,13 +92,14 @@ export const init = () => {
                 settings = defaultSettings;
             }
 
-            debug("Settings loaded: ", settings);
+            const { domainList, ...settingsToLog } = settings;
+            debug("Settings loaded: ", settingsToLog);
             handler.updateSettings(settings);
 
             window.addEventListener("message", (event) => {
                 if (!event.data) return;
                 if (window.top === window.self) {
-                    // Security check: ensure the data object exists and is ours
+                    // Ensure the data object exists and is ours
                     if (event.data.type === "VOLUME_SCROLL_RELAY") {
                         debug("Received direct postMessage relay", event.data);
 
@@ -144,7 +145,8 @@ export const init = () => {
 browser.storage.onChanged.addListener((changes) => {
     settings = changes.settings.newValue as Settings;
     handler.updateSettings(settings);
-    debug("Settings reapplied: ", settings);
+    const { domainList, ...settingsToLog } = settings;
+    debug("Settings reapplied: ", settingsToLog);
 });
 
 browser.runtime.onMessage.addListener((message: any) => {
@@ -153,8 +155,9 @@ browser.runtime.onMessage.addListener((message: any) => {
         if (window.top !== window.self) return;
 
         debug("Received GET_DEBUG_LOGS message");
+        const { domainList, ...settingsToLog } = settings;
         const debugData = {
-            settings: settings,
+            settings: settingsToLog,
             logs: logList
         };
 
