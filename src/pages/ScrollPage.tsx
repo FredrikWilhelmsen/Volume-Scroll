@@ -165,7 +165,7 @@ const ScrollPage: React.FC<ScrollPageInterface> = ({ settings, editSetting, setP
                             <Slider
                                 min={0}
                                 max={100}
-                                step={5}
+                                step={1}
                                 aria-label="Custom precise scroll threshold"
                                 value={customPreciseScrollThreshold}
                                 valueLabelDisplay="off"
