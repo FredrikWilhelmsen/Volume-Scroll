@@ -120,18 +120,29 @@ export class DefaultHandler {
     protected getVideo(mouseX: number, mouseY: number, debug: (message: String, extra?: any) => void): videoElements | null {
         const elements = document.elementsFromPoint(mouseX, mouseY);
 
-        for (const element of elements) {
-            if (element.tagName === "VIDEO") {
-                const videoGroup: videoElements = {
-                    display: element as HTMLBaseElement,
-                    video: element as HTMLVideoElement
-                };
+        const tagNamesToIgnore = [
+            "yt-multi-page-menu-section-renderer",
+            "yt-contextual-sheet-layout"
+        ];
 
-                return videoGroup;
-            }
+        const classNamesToIgnore = [
+            "ytSearchboxComponentSuggestionsContainerScrollable",
+            "scrollable"
+        ];
+
+        const scrollLists = elements.find(el => tagNamesToIgnore.includes(el.tagName) || classNamesToIgnore.includes(el.className));
+
+        if (scrollLists) {
+            debug("Found scroll list, aborting scroll", scrollLists);
+            return null;
         }
 
-        return null;
+        const video = elements.find(el => el.tagName === "VIDEO") as HTMLVideoElement | undefined;
+
+        return video ? {
+            display: video as unknown as HTMLBaseElement,
+            video: video
+        } : null;
     }
 
     protected getAllVideos(): HTMLCollectionOf<Element> | HTMLVideoElement[] {
