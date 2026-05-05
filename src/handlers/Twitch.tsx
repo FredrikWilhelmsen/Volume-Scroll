@@ -10,7 +10,7 @@ export class TwitchHandler extends DefaultHandler {
     // Track the "main" video (the stream)
     private mainVideo: HTMLVideoElement | null = null;
 
-    private previousVolume: number = 0;
+
 
     protected setVolume(volume: number, video: HTMLVideoElement, debug: (message: String, extra?: any) => void): number {
         // If the video is hidden (no dimensions), do not unmute it.
@@ -53,25 +53,4 @@ export class TwitchHandler extends DefaultHandler {
         return null;
     }
 
-    public toggleMute(mouseX: number, mouseY: number, debug: (message: String, extra?: any) => void): boolean {
-        const videoGroup: videoElements | null = this.getVideo(mouseX, mouseY, debug);
-
-        if (!videoGroup) return false;
-
-        const video: HTMLVideoElement = videoGroup?.video as HTMLVideoElement;
-
-        if (video.muted) {
-            this.volumeTargets.set(video, this.previousVolume);
-            video.volume = this.previousVolume;
-            video.muted = false;
-        }
-        else {
-            this.volumeTargets.set(video, 0);
-            this.previousVolume = video.volume;
-            video.volume = 0;
-            video.muted = true;
-        }
-
-        return true;
-    }
 }
