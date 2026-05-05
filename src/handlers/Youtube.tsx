@@ -7,14 +7,18 @@ export class YoutubeHandler extends DefaultHandler {
         "www.youtube.com"
     ];
 
-    protected getVideo(mouseX: number, mouseY: number, debug: (message: String, extra?: any) => void): videoElements | null {
-        const elements = document.elementsFromPoint(mouseX, mouseY);
+    protected tagNamesToIgnore = [
+        "YT-MULTI-PAGE-MENU-SECTION-RENDERER",
+        "YT-CONTEXTUAL-SHEET-LAYOUT",
+        "YTD-LIVE-CHAT-FRAME",
+        "YTD-GUIDE-RENDERER"
+    ];
 
-        const video = elements.find(el => el.tagName === "VIDEO") as HTMLVideoElement | undefined;
+    protected classNamesToIgnore = [
+        "ytSearchboxComponentSuggestionsContainerScrollable",
+        "ytd-popup-container",
+        "ytp-settings-menu",
+        "yt-live-chat-renderer"
+    ];
 
-        return video ? {
-            display: video as unknown as HTMLBaseElement,
-            video: video
-        } : null;
-    }
 }
