@@ -450,17 +450,27 @@ export class DefaultHandler {
                     if (node instanceof HTMLElement) {
                         // Check if the added node is itself a video
                         if (node.tagName === "VIDEO") {
-                            debug("New video found: ", node);
-                            debug("Default volume set to: ", this.settings.defaultVolume);
-                            this.setVolume(this.settings.defaultVolume, node as HTMLVideoElement, debug);
+                            const video = node as HTMLVideoElement;
+                            if (this.volumeTargets.has(video)) {
+                                debug("Already tracking this video, skipping default volume reset", video);
+                            } else {
+                                debug("New video found: ", video);
+                                debug("Default volume set to: ", this.settings.defaultVolume);
+                                this.setVolume(this.settings.defaultVolume, video, debug);
+                            }
                         }
                         // Check if the added node contains videos (e.g. a div with a video inside)
                         else {
                             const nestedVideos = node.getElementsByTagName("VIDEO");
                             for (let video of nestedVideos) {
-                                debug("New video found: ", video);
-                                debug("Default volume set to: ", this.settings.defaultVolume);
-                                this.setVolume(this.settings.defaultVolume, video as HTMLVideoElement, debug);
+                                const videoElement = video as HTMLVideoElement;
+                                if (this.volumeTargets.has(videoElement)) {
+                                    debug("Already tracking this nested video, skipping default volume reset", videoElement);
+                                } else {
+                                    debug("New video found: ", videoElement);
+                                    debug("Default volume set to: ", this.settings.defaultVolume);
+                                    this.setVolume(this.settings.defaultVolume, videoElement, debug);
+                                }
                             }
                         }
                     }
