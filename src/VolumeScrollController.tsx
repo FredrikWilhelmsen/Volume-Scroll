@@ -113,7 +113,8 @@ export const init = () => {
                             clientX: mouseX,
                             clientY: mouseY,
                             preventDefault: () => { },
-                            stopPropagation: () => { }
+                            stopPropagation: () => { },
+                            stopImmediatePropagation: () => { }
                         } as any as WheelEvent;
 
                         onScroll(syntheticEvent);

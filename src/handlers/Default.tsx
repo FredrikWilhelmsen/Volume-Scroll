@@ -488,9 +488,9 @@ export class DefaultHandler {
         }
 
         // Video found, prevent default scroll behaviour and stop propagation to site listeners
-        e.preventDefault();
-        e.stopPropagation();
-        e.stopImmediatePropagation();
+        if (e.preventDefault) e.preventDefault();
+        if (e.stopPropagation) e.stopPropagation();
+        if (e.stopImmediatePropagation) e.stopImmediatePropagation();
 
         // Get scroll direction
         const direction: number = Math.round(e.deltaY / 100 * -1);
