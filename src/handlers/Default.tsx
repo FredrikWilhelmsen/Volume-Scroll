@@ -176,6 +176,9 @@ export class DefaultHandler {
             overlay = this.createOverlay(body);
         }
 
+        // Move overlay next to video in DOM (do this before measuring/positioning)
+        display.insertAdjacentElement("beforebegin", overlay);
+
         // Update overlay text
         overlay.innerHTML = `${Math.round(volume)}`;
         overlay.style.color = this.settings.fontColor;
@@ -183,17 +186,13 @@ export class DefaultHandler {
 
         // Position the overlay
         if (this.settings.overlayPosition === "mouse") {
-            overlay.style.left = window.scrollX + e.clientX - overlay.offsetWidth + "px";
-            overlay.style.top = window.scrollY + e.clientY - overlay.offsetHeight + "px";
+            const parentRect = (overlay.offsetParent || body).getBoundingClientRect();
+            overlay.style.left = e.clientX - parentRect.left - overlay.offsetWidth + "px";
+            overlay.style.top = e.clientY - parentRect.top - overlay.offsetHeight + "px";
         } else {
-            let vidPos = display.getBoundingClientRect();
-            let overlayPos = overlay.getBoundingClientRect();
-            overlay.style.left = (vidPos.width / 100 * this.settings.overlayXPos) - (overlayPos.width / 2) + "px";
-            overlay.style.top = (vidPos.height / 100 * this.settings.overlayYPos) - (overlayPos.height / 2) + "px";
+            overlay.style.left = display.offsetLeft + (display.offsetWidth / 100 * this.settings.overlayXPos) - (overlay.offsetWidth / 2) + "px";
+            overlay.style.top = display.offsetTop + (display.offsetHeight / 100 * this.settings.overlayYPos) - (overlay.offsetHeight / 2) + "px";
         }
-
-        // Move overlay next to video in DOM
-        display.insertAdjacentElement("beforebegin", overlay);
 
         // Animate fade
         let newOverlay = overlay;
