@@ -1,4 +1,4 @@
-import { Settings, videoElements, defaultSettings } from "../types";
+import { Settings, videoElements, defaultSettings, VideoState } from "../types";
 
 export class DefaultHandler {
     protected name: string = "DefaultHandler";
@@ -6,7 +6,7 @@ export class DefaultHandler {
     protected observer: MutationObserver | null = null;
     protected settings: Settings = defaultSettings;
 
-    protected volumeTargets = new WeakMap<HTMLVideoElement, number>();
+    protected volumeTargets = new WeakMap<HTMLVideoElement, VideoState>();
     protected watchdogs = new WeakSet<HTMLVideoElement>();
 
     // Web Audio API
@@ -216,25 +216,25 @@ export class DefaultHandler {
         debug("Attached volume watchdog");
 
         video.addEventListener("volumechange", () => {
-            const targetVolume: number | undefined = this.volumeTargets.get(video);
+            const state: VideoState | undefined = this.volumeTargets.get(video);
 
-            if (targetVolume === undefined) return;
+            if (state === undefined) return;
 
-            if (this.shouldRevertVolume(video, video.volume, targetVolume)) {
-                debug(`Site tried to reset volume to ${video.volume}, forcing back to ${targetVolume} (Effective: ${targetVolume > 1 ? "1.0 + Gain" : targetVolume})`, video);
+            if (this.shouldRevertVolume(video, video.volume, state.targetVolume)) {
+                debug(`Site tried to reset volume to ${video.volume}, forcing back to ${state.targetVolume} (Effective: ${state.targetVolume > 1 ? "1.0 + Gain" : state.targetVolume})`, video);
 
                 // Force it back
-                if (targetVolume > 1) {
+                if (state.targetVolume > 1) {
                     video.volume = 1;
                     video.muted = false;
                     // Ensure gain is correct (re-apply boost)
                     const gainNode = this.getGainNode(video, debug);
                     if (gainNode) {
-                        gainNode.gain.value = targetVolume;
+                        gainNode.gain.value = state.targetVolume;
                     }
                 } else {
-                    video.volume = targetVolume;
-                    video.muted = targetVolume <= 0;
+                    video.volume = state.targetVolume;
+                    video.muted = state.isMuted || state.targetVolume <= 0;
 
                     // Reset gain if exists
                     const gainNode = this.gainNodes.get(video);
@@ -250,7 +250,19 @@ export class DefaultHandler {
         debug(`New volume set to: ${volume}`)
 
         // Set volume initially
-        this.volumeTargets.set(video, volume / 100);
+        let state = this.volumeTargets.get(video);
+        if (!state) {
+            state = { targetVolume: volume / 100, lastUnmutedVolume: volume / 100, isMuted: video.muted };
+            this.volumeTargets.set(video, state);
+        } else {
+            state.targetVolume = volume / 100;
+            if (volume > 0) {
+                state.lastUnmutedVolume = volume / 100;
+                state.isMuted = false;
+            } else {
+                state.isMuted = true;
+            }
+        }
 
         let effectiveVolume = volume;
 
@@ -282,7 +294,8 @@ export class DefaultHandler {
                 video.muted = false;
 
                 // Correct the target since we failed to boost
-                this.volumeTargets.set(video, 1);
+                state.targetVolume = 1;
+                state.lastUnmutedVolume = 1;
                 effectiveVolume = 100;
             }
         } else {
@@ -316,11 +329,16 @@ export class DefaultHandler {
         body: HTMLElement, isAltVolumeKeyPressed: boolean, debug: (message: String, extra?: any) => void): void {
 
         // Retrieve stored previous volume
-        const previousVolumeRaw: number | undefined = this.volumeTargets.get(videoGroup.video);
+        const state: VideoState | undefined = this.volumeTargets.get(videoGroup.video);
         let previousVolume: number = 0;
 
-        if (previousVolumeRaw !== undefined && !isNaN(previousVolumeRaw)) {
-            previousVolume = Math.round(previousVolumeRaw * 100);
+        if (state !== undefined && !isNaN(state.targetVolume)) {
+            // If currently muted, we want to scroll relative to the last unmuted volume
+            if (state.isMuted || state.targetVolume === 0) {
+                previousVolume = Math.round(state.lastUnmutedVolume * 100);
+            } else {
+                previousVolume = Math.round(state.targetVolume * 100);
+            }
         } else {
             previousVolume = Math.round(videoGroup.video.volume * 100);
         }
@@ -467,7 +485,32 @@ export class DefaultHandler {
 
         if (!videoGroup) return false;
 
-        videoGroup.video.muted = !videoGroup.video.muted;
+        const video = videoGroup.video;
+        let state = this.volumeTargets.get(video);
+
+        if (!state) {
+            state = {
+                targetVolume: video.volume,
+                lastUnmutedVolume: video.volume > 0 ? video.volume : (this.settings.defaultVolume / 100),
+                isMuted: video.muted
+            };
+            this.volumeTargets.set(video, state);
+        }
+
+        if (video.muted || state.isMuted) {
+            // Unmute: Restore last unmuted volume
+            debug(`Unmuting. Restoring volume to ${state.lastUnmutedVolume}`);
+            this.setVolume(state.lastUnmutedVolume * 100, video, debug);
+            video.muted = false;
+            state.isMuted = false;
+        } else {
+            // Mute: Save current volume and set to 0
+            debug(`Muting. Saving volume ${state.targetVolume} and setting to 0`);
+            state.lastUnmutedVolume = state.targetVolume;
+            this.setVolume(0, video, debug);
+            video.muted = true;
+            state.isMuted = true;
+        }
 
         return true;
     }

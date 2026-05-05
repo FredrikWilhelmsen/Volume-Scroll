@@ -33,7 +33,12 @@ export class RedditHandler extends DefaultHandler {
                 // We accept this as a sync.
                 if (Math.abs(currentVolume - 1) <= 0.001) {
                     // Update internal target to match the boosted volume
-                    this.volumeTargets.set(video, this.lastUserSetVolume);
+                    let state = this.volumeTargets.get(video);
+                    if (state) {
+                        state.targetVolume = this.lastUserSetVolume;
+                        state.lastUnmutedVolume = this.lastUserSetVolume;
+                        state.isMuted = false;
+                    }
 
                     // Apply the boost to this video too
                     // We need to use getGainNode. Since we are in an override, we have access to it.
@@ -53,7 +58,16 @@ export class RedditHandler extends DefaultHandler {
                 // If the site changed this video to match the last one we scrolled...
                 if (syncDiff <= 0.001) {
                     // ... then accept the sync Update our internal target to match.
-                    this.volumeTargets.set(video, this.lastUserSetVolume);
+                    let state = this.volumeTargets.get(video);
+                    if (state) {
+                        state.targetVolume = this.lastUserSetVolume;
+                        if (this.lastUserSetVolume > 0) {
+                            state.lastUnmutedVolume = this.lastUserSetVolume;
+                            state.isMuted = false;
+                        } else {
+                            state.isMuted = true;
+                        }
+                    }
 
                     // Reset gain for this video if it exists (since we are not boosted)
                     const gainNode = this.gainNodes.get(video);

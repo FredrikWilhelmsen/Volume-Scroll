@@ -87,3 +87,9 @@ export interface logElement {
     text: String;
     extra?: any;
 }
+
+export interface VideoState {
+    targetVolume: number; // Ratio 0-1 (or > 1 for boost)
+    lastUnmutedVolume: number; // Ratio 0-1 (or > 1 for boost)
+    isMuted: boolean; // Tracking if we have forced mute
+}
