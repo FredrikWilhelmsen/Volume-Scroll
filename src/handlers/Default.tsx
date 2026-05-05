@@ -220,8 +220,12 @@ export class DefaultHandler {
 
             if (state === undefined) return;
 
-            if (this.shouldRevertVolume(video, video.volume, state.targetVolume)) {
-                debug(`Site tried to reset volume to ${video.volume}, forcing back to ${state.targetVolume} (Effective: ${state.targetVolume > 1 ? "1.0 + Gain" : state.targetVolume})`, video);
+            const needsRevert = this.shouldRevertVolume(video, video.volume, state.targetVolume) ||
+                (state.isMuted && !video.muted) ||
+                (state.targetVolume > 1 && video.muted);
+
+            if (needsRevert) {
+                debug(`Site tried to change volume/mute to ${video.volume} (muted: ${video.muted}), forcing back to ${state.targetVolume} (muted: ${state.isMuted || state.targetVolume <= 0})`, video);
 
                 // Force it back
                 if (state.targetVolume > 1) {
