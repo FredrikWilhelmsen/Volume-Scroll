@@ -2,11 +2,13 @@ import browser from "webextension-polyfill";
 import { Settings, defaultSettings, logElement } from "./types";
 
 import { DefaultHandler } from "./handlers/Default";
+import { YoutubeHandler } from "./handlers/Youtube";
 import { YTMusicHandler } from "./handlers/YTMusic";
 import { TwitchHandler } from "./handlers/Twitch";
 import { RedditHandler } from "./handlers/Reddit";
 
 const handlers: DefaultHandler[] = [
+    new YoutubeHandler(),
     new YTMusicHandler(),
     new TwitchHandler(),
     new RedditHandler()
@@ -235,6 +237,14 @@ export function onScroll(e: WheelEvent): void {
 
     // If we are inside an iframe
     if (window.self !== window.top) {
+        const elementsAtPoint = document.elementsFromPoint(e.clientX, e.clientY);
+
+        // If the handler says this area should be ignored, then we respect that and allow default scrolling
+        if (handler.isIgnored(elementsAtPoint, debug)) {
+            debug("Area is blacklisted by handler, allowing default scroll");
+            return;
+        }
+
         const localVideo = document.getElementsByTagName("video")[0];
 
         // If no video here, assume we are an overlay and shout to the parent

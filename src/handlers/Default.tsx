@@ -18,6 +18,10 @@ export class DefaultHandler {
         "clips.twitch.tv"
     ];
 
+    protected tagNamesToIgnore: string[] = [];
+    protected classNamesToIgnore: string[] = [];
+
+
     public updateSettings(newSettings: Settings): void {
         this.settings = newSettings;
     }
@@ -112,26 +116,36 @@ export class DefaultHandler {
             return true;
         }
 
-        //TODO: Look into Web Audio API
-
         return false;
+    }
+
+    public isIgnored(elements: Element[], debug: (message: String, extra?: any) => void): boolean {
+        const scrollLists = elements.find(el =>
+            this.tagNamesToIgnore.includes(el.tagName) ||
+            this.classNamesToIgnore.some(className => el.classList.contains(className))
+        );
+
+        return !!scrollLists;
+    }
+
+    protected getVideoFromElements(elements: Element[], debug: (message: String, extra?: any) => void): videoElements | null {
+        const video = elements.find(el => el.tagName === "VIDEO") as HTMLVideoElement | undefined;
+
+        return video ? {
+            display: video as unknown as HTMLBaseElement,
+            video: video
+        } : null;
     }
 
     protected getVideo(mouseX: number, mouseY: number, debug: (message: String, extra?: any) => void): videoElements | null {
         const elements = document.elementsFromPoint(mouseX, mouseY);
 
-        for (const element of elements) {
-            if (element.tagName === "VIDEO") {
-                const videoGroup: videoElements = {
-                    display: element as HTMLBaseElement,
-                    video: element as HTMLVideoElement
-                };
-
-                return videoGroup;
-            }
+        if (this.isIgnored(elements, debug)) {
+            debug("Found blacklisted overlay, aborting scroll");
+            return null;
         }
 
-        return null;
+        return this.getVideoFromElements(elements, debug);
     }
 
     protected getAllVideos(): HTMLCollectionOf<Element> | HTMLVideoElement[] {
@@ -376,12 +390,13 @@ export class DefaultHandler {
     public scroll(e: WheelEvent, body: HTMLElement, isAltVolumeKeyPressed: boolean, debug: (message: String, extra?: any) => void): void {
         // Get video
         const videoGroup: videoElements | null = this.getVideo(e.clientX, e.clientY, debug);
-        debug("Got video group: ", videoGroup);
 
         if (videoGroup === null) {
             debug("Video group was null, returning");
             return;
         }
+
+        debug("Got video group: ", videoGroup);
 
         if (!this.hasAudio(videoGroup.video)) {
             debug("Video has no audio track, returning");
