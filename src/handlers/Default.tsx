@@ -14,6 +14,8 @@ export class DefaultHandler {
     protected gainNodes = new WeakMap<HTMLVideoElement, GainNode>();
     protected sourceNodes = new WeakMap<HTMLVideoElement, MediaElementAudioSourceNode>();
 
+    protected overlay: HTMLElement | null = null;
+
     protected invalidDomains: string[] = [
         "clips.twitch.tv"
     ];
@@ -164,20 +166,81 @@ export class DefaultHandler {
         return div;
     }
 
+    protected getFullscreenElement(): Element | null {
+        return document.fullscreenElement || (document as any).webkitFullscreenElement || (document as any).mozFullScreenElement || (document as any).msFullscreenElement;
+    }
+
+    private ensureStylesInShadowRoot(shadowRoot: ShadowRoot): void {
+        if (shadowRoot.querySelector("#volumeScrollStyles")) return;
+
+        const style = document.createElement("style");
+        style.id = "volumeScrollStyles";
+        style.textContent = `
+            .volumeScrollOverlay {
+                font-family: Roboto, Arial, sans-serif !important;
+                font-weight: bold !important;
+                opacity: 0;
+                position: absolute !important;
+                visibility: visible !important;
+                z-index: 9999999 !important;
+                text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000 !important;
+                pointer-events: none;
+            }
+            @keyframes volumeScrollFade {
+                0% { opacity: 1; }
+                90% { opacity: 1; }
+                100% { opacity: 0; }
+            }
+            .volumeScrollOverlayFade {
+                animation-name: volumeScrollFade;
+                animation-duration: 2s;
+                animation-direction: normal;
+            }
+        `;
+        shadowRoot.appendChild(style);
+    }
+
     private updateOverlay(e: WheelEvent, display: HTMLElement, volume: number,
         body: HTMLElement, debug: (message: String, extra?: any) => void): void {
 
         if (!this.settings.useOverlay) return;
 
-        let overlay: HTMLElement | null = document.getElementById("volumeScrollOverlay");
+        // Try to find existing overlay if we don't have a valid reference
+        if (!this.overlay || !this.overlay.isConnected) {
+            this.overlay = document.getElementById("volumeScrollOverlay");
 
-        if (!overlay) {
-            debug("Overlay does not exist, creating a new overlay");
-            overlay = this.createOverlay(body);
+            if (!this.overlay) {
+                const fs = this.getFullscreenElement();
+                if (fs && fs.shadowRoot) {
+                    this.overlay = fs.shadowRoot.querySelector("#volumeScrollOverlay") as HTMLElement;
+                }
+            }
         }
 
+        if (!this.overlay) {
+            debug("Overlay does not exist, creating a new overlay");
+            this.overlay = this.createOverlay(body);
+        }
+
+        let overlay = this.overlay;
+
         // Move overlay next to video in DOM (do this before measuring/positioning)
-        display.insertAdjacentElement("beforebegin", overlay);
+        const fullscreenElement = this.getFullscreenElement();
+        if (fullscreenElement) {
+            // If the fullscreen element has a shadow root (like Reddit), we must append to it
+            if (fullscreenElement.shadowRoot) {
+                this.ensureStylesInShadowRoot(fullscreenElement.shadowRoot);
+                if (overlay.parentNode !== fullscreenElement.shadowRoot) {
+                    fullscreenElement.shadowRoot.appendChild(overlay);
+                }
+            } else {
+                if (overlay.parentNode !== fullscreenElement) {
+                    fullscreenElement.appendChild(overlay);
+                }
+            }
+        } else {
+            display.insertAdjacentElement("beforebegin", overlay);
+        }
 
         // Update overlay text
         overlay.innerHTML = `${Math.round(volume)}`;
