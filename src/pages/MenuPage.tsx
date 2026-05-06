@@ -52,10 +52,10 @@ const MenuPage: React.FC<MenuPageInterface> = ({ settings, editSetting, setPage 
         };
     }, [settings.doDebugLog, editSetting]);
 
-    const isEnabled = settings.domainList?.[hostname] ?? settings.enableDefault;
+    const isEnabled = settings.domainList?.[hostname.toLowerCase()] ?? settings.enableDefault;
 
     const handleEnableToggle = (_e: Event | React.SyntheticEvent, value: any) => {
-        editSetting("domainList", { ...settings.domainList, [hostname]: value });
+        editSetting("domainList", { ...settings.domainList, [hostname.toLowerCase()]: value });
     }
 
     const handleCopyLogs = async () => {

@@ -167,7 +167,7 @@ const MiscPage: React.FC<MiscPageInterface> = ({ settings, editSetting, setPage 
         if (!domainListInput) return;
 
         const updatedDomainList = { ...settings.domainList };
-        updatedDomainList[domainListInput] = value;
+        updatedDomainList[domainListInput.toLowerCase()] = value;
         editSetting("domainList", updatedDomainList);
     }
 
@@ -175,7 +175,7 @@ const MiscPage: React.FC<MiscPageInterface> = ({ settings, editSetting, setPage 
         if (!domainListInput) return;
 
         const updatedDomainList = { ...settings.domainList };
-        delete updatedDomainList[domainListInput];
+        delete updatedDomainList[domainListInput.toLowerCase()];
         editSetting("domainList", updatedDomainList);
     }
 
@@ -336,19 +336,19 @@ const MiscPage: React.FC<MiscPageInterface> = ({ settings, editSetting, setPage 
                                 onChange={handleDomainListToggle}
                                 control={
                                     <Switch
-                                        checked={settings.domainList?.[domainListInput] ?? settings.enableDefault}
+                                        checked={settings.domainList?.[domainListInput.toLowerCase()] ?? settings.enableDefault}
                                         disabled={!domainListInput}
                                     />}
-                                label={settings.domainList?.[domainListInput] === undefined ? "Default" : (settings.domainList[domainListInput] ? "Enabled" : "Disabled")}
+                                label={settings.domainList?.[domainListInput.toLowerCase()] === undefined ? "Default" : (settings.domainList[domainListInput.toLowerCase()] ? "Enabled" : "Disabled")}
                             />
                         </Tooltip>
                         <Tooltip title="Delete override" placement="top" disableInteractive>
                             <IconButton
-                                onClick={(!domainListInput || settings.domainList?.[domainListInput] === undefined) ? undefined : handleDomainListDelete}
+                                onClick={(!domainListInput || settings.domainList?.[domainListInput.toLowerCase()] === undefined) ? undefined : handleDomainListDelete}
                                 size="small"
                                 sx={{
-                                    color: (!domainListInput || settings.domainList?.[domainListInput] === undefined) ? "gray" : "white",
-                                    cursor: (!domainListInput || settings.domainList?.[domainListInput] === undefined) ? "default" : "pointer"
+                                    color: (!domainListInput || settings.domainList?.[domainListInput.toLowerCase()] === undefined) ? "gray" : "white",
+                                    cursor: (!domainListInput || settings.domainList?.[domainListInput.toLowerCase()] === undefined) ? "default" : "pointer"
                                 }}
                             >
                                 <DeleteIcon fontSize="small" />

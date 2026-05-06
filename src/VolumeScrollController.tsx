@@ -180,20 +180,20 @@ const isFullscreen = function (): boolean {
 const isDisabledOnSite = function (): boolean {
     // Returns default value if domain is not in the map, otherwise returns the domain-specific value
     // If in an iframe, we also want to respect the parent domain's setting if the iframe domain is not explicitly set
-    let enabled = settings.domainList?.[window.location.hostname];
+    let enabled = settings.domainList?.[window.location.hostname.toLowerCase()];
 
     if (enabled === undefined && window.self !== window.top) {
         try {
             // Try to get the top frame's hostname
             if (window.top?.location.hostname) {
-                enabled = settings.domainList?.[window.top.location.hostname];
+                enabled = settings.domainList?.[window.top.location.hostname.toLowerCase()];
             }
         } catch (e) {
             // Cross-origin access denied. Fallback to referrer.
             if (document.referrer) {
                 try {
                     const referrerHostname = new URL(document.referrer).hostname;
-                    enabled = settings.domainList?.[referrerHostname];
+                    enabled = settings.domainList?.[referrerHostname.toLowerCase()];
                 } catch (refErr) {
                     // Invalid referrer URL, ignore
                 }
