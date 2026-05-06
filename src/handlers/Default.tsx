@@ -33,7 +33,7 @@ export class DefaultHandler {
     }
 
     public handlesDomain(domain: string): boolean {
-        return this.domains.includes(domain);
+        return this.domains.includes(domain.toLowerCase());
     }
 
     protected initAudioContext(): void {
