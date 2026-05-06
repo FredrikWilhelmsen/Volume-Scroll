@@ -157,10 +157,6 @@ const MiscPage: React.FC<MiscPageInterface> = ({ settings, editSetting, setPage 
         setIsSettingAlternateIncrementKey(true);
     }
 
-    const handleFullscreenOnlyToggle = (_e: Event | React.SyntheticEvent, value: any) => {
-        editSetting("fullscreenOnly", value);
-    }
-
     return (
         <div>
             <BackButton setPage={setPage} title={"Misc Settings"} />
@@ -298,19 +294,6 @@ const MiscPage: React.FC<MiscPageInterface> = ({ settings, editSetting, setPage 
                             </Button>
                         </Tooltip>
                     </div>
-                </div>
-                <div id="fullscreenOnlyContainer">
-                    <Tooltip title="Volume scroll will only be enabled when video is in fullscreen mode" placement="top" disableInteractive>
-                        <FormControlLabel
-                            onChange={handleFullscreenOnlyToggle}
-                            control={
-                                <Switch
-                                    checked={settings.fullscreenOnly}
-                                    disabled={!settings.useMouseWheelVolume}
-                                />}
-                            label="Fullscreen only"
-                        />
-                    </Tooltip>
                 </div>
             </div>
         </div>
