@@ -95,6 +95,10 @@ const MiscPage: React.FC<MiscPageInterface> = ({ settings, editSetting, setPage 
         editSetting("defaultVolume", newValue);
     }
 
+    const handleStartMutedToggle = (_e: Event | React.SyntheticEvent, value: any) => {
+        editSetting("startMuted", value);
+    }
+
     const handleBoostVolumeToggle = (_e: Event | React.SyntheticEvent, value: any) => {
         editSetting("doBoostVolume", value);
     }
@@ -195,6 +199,19 @@ const MiscPage: React.FC<MiscPageInterface> = ({ settings, editSetting, setPage 
                                 valueLabelDisplay="off"
                                 disabled={!settings.useDefaultVolume}
                                 onChange={handleDefaultVolumeChange}
+                            />
+                        </Tooltip>
+                    </div>
+                    <div>
+                        <Tooltip title="Makes default volume start new videos muted" placement="top" disableInteractive>
+                            <FormControlLabel
+                                onChange={handleStartMutedToggle}
+                                control={
+                                    <Switch
+                                        disabled={!settings.useDefaultVolume}
+                                        checked={settings.startMuted}
+                                    />}
+                                label="Start muted"
                             />
                         </Tooltip>
                     </div>
