@@ -21,6 +21,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
     const [xPos, setXPos] = useState(settings.overlayXPos);
     const [yPos, setYPos] = useState(settings.overlayYPos);
     const [fontSize, setFontSize] = useState(settings.fontSize);
+    const [overlayDuration, setOverlayDuration] = useState(settings.overlayDuration);
 
     const [isColorpickerVisible, setIsColorpickerVisible] = useState(false);
 
@@ -62,6 +63,27 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
 
         setFontSize(newValue);
         editSetting("fontSize", newValue);
+    };
+
+    const handleOverlayDurationChange = (_e: Event | React.SyntheticEvent, value: any) => {
+        editSetting("overlayDuration", value);
+        setOverlayDuration(value);
+    }
+
+    const handleOverlayDurationScroll = (e: React.WheelEvent) => {
+        if (!settings.useMouseWheelVolume) return;
+
+        e.preventDefault();
+
+        let newValue: number = overlayDuration;
+
+        if (e.deltaY < 0) {
+            newValue = Math.min(newValue + 500, 10000);
+        } else {
+            newValue = Math.max(newValue - 500, 0);
+        }
+
+        handleOverlayDurationChange(e, newValue);
     };
 
     const handleColorChange = (color: any) => {
@@ -150,12 +172,12 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
             <div className="settingsContainer">
                 <div id="useOverlayContainer">
                     <Tooltip title="Enable or disable the overlay" placement="top" disableInteractive>
-                        <FormControlLabel 
+                        <FormControlLabel
                             onChange={handleUseOverlayToggle}
                             control={
-                            <Switch 
-                                checked={settings.useOverlay}
-                            />} 
+                                <Switch
+                                    checked={settings.useOverlay}
+                                />}
                             label="Overlay"
                         />
                     </Tooltip>
@@ -184,6 +206,34 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
                                 valueLabelDisplay="off"
                                 disabled={!settings.useMouseWheelVolume || !settings.useOverlay}
                                 onChange={handleOverlaySizeChange}
+                            />
+                        </Tooltip>
+                    </div>
+                </div>
+                <div id="overlayDurationContainer">
+                    <div id="overlayDurationDisplay" className="sliderDisplayContainer">
+                        <Typography variant="body1">
+                            Overlay duration
+                        </Typography>
+                        <Tooltip title="Current duration in seconds" placement="top" disableInteractive>
+                            <div id="overlayDurationValueDisplay" className="sliderDisplay">
+                                <Typography variant="body2" sx={settings.overlayDuration === 0 ? { fontSize: '1.3rem', lineHeight: 1 } : {}}>
+                                    {settings.overlayDuration === 0 ? "∞" : (settings.overlayDuration / 1000).toFixed(1)}
+                                </Typography>
+                            </div>
+                        </Tooltip>
+                    </div>
+                    <div onWheel={handleOverlayDurationScroll}>
+                        <Tooltip title="Set how long the overlay is visible in seconds. Set to 0 for infinite." disableInteractive>
+                            <Slider
+                                min={0}
+                                max={10000}
+                                step={500}
+                                aria-label="Overlay Duration"
+                                value={overlayDuration}
+                                valueLabelDisplay="off"
+                                disabled={!settings.useMouseWheelVolume || !settings.useOverlay}
+                                onChange={handleOverlayDurationChange}
                             />
                         </Tooltip>
                     </div>
