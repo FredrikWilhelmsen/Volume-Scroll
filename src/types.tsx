@@ -1,6 +1,7 @@
 export interface Settings {
     useDefaultVolume: boolean,
     defaultVolume: number,
+    startMuted: boolean,
 
     useMouseWheelVolume: boolean,
     volumeIncrement: number,
@@ -40,6 +41,7 @@ export interface Settings {
 export const defaultSettings: Settings = {
     useDefaultVolume: false,
     defaultVolume: 20,
+    startMuted: false,
 
     useMouseWheelVolume: true,
     volumeIncrement: 5,
@@ -92,4 +94,4 @@ export interface VideoState {
     targetVolume: number; // Ratio 0-1 (or > 1 for boost)
     lastUnmutedVolume: number; // Ratio 0-1 (or > 1 for boost)
     isMuted: boolean; // Tracking if we have forced mute
-}
+}
