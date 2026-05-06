@@ -208,6 +208,7 @@ const MiscPage: React.FC<MiscPageInterface> = ({ settings, editSetting, setPage 
                                 onChange={handleStartMutedToggle}
                                 control={
                                     <Switch
+                                        disabled={!settings.useDefaultVolume}
                                         checked={settings.startMuted}
                                     />}
                                 label="Start muted"
