@@ -59,7 +59,7 @@ const ScrollPage: React.FC<ScrollPageInterface> = ({ settings, editSetting, setP
     }
 
     const handleCustomPreciseScrollThresholdScroll = (e: React.WheelEvent) => {
-        if (!settings.useCustomPreciseScrollThreshold || !settings.usePreciseScroll) return;
+        if (!settings.useMouseWheelVolume || !settings.useCustomPreciseScrollThreshold || !settings.usePreciseScroll) return;
 
         e.preventDefault();
 
@@ -168,7 +168,7 @@ const ScrollPage: React.FC<ScrollPageInterface> = ({ settings, editSetting, setP
                                 aria-label="Custom precise scroll threshold"
                                 value={customPreciseScrollThreshold}
                                 valueLabelDisplay="off"
-                                disabled={!settings.usePreciseScroll || !settings.useCustomPreciseScrollThreshold}
+                                disabled={!settings.useMouseWheelVolume || !settings.usePreciseScroll || !settings.useCustomPreciseScrollThreshold}
                                 onChange={handleCustomPreciseScrollThresholdChange}
                             />
                         </Tooltip>
