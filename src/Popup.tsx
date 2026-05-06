@@ -7,7 +7,7 @@ import MenuPage from "./pages/MenuPage";
 import ScrollPage from "./pages/ScrollPage";
 import HotkeyPage from "./pages/HotkeyPage";
 import OverlayPage from "./pages/OverlayPage";
-import VolumePage from "./pages/MiscPage";
+import MiscPage from "./pages/MiscPage";
 import "./style/globalStyle.css";
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
@@ -20,7 +20,7 @@ const SettingsPopup = () => {
 
     useEffect(() => {
         //Load saved settings when the component mounts
-        browser.storage.local.get({ settings: defaultSettings }).then((result) => {
+        browser.storage.sync.get({ settings: defaultSettings }).then((result) => {
             const savedSettings = result.settings as Settings;
             setSettings({ ...defaultSettings, ...savedSettings });
         });
@@ -36,7 +36,7 @@ const SettingsPopup = () => {
                 [key]: value
             };
 
-            browser.storage.local.set({ settings: updatedSettings });
+            browser.storage.sync.set({ settings: updatedSettings });
 
             return updatedSettings;
         });
@@ -51,7 +51,7 @@ const SettingsPopup = () => {
                 {page === "scroll" && <ScrollPage settings={settings} editSetting={handleSettingChange} setPage={setPage} />}
                 {page === "hotkeys" && <HotkeyPage settings={settings} editSetting={handleSettingChange} setPage={setPage} />}
                 {page === "overlay" && <OverlayPage settings={settings} editSetting={handleSettingChange} setPage={setPage} />}
-                {page === "misc" && <VolumePage settings={settings} editSetting={handleSettingChange} setPage={setPage} />}
+                {page === "misc" && <MiscPage settings={settings} editSetting={handleSettingChange} setPage={setPage} />}
             </div>
         </div>
     )
