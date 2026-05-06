@@ -517,9 +517,7 @@ export class DefaultHandler {
                             if (this.volumeTargets.has(video)) {
                                 debug("Already tracking this video, skipping default volume reset", video);
                             } else {
-                                debug("New video found: ", video);
-                                debug("Default volume set to: ", this.settings.defaultVolume);
-                                this.setVolume(this.settings.defaultVolume, video, debug);
+                                this.applyDefaultVolume(video, debug);
                             }
                         }
                         // Check if the added node contains videos (e.g. a div with a video inside)
@@ -530,9 +528,7 @@ export class DefaultHandler {
                                 if (this.volumeTargets.has(videoElement)) {
                                     debug("Already tracking this nested video, skipping default volume reset", videoElement);
                                 } else {
-                                    debug("New video found: ", videoElement);
-                                    debug("Default volume set to: ", this.settings.defaultVolume);
-                                    this.setVolume(this.settings.defaultVolume, videoElement, debug);
+                                    this.applyDefaultVolume(videoElement, debug);
                                 }
                             }
                         }
@@ -545,13 +541,26 @@ export class DefaultHandler {
         this.observer.observe(body, { childList: true, subtree: true });
     }
 
+    private applyDefaultVolume(video: HTMLVideoElement, debug: (message: String, extra?: any) => void) {
+        debug("New video found: ", video);
+        debug("Default volume set to: ", this.settings.defaultVolume);
+        this.setVolume(this.settings.defaultVolume, video, debug);
+
+        if (this.settings.startMuted) {
+            debug("Start muted is enabled, muting video");
+            video.muted = true;
+            const state = this.volumeTargets.get(video);
+            if (state) state.isMuted = true;
+        }
+    }
+
     public setDefaultVolume(body: HTMLElement, debug: (message: String, extra?: any) => void) {
         const videoCollection: HTMLVideoElement[] = this.getAllVideos() as HTMLVideoElement[];
         debug("Setting default volume for: ", videoCollection);
 
         for (let tag of videoCollection) {
             let video: HTMLVideoElement = tag as HTMLVideoElement;
-            this.setVolume(this.settings.defaultVolume, video, debug);
+            this.applyDefaultVolume(video, debug);
         }
 
         this.startVideoObserver(body, debug);
