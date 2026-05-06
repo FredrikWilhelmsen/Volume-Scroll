@@ -31,6 +31,7 @@ export interface Settings {
     overlayPosition: string,
     overlayXPos: number,
     overlayYPos: number,
+    overlayDuration: number,
 
     domainList: Record<string, boolean>,
     enableDefault: boolean,
@@ -71,6 +72,7 @@ export const defaultSettings: Settings = {
     overlayPosition: "tl",
     overlayXPos: 5,
     overlayYPos: 5,
+    overlayDuration: 2000,
 
     domainList: {},
     enableDefault: true,
