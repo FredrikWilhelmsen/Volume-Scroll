@@ -27,9 +27,6 @@
             ],
             "all_frames": true,
             "run_at": "document_start",
-            "css": [
-                "volumeScroll.css"
-            ],
             "js": [
                 "volumeScroll.tsx"
             ]

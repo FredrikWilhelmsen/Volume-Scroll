@@ -1,4 +1,6 @@
 import { Settings, videoElements, defaultSettings, VideoState } from "../types";
+import { createRoot, Root } from "react-dom/client";
+import { VolumeOverlay } from "../components/VolumeOverlay";
 
 export class DefaultHandler {
     protected name: string = "DefaultHandler";
@@ -14,7 +16,9 @@ export class DefaultHandler {
     protected gainNodes = new WeakMap<HTMLVideoElement, GainNode>();
     protected sourceNodes = new WeakMap<HTMLVideoElement, MediaElementAudioSourceNode>();
 
-    protected overlay: HTMLElement | null = null;
+    protected reactRoot: Root | null = null;
+    protected overlayContainer: HTMLElement | null = null;
+    protected animationKey: number = 0;
 
     protected invalidDomains: string[] = [
         "clips.twitch.tv"
@@ -154,50 +158,8 @@ export class DefaultHandler {
         return document.getElementsByTagName("VIDEO");
     }
 
-    private createOverlay(body: HTMLElement): HTMLElement {
-        let div = document.createElement("div");
-
-        div.id = "volumeScrollOverlay";
-        div.classList.add("volumeScrollOverlay");
-        div.style.color = this.settings.fontColor;
-        div.style.fontSize = this.settings.fontSize + "px";
-        body.appendChild(div);
-
-        return div;
-    }
-
     protected getFullscreenElement(): Element | null {
         return document.fullscreenElement || (document as any).webkitFullscreenElement || (document as any).mozFullScreenElement || (document as any).msFullscreenElement;
-    }
-
-    private ensureStylesInShadowRoot(shadowRoot: ShadowRoot): void {
-        if (shadowRoot.querySelector("#volumeScrollStyles")) return;
-
-        const style = document.createElement("style");
-        style.id = "volumeScrollStyles";
-        style.textContent = `
-            .volumeScrollOverlay {
-                font-family: Roboto, Arial, sans-serif !important;
-                font-weight: bold !important;
-                opacity: 0;
-                position: absolute !important;
-                visibility: visible !important;
-                z-index: 9999999 !important;
-                text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000 !important;
-                pointer-events: none;
-            }
-            @keyframes volumeScrollFade {
-                0% { opacity: 1; }
-                90% { opacity: 1; }
-                100% { opacity: 0; }
-            }
-            .volumeScrollOverlayFade {
-                animation-name: volumeScrollFade;
-                animation-duration: 2s;
-                animation-direction: normal;
-            }
-        `;
-        shadowRoot.appendChild(style);
     }
 
     private updateOverlay(e: WheelEvent, display: HTMLElement, volume: number,
@@ -205,62 +167,80 @@ export class DefaultHandler {
 
         if (!this.settings.useOverlay) return;
 
-        // Try to find existing overlay if we don't have a valid reference
-        if (!this.overlay || !this.overlay.isConnected) {
-            this.overlay = document.getElementById("volumeScrollOverlay");
+        // Try to find existing container if we don't have a valid reference
+        if (!this.overlayContainer || !this.overlayContainer.isConnected) {
+            this.overlayContainer = document.getElementById("volumeScrollOverlayContainer");
 
-            if (!this.overlay) {
+            if (!this.overlayContainer) {
                 const fs = this.getFullscreenElement();
                 if (fs && fs.shadowRoot) {
-                    this.overlay = fs.shadowRoot.querySelector("#volumeScrollOverlay") as HTMLElement;
+                    this.overlayContainer = fs.shadowRoot.querySelector("#volumeScrollOverlayContainer") as HTMLElement;
                 }
             }
         }
 
-        if (!this.overlay) {
-            debug("Overlay does not exist, creating a new overlay");
-            this.overlay = this.createOverlay(body);
+        if (!this.overlayContainer) {
+            debug("Overlay container does not exist, creating a new container");
+            this.overlayContainer = document.createElement("div");
+            this.overlayContainer.id = "volumeScrollOverlayContainer";
+            body.appendChild(this.overlayContainer);
+            this.reactRoot = createRoot(this.overlayContainer);
+        } else if (!this.reactRoot) {
+            this.reactRoot = createRoot(this.overlayContainer);
         }
 
-        let overlay = this.overlay;
+        let container = this.overlayContainer;
 
-        // Move overlay next to video in DOM (do this before measuring/positioning)
+        // Move container next to video in DOM (do this before measuring/positioning)
         const fullscreenElement = this.getFullscreenElement();
         if (fullscreenElement) {
             // If the fullscreen element has a shadow root (like Reddit), we must append to it
             if (fullscreenElement.shadowRoot) {
-                this.ensureStylesInShadowRoot(fullscreenElement.shadowRoot);
-                if (overlay.parentNode !== fullscreenElement.shadowRoot) {
-                    fullscreenElement.shadowRoot.appendChild(overlay);
+                if (container.parentNode !== fullscreenElement.shadowRoot) {
+                    fullscreenElement.shadowRoot.appendChild(container);
                 }
             } else {
-                if (overlay.parentNode !== fullscreenElement) {
-                    fullscreenElement.appendChild(overlay);
+                if (container.parentNode !== fullscreenElement) {
+                    fullscreenElement.appendChild(container);
                 }
             }
         } else {
-            display.insertAdjacentElement("beforebegin", overlay);
+            if (container.parentNode !== body) {
+                body.appendChild(container);
+            }
         }
-
-        // Update overlay text
-        overlay.innerHTML = `${Math.round(volume)}`;
-        overlay.style.color = this.settings.fontColor;
-        overlay.style.fontSize = `${this.settings.fontSize}px`;
 
         // Position the overlay
+        let x = 0;
+        let y = 0;
+
+        // Estimate the width/height of the text since React rendering is asynchronous
+        const textLength = Math.round(volume).toString().length;
+        const estWidth = textLength * this.settings.fontSize * 0.6;
+        const estHeight = this.settings.fontSize;
+
+        const parentRect = (container.offsetParent || body).getBoundingClientRect();
+
         if (this.settings.overlayPosition === "mouse") {
-            const parentRect = (overlay.offsetParent || body).getBoundingClientRect();
-            overlay.style.left = e.clientX - parentRect.left - overlay.offsetWidth + "px";
-            overlay.style.top = e.clientY - parentRect.top - overlay.offsetHeight + "px";
+            x = e.clientX - parentRect.left - estWidth;
+            y = e.clientY - parentRect.top - estHeight;
         } else {
-            overlay.style.left = display.offsetLeft + (display.offsetWidth / 100 * this.settings.overlayXPos) - (overlay.offsetWidth / 2) + "px";
-            overlay.style.top = display.offsetTop + (display.offsetHeight / 100 * this.settings.overlayYPos) - (overlay.offsetHeight / 2) + "px";
+            const displayRect = display.getBoundingClientRect();
+            x = displayRect.left - parentRect.left + (displayRect.width / 100 * this.settings.overlayXPos) - (estWidth / 2);
+            y = displayRect.top - parentRect.top + (displayRect.height / 100 * this.settings.overlayYPos) - (estHeight / 2);
         }
 
-        // Animate fade
-        let newOverlay = overlay;
-        overlay.parentNode?.replaceChild(newOverlay, overlay);
-        overlay.classList.add("volumeScrollOverlayFade");
+        this.animationKey++;
+
+        this.reactRoot.render(
+            <VolumeOverlay
+                volume={volume}
+                x={x}
+                y={y}
+                settings={this.settings}
+                animationKey={this.animationKey}
+            />
+        );
     }
 
     protected shouldRevertVolume(video: HTMLVideoElement, currentVolume: number, targetVolume: number): boolean {
