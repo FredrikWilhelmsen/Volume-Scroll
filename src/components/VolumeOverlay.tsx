@@ -10,12 +10,16 @@ export interface VolumeOverlayProps {
 }
 
 export const VolumeOverlay: React.FC<VolumeOverlayProps> = ({ volume, x, y, settings, animationKey }) => {
+    const fadeStartPercentage = settings.overlayDuration > 250
+        ? Math.round(((settings.overlayDuration - 250) / settings.overlayDuration) * 100)
+        : 0;
+
     return (
         <React.Fragment>
             <style>{`
                 @keyframes volumeScrollFade {
                     0% { opacity: 1; }
-                    90% { opacity: 1; }
+                    ${fadeStartPercentage}% { opacity: 1; }
                     100% { opacity: 0; }
                 }
                 .volumeScrollOverlay {
@@ -26,8 +30,8 @@ export const VolumeOverlay: React.FC<VolumeOverlayProps> = ({ volume, x, y, sett
                     z-index: 9999999 !important;
                     text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000 !important;
                     pointer-events: none;
-                    opacity: 0;
-                    animation: volumeScrollFade 2s normal forwards;
+                    opacity: ${settings.overlayDuration === 0 ? 1 : 0};
+                    animation: ${settings.overlayDuration === 0 ? 'none' : `volumeScrollFade ${settings.overlayDuration}ms normal forwards`};
                 }
             `}</style>
             <div
