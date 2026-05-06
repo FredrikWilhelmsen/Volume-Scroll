@@ -88,7 +88,7 @@ const debug = function (message: String, extra?: any): void {
 }
 
 export const init = () => {
-    browser.storage.local.get("settings")
+    browser.storage.sync.get("settings")
         .then((result) => {
             if (result.settings) {
                 settings = { ...defaultSettings, ...result.settings };
@@ -147,7 +147,10 @@ export const init = () => {
         });
 };
 
-browser.storage.onChanged.addListener((changes) => {
+browser.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName !== "sync") return;
+    if (!changes.settings) return;
+
     settings = changes.settings.newValue as Settings;
     handler.updateSettings(settings);
     const { domainList, ...settingsToLog } = settings;
