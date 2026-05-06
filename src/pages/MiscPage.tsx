@@ -211,7 +211,7 @@ const MiscPage: React.FC<MiscPageInterface> = ({ settings, editSetting, setPage 
                                         disabled={!settings.useDefaultVolume}
                                         checked={settings.startMuted}
                                     />}
-                                label="Start muted"
+                                label="Makes default volume start muted"
                             />
                         </Tooltip>
                     </div>
