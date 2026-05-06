@@ -49,7 +49,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
     }
 
     const handleFontSizeScroll = (e: React.WheelEvent) => {
-        if (!settings.useMouseWheelVolume) return;
+        if (!settings.useMouseWheelVolume || !settings.useOverlay) return;
 
         e.preventDefault();
 
@@ -71,7 +71,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
     }
 
     const handleOverlayDurationScroll = (e: React.WheelEvent) => {
-        if (!settings.useMouseWheelVolume) return;
+        if (!settings.useMouseWheelVolume || !settings.useOverlay) return;
 
         e.preventDefault();
 
@@ -125,7 +125,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
     }
 
     const handleHorizontalScroll = (e: React.WheelEvent) => {
-        if (!settings.useMouseWheelVolume || settings.overlayPosition != "custom") return;
+        if (!settings.useMouseWheelVolume || settings.overlayPosition != "custom" || !settings.useOverlay) return;
 
         e.preventDefault();
 
@@ -147,7 +147,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
     }
 
     const handleVerticalScroll = (e: React.WheelEvent) => {
-        if (!settings.useMouseWheelVolume || settings.overlayPosition != "custom") return;
+        if (!settings.useMouseWheelVolume || settings.overlayPosition != "custom" || !settings.useOverlay) return;
 
         e.preventDefault();
 
