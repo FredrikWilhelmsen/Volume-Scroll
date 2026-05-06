@@ -203,7 +203,7 @@ const MiscPage: React.FC<MiscPageInterface> = ({ settings, editSetting, setPage 
                         </Tooltip>
                     </div>
                     <div>
-                        <Tooltip title="Start muted" placement="top" disableInteractive>
+                        <Tooltip title="Makes default volume start new videos muted" placement="top" disableInteractive>
                             <FormControlLabel
                                 onChange={handleStartMutedToggle}
                                 control={
@@ -211,7 +211,7 @@ const MiscPage: React.FC<MiscPageInterface> = ({ settings, editSetting, setPage 
                                         disabled={!settings.useDefaultVolume}
                                         checked={settings.startMuted}
                                     />}
-                                label="Makes default volume start muted"
+                                label="Start muted"
                             />
                         </Tooltip>
                     </div>
