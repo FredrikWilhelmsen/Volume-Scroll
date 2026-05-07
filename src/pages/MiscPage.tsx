@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Settings, Pages } from '../types';
 import BackButton from '../components/BackButton';
 import Typography from '@mui/material/Typography/Typography';
@@ -23,6 +23,7 @@ const MiscPage: React.FC<MiscPageInterface> = ({ settings, editSetting, setPage 
     const [alternateVolumeIncrement, setAlternateVolumeIncrement] = useState(settings.alternateVolumeIncrement);
     const [isSettingAlternateIncrementKey, setIsSettingAlternateIncrementKey] = useState(false);
     const [domainListInput, setdomainListInput] = useState("");
+    const lastSetTime = useRef(0);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -30,28 +31,41 @@ const MiscPage: React.FC<MiscPageInterface> = ({ settings, editSetting, setPage 
 
             e.preventDefault();
 
-            if (isSettingAlternateIncrementKey) {
+            if (e.key === "Escape") {
+                setIsSettingAlternateIncrementKey(false);
+                lastSetTime.current = Date.now();
+                return;
+            }
+
+            const allowedKeys = ["Shift", "Alt", "Control"];
+
+            if (isSettingAlternateIncrementKey && allowedKeys.includes(e.key)) {
                 editSetting("alternateVolumeIncrementHotkey", e.key);
                 setIsSettingAlternateIncrementKey(false);
+                lastSetTime.current = Date.now();
             }
         };
 
         const handleMouseDown = (e: MouseEvent) => {
             if (!isSettingAlternateIncrementKey) return;
+            e.preventDefault();
+            e.stopPropagation();
 
-            const getMouseKey = (key: number) => {
+            const getMouseKey = (key: number): string | undefined => {
                 switch (key) {
                     case 0: return "Left Mouse";
                     case 1: return "Middle Mouse";
                     case 2: return "Right Mouse";
                     case 3: return "Mouse 4";
                     case 4: return "Mouse 5";
+                    default: return undefined;
                 }
-            };
+            }
 
             if (isSettingAlternateIncrementKey) {
                 editSetting("alternateVolumeIncrementHotkey", getMouseKey(e.button));
                 setIsSettingAlternateIncrementKey(false);
+                lastSetTime.current = Date.now();
             }
         };
 
@@ -60,13 +74,19 @@ const MiscPage: React.FC<MiscPageInterface> = ({ settings, editSetting, setPage 
             e.preventDefault();
         };
 
+        const handleKeyUp = (e: KeyboardEvent) => {
+            if (e.key === "Alt") e.preventDefault();
+        };
+
         window.addEventListener("contextmenu", handleContextMenu, { capture: true });
         window.addEventListener("keydown", handleKeyDown);
+        window.addEventListener("keyup", handleKeyUp);
         window.addEventListener("mousedown", handleMouseDown);
 
         return () => {
             window.removeEventListener("contextmenu", handleContextMenu);
             window.removeEventListener("keydown", handleKeyDown);
+            window.removeEventListener("keyup", handleKeyUp);
             window.removeEventListener("mousedown", handleMouseDown);
         };
     }, [isSettingAlternateIncrementKey, editSetting]);
@@ -154,7 +174,7 @@ const MiscPage: React.FC<MiscPageInterface> = ({ settings, editSetting, setPage 
     }
 
     const handleAlternateIncrementKeyClick = (_e: Event | React.SyntheticEvent) => {
-        if (isSettingAlternateIncrementKey) return;
+        if (isSettingAlternateIncrementKey || Date.now() - lastSetTime.current < 100) return;
 
         setIsSettingAlternateIncrementKey(true);
     }
@@ -304,7 +324,7 @@ const MiscPage: React.FC<MiscPageInterface> = ({ settings, editSetting, setPage 
                         </Tooltip>
                     </div>
                     <div>
-                        <Tooltip title="Click to change alternate step hotkey" placement="top" disableInteractive>
+                        <Tooltip title="Click to change alternate step hotkey. Limited to mouse buttons and modifier keys (Alt, Ctrl, Shift)." placement="top" disableInteractive>
                             <Button
                                 onClick={handleAlternateIncrementKeyClick}
                                 className="button"

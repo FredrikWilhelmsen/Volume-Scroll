@@ -295,18 +295,14 @@ export function onScroll(e: WheelEvent): void {
     handler.scroll(e, body, isAltVolumeKeyPressed, debug);
 }
 
-const getMouseKey = function (key: number) {
+const getMouseKey = (key: number): string | undefined => {
     switch (key) {
-        case 0:
-            return "Left Mouse";
-        case 1:
-            return "Middle Mouse";
-        case 2:
-            return "Right Mouse";
-        case 3:
-            return "Mouse 4";
-        case 4:
-            return "Mouse 5";
+        case 0: return "Left Mouse";
+        case 1: return "Middle Mouse";
+        case 2: return "Right Mouse";
+        case 3: return "Mouse 4";
+        case 4: return "Mouse 5";
+        default: return undefined;
     }
 }
 
