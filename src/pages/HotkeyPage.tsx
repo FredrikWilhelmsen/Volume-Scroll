@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Settings, Pages } from '../types';
 import BackButton from '../components/BackButton';
 import Tooltip from '@mui/material/Tooltip/Tooltip';
@@ -17,6 +17,7 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({ settings, editSetting, setP
 
     const [isSettingModifierKey, setIsSettingModifierKey] = useState(false);
     const [isSettingMuteKey, setIsSettingMuteKey] = useState(false);
+    const lastSetTime = useRef(0);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -24,34 +25,46 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({ settings, editSetting, setP
 
             e.preventDefault();
 
-            if (isSettingModifierKey) {
+            if (e.key === "Escape") {
+                setIsSettingModifierKey(false);
+                setIsSettingMuteKey(false);
+                lastSetTime.current = Date.now();
+                return;
+            }
+
+            const allowedKeys = ["Shift", "Alt", "Control"];
+
+            if (isSettingModifierKey && allowedKeys.includes(e.key)) {
                 editSetting("modifierKey", e.key);
                 setIsSettingModifierKey(false);
-            } else if (isSettingMuteKey) {
-                editSetting("toggleMuteKey", e.key);
-                setIsSettingMuteKey(false);
+                lastSetTime.current = Date.now();
             }
         };
 
         const handleMouseDown = (e: MouseEvent) => {
             if (!isSettingModifierKey && !isSettingMuteKey) return;
+            e.preventDefault();
+            e.stopPropagation();
 
-            const getMouseKey = (key: number) => {
+            const getMouseKey = (key: number): string | undefined => {
                 switch (key) {
                     case 0: return "Left Mouse";
                     case 1: return "Middle Mouse";
                     case 2: return "Right Mouse";
                     case 3: return "Mouse 4";
                     case 4: return "Mouse 5";
+                    default: return undefined;
                 }
-            };
+            }
 
             if (isSettingModifierKey) {
                 editSetting("modifierKey", getMouseKey(e.button));
                 setIsSettingModifierKey(false);
+                lastSetTime.current = Date.now();
             } else if (isSettingMuteKey) {
                 editSetting("toggleMuteKey", getMouseKey(e.button));
                 setIsSettingMuteKey(false);
+                lastSetTime.current = Date.now();
             }
         };
 
@@ -60,13 +73,19 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({ settings, editSetting, setP
             e.preventDefault();
         };
 
+        const handleKeyUp = (e: KeyboardEvent) => {
+            if (e.key === "Alt") e.preventDefault();
+        };
+
         window.addEventListener("contextmenu", handleContextMenu, { capture: true });
         window.addEventListener("keydown", handleKeyDown);
+        window.addEventListener("keyup", handleKeyUp);
         window.addEventListener("mousedown", handleMouseDown);
 
         return () => {
             window.removeEventListener("contextmenu", handleContextMenu);
             window.removeEventListener("keydown", handleKeyDown);
+            window.removeEventListener("keyup", handleKeyUp);
             window.removeEventListener("mousedown", handleMouseDown);
         };
     }, [isSettingModifierKey, isSettingMuteKey, editSetting]);
@@ -76,7 +95,7 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({ settings, editSetting, setP
     }
 
     const handleModifierKeyClick = (_e: Event | React.SyntheticEvent) => {
-        if (isSettingModifierKey || isSettingMuteKey) return;
+        if (isSettingModifierKey || isSettingMuteKey || Date.now() - lastSetTime.current < 100) return;
 
         setIsSettingModifierKey(true);
     }
@@ -90,7 +109,7 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({ settings, editSetting, setP
     }
 
     const handleMuteKeyClick = (_e: Event | React.SyntheticEvent) => {
-        if (isSettingModifierKey || isSettingMuteKey) return;
+        if (isSettingModifierKey || isSettingMuteKey || Date.now() - lastSetTime.current < 100) return;
 
         setIsSettingMuteKey(true);
     }
@@ -114,7 +133,7 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({ settings, editSetting, setP
                             label="Modifier key"
                         />
                     </Tooltip>
-                    <Tooltip title="Click to change hotkey" placement="top" disableInteractive>
+                    <Tooltip title="Click to change modifier hotkey. Limited to mouse buttons and modifier keys (Alt, Ctrl, Shift)." placement="top" disableInteractive>
                         <Button
                             onClick={handleModifierKeyClick}
                             className="button"
@@ -151,7 +170,7 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({ settings, editSetting, setP
                             label="Toggle mute key"
                         />
                     </Tooltip>
-                    <Tooltip title="Click to change hotkey" placement="top" disableInteractive>
+                    <Tooltip title="Click to change mute hotkey. Limited to mouse buttons." placement="top" disableInteractive>
                         <Button
                             onClick={handleMuteKeyClick}
                             className="button"

@@ -30,8 +30,7 @@ const getHandler = function (): DefaultHandler {
 const handler: DefaultHandler = getHandler();
 const body: HTMLElement = document.documentElement || document.body || document.getElementsByTagName("body")[0];
 let settings: Settings = defaultSettings;
-let isModifierKeyPressed: boolean = false;
-let isAltVolumeKeyPressed: boolean = false;
+
 let mouseX: number = 0;
 let mouseY: number = 0;
 let preventContextMenu: boolean = false;
@@ -173,6 +172,20 @@ browser.runtime.onMessage.addListener((message: any) => {
     }
 });
 
+const isHotkeyPressed = (e: MouseEvent | WheelEvent, hotkey: string): boolean => {
+    switch (hotkey) {
+        case "Left Mouse": return (e.buttons & 1) !== 0;
+        case "Right Mouse": return (e.buttons & 2) !== 0;
+        case "Middle Mouse": return (e.buttons & 4) !== 0;
+        case "Mouse 4": return (e.buttons & 8) !== 0;
+        case "Mouse 5": return (e.buttons & 16) !== 0;
+        case "Shift": return e.shiftKey;
+        case "Alt": return e.altKey;
+        case "Control": return e.ctrlKey;
+        default: return false;
+    }
+}
+
 const isFullscreen = function (): boolean {
     return document.fullscreenElement != null;
 }
@@ -205,7 +218,9 @@ const isDisabledOnSite = function (): boolean {
     return !(enabled ?? settings.enableDefault);
 }
 
-const doVolumeScroll = function (): boolean {
+const doVolumeScroll = function (e: WheelEvent): boolean {
+    const isModifierKeyPressed = isHotkeyPressed(e, settings.modifierKey);
+
     switch (true) {
         case isDisabledOnSite():                                                                // Domain is disabled
         case !settings.useMouseWheelVolume:                                                     // Volume Scroll is disabled
@@ -221,22 +236,14 @@ const doVolumeScroll = function (): boolean {
 export function onScroll(e: WheelEvent): void {
     debug("Scrolled!");
 
+    const isModifierKeyPressed = isHotkeyPressed(e, settings.modifierKey);
+    debug(`Modifier key state: ${isModifierKeyPressed}, currently set to: ${settings.modifierKey}`);
+    const isAltVolumeKeyPressed = isHotkeyPressed(e, settings.alternateVolumeIncrementHotkey);
+    debug(`Alt volume key state: ${isAltVolumeKeyPressed}, currently set to: ${settings.alternateVolumeIncrementHotkey}`);
+
     // Check if we utilized the Right Mouse button as a modifier for this scroll
     if (settings.useModifierKey && settings.modifierKey === "Right Mouse" && isModifierKeyPressed) {
         preventContextMenu = true;
-    }
-
-    // Check if we utilized the Right Mouse button as an alternate increment hotkey for this scroll
-    if (settings.useAlternateVolumeIncrement && settings.alternateVolumeIncrementHotkey === "Right Mouse" && isAltVolumeKeyPressed) {
-        preventContextMenu = true;
-    }
-
-    // Check if we utilized the Middle Mouse button for this scroll
-    if (settings.useModifierKey && settings.modifierKey === "Middle Mouse" && isModifierKeyPressed) {
-        preventMiddleClick = true;
-    }
-    if (settings.useAlternateVolumeIncrement && settings.alternateVolumeIncrementHotkey === "Middle Mouse" && isAltVolumeKeyPressed) {
-        preventMiddleClick = true;
     }
 
     // If we are inside an iframe
@@ -270,23 +277,32 @@ export function onScroll(e: WheelEvent): void {
     }
 
     // Check settings
-    if (!doVolumeScroll()) return;
+    if (!doVolumeScroll(e)) return;
+
+    // Check if we utilized the Right Mouse button as an alternate increment hotkey for this scroll
+    if (settings.useAlternateVolumeIncrement && settings.alternateVolumeIncrementHotkey === "Right Mouse" && isAltVolumeKeyPressed) {
+        preventContextMenu = true;
+    }
+
+    // Check if we utilized the Middle Mouse button for this scroll
+    if (settings.useModifierKey && settings.modifierKey === "Middle Mouse" && isModifierKeyPressed) {
+        preventMiddleClick = true;
+    }
+    if (settings.useAlternateVolumeIncrement && settings.alternateVolumeIncrementHotkey === "Middle Mouse" && isAltVolumeKeyPressed) {
+        preventMiddleClick = true;
+    }
 
     handler.scroll(e, body, isAltVolumeKeyPressed, debug);
 }
 
-const getMouseKey = function (key: number) {
+const getMouseKey = (key: number): string | undefined => {
     switch (key) {
-        case 0:
-            return "Left Mouse";
-        case 1:
-            return "Middle Mouse";
-        case 2:
-            return "Right Mouse";
-        case 3:
-            return "Mouse 4";
-        case 4:
-            return "Mouse 5";
+        case 0: return "Left Mouse";
+        case 1: return "Middle Mouse";
+        case 2: return "Right Mouse";
+        case 3: return "Mouse 4";
+        case 4: return "Mouse 5";
+        default: return undefined;
     }
 }
 
@@ -296,18 +312,6 @@ export function onMouseDown(e: MouseEvent): void {
     // Reset context menu prevention on new click.
     if (getMouseKey(e.button) === "Right Mouse") {
         preventContextMenu = false;
-    }
-
-    if (settings.alternateVolumeIncrementHotkey === getMouseKey(e.button) && settings.useAlternateVolumeIncrement) {
-        e.preventDefault();
-        isAltVolumeKeyPressed = true;
-        debug("Alternate volume increment key pressed");
-    }
-
-    if (settings.modifierKey === getMouseKey(e.button) && settings.useModifierKey) {
-        e.preventDefault();
-        isModifierKeyPressed = true;
-        debug("Modifier key pressed");
     }
 
     if (settings.toggleMuteKey === getMouseKey(e.button) && settings.useToggleMuteKey) {
@@ -339,73 +343,10 @@ export function onMouseDown(e: MouseEvent): void {
 export function onMouseUp(e: MouseEvent): void {
     debug("Mouse up!");
 
-    if (settings.alternateVolumeIncrementHotkey === getMouseKey(e.button) && settings.useAlternateVolumeIncrement) {
-        e.preventDefault();
-        isAltVolumeKeyPressed = false;
-        debug("Alternate volume increment key released");
-    }
-
     if (preventMiddleClick && getMouseKey(e.button) === "Middle Mouse") {
         debug("Mouseup blocked due to volume mute action");
         e.preventDefault();
         e.stopPropagation();
-    }
-
-    if (settings.modifierKey === getMouseKey(e.button) && settings.useModifierKey) {
-        e.preventDefault();
-        isModifierKeyPressed = false;
-        debug("Modifier key released");
-    }
-}
-
-export function onKeyDown(e: KeyboardEvent): void {
-    debug("Key down!");
-
-    if (settings.alternateVolumeIncrementHotkey === e.key && settings.useAlternateVolumeIncrement) {
-        e.preventDefault();
-        isAltVolumeKeyPressed = true;
-        debug("Alternate volume increment key pressed");
-    }
-
-    if (settings.modifierKey === e.key && settings.useModifierKey) {
-        e.preventDefault();
-        isModifierKeyPressed = true;
-        debug("Modifier key pressed");
-    }
-
-    if (settings.toggleMuteKey === e.key && settings.useToggleMuteKey) {
-
-        if (window.self !== window.top) {
-            const localVideo = document.getElementsByTagName("video")[0];
-            if (!localVideo) {
-                debug("In iframe, relaying Mute Toggle to parent");
-                e.preventDefault();
-                e.stopPropagation();
-
-                window.parent.postMessage({ type: "VOLUME_MUTE_RELAY" }, "*");
-                return;
-            }
-        }
-
-        e.preventDefault();
-        //handler.toggleMute(mouseX, mouseY, debug); temporarily disabled due to new system coming.
-        debug("Toggle mute key pressed");
-    }
-}
-
-export function onKeyUp(e: KeyboardEvent): void {
-    debug("Key up!");
-
-    if (settings.alternateVolumeIncrementHotkey === e.key && settings.useAlternateVolumeIncrement) {
-        e.preventDefault();
-        isAltVolumeKeyPressed = false;
-        debug("Alternate volume increment key released");
-    }
-
-    if (settings.modifierKey === e.key && settings.useModifierKey) {
-        e.preventDefault();
-        isModifierKeyPressed = false;
-        debug("Modifier key released");
     }
 }
 
