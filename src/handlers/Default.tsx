@@ -1,4 +1,4 @@
-import { Settings, videoElements, defaultSettings, VideoState } from "../types";
+import { Settings, videoElements, defaultSettings, VideoState, OverlayType } from "../types";
 import { createRoot, Root } from "react-dom/client";
 import { VolumeOverlay } from "../components/VolumeOverlay";
 
@@ -162,7 +162,7 @@ export class DefaultHandler {
         return document.fullscreenElement || (document as any).webkitFullscreenElement || (document as any).mozFullScreenElement || (document as any).msFullscreenElement;
     }
 
-    private updateOverlay(e: WheelEvent, display: HTMLElement, volume: number,
+    private updateOverlay(e: MouseEvent, display: HTMLElement, type: OverlayType, volume: number,
         body: HTMLElement, debug: (message: String, extra?: any) => void): void {
 
         if (!this.settings.useOverlay) return;
@@ -214,20 +214,15 @@ export class DefaultHandler {
         let x = 0;
         let y = 0;
 
-        // Estimate the width/height of the text since React rendering is asynchronous
-        const textLength = Math.round(volume).toString().length;
-        const estWidth = textLength * this.settings.fontSize * 0.6;
-        const estHeight = this.settings.fontSize;
-
         const parentRect = (container.offsetParent || body).getBoundingClientRect();
 
         if (this.settings.overlayPosition === "mouse") {
-            x = e.clientX - parentRect.left - estWidth;
-            y = e.clientY - parentRect.top - estHeight;
+            x = e.clientX - parentRect.left;
+            y = e.clientY - parentRect.top;
         } else {
             const displayRect = display.getBoundingClientRect();
-            x = displayRect.left - parentRect.left + (displayRect.width / 100 * this.settings.overlayXPos) - (estWidth / 2);
-            y = displayRect.top - parentRect.top + (displayRect.height / 100 * this.settings.overlayYPos) - (estHeight / 2);
+            x = displayRect.left - parentRect.left + (displayRect.width / 100 * this.settings.overlayXPos);
+            y = displayRect.top - parentRect.top + (displayRect.height / 100 * this.settings.overlayYPos);
         }
 
         this.animationKey++;
@@ -238,6 +233,7 @@ export class DefaultHandler {
                 x={x}
                 y={y}
                 settings={this.settings}
+                type={type}
                 animationKey={this.animationKey}
             />
         );
@@ -378,11 +374,13 @@ export class DefaultHandler {
         // Retrieve stored previous volume
         const state: VideoState | undefined = this.volumeTargets.get(videoGroup.video);
         let previousVolume: number = 0;
+        let type: OverlayType = "volume";
 
         if (state !== undefined && !isNaN(state.targetVolume)) {
             // If currently muted, we want to scroll relative to the last unmuted volume
             if (state.isMuted || state.targetVolume === 0) {
                 previousVolume = Math.round(state.lastUnmutedVolume * 100);
+                type = "unmute";
             } else {
                 previousVolume = Math.round(state.targetVolume * 100);
             }
@@ -448,7 +446,7 @@ export class DefaultHandler {
             effectiveVolume = newVolume;
         }
 
-        this.updateOverlay(e, videoGroup.display, effectiveVolume, body, debug);
+        this.updateOverlay(e, videoGroup.display, type, effectiveVolume, body, debug);
     }
 
     public scroll(e: WheelEvent, body: HTMLElement, isAltVolumeKeyPressed: boolean, debug: (message: String, extra?: any) => void): void {
@@ -546,8 +544,8 @@ export class DefaultHandler {
         this.startVideoObserver(body, debug);
     }
 
-    public toggleMute(mouseX: number, mouseY: number, debug: (message: String, extra?: any) => void): boolean {
-        const videoGroup: videoElements | null = this.getVideo(mouseX, mouseY, debug);
+    public toggleMute(e: MouseEvent, body: HTMLElement, debug: (message: String, extra?: any) => void): boolean {
+        const videoGroup: videoElements | null = this.getVideo(e.clientX, e.clientY, debug);
 
         if (!videoGroup) return false;
 
@@ -567,6 +565,7 @@ export class DefaultHandler {
             // Unmute: Restore last unmuted volume
             debug(`Unmuting. Restoring volume to ${state.lastUnmutedVolume}`);
             this.setVolume(state.lastUnmutedVolume * 100, video, debug);
+            this.updateOverlay(e, videoGroup.display, "unmute", state.lastUnmutedVolume * 100, body, debug);
             video.muted = false;
             state.isMuted = false;
         } else {
@@ -574,6 +573,7 @@ export class DefaultHandler {
             debug(`Muting. Saving volume ${state.targetVolume} and setting to 0`);
             state.lastUnmutedVolume = state.targetVolume;
             this.setVolume(0, video, debug);
+            this.updateOverlay(e, videoGroup.display, "mute", state.lastUnmutedVolume * 100, body, debug);
             video.muted = true;
             state.isMuted = true;
         }
