@@ -15,10 +15,15 @@ interface MenuPageInterface {
     setPage: React.Dispatch<React.SetStateAction<Pages>>
 }
 
-const isFirefox = navigator.userAgent.toLowerCase().includes('firefox');
+const userAgent = navigator.userAgent.toLowerCase();
+const isFirefox = userAgent.includes('firefox');
+const isEdge = userAgent.includes('edg/');
+
 const reviewLink = isFirefox
     ? "https://addons.mozilla.org/en-GB/firefox/addon/volume-scroll/reviews/2585522/"
-    : "https://chromewebstore.google.com/detail/volume-scroll/gkmagiadkkhdilnaicdnngcjhmhaeaoh/reviews";
+    : isEdge
+        ? "" // TODO: Add Edge Webstore link here
+        : "https://chromewebstore.google.com/detail/volume-scroll/gkmagiadkkhdilnaicdnngcjhmhaeaoh/reviews";
 
 const MenuPage: React.FC<MenuPageInterface> = ({ settings, editSetting, setPage }) => {
 
