@@ -15,6 +15,8 @@
 
 *Take it to the next level, and scroll to change the settings in the extension!*
 
+---
+
 ### The project was built using
 *   **Operating System:** Windows 11.
 *   **Node.js Version:** v21.2.0
