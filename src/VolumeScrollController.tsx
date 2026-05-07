@@ -122,7 +122,7 @@ export const init = () => {
 
                     if (event.data.type === "VOLUME_MUTE_RELAY") {
                         debug("Received Mute Relay");
-                        handler.toggleMute(mouseX, mouseY, debug);
+                        handler.toggleMute(event as unknown as MouseEvent, body, debug);
                     }
                 }
 
@@ -325,7 +325,7 @@ export function onMouseDown(e: MouseEvent): void {
         }
 
         e.preventDefault();
-        const result: boolean = handler.toggleMute(e.clientX, e.clientY, debug);
+        const result: boolean = handler.toggleMute(e, body, debug);
         debug("Toggle mute key pressed");
 
         if (getMouseKey(e.button) === "Right Mouse") {
@@ -388,7 +388,7 @@ export function onKeyDown(e: KeyboardEvent): void {
         }
 
         e.preventDefault();
-        handler.toggleMute(mouseX, mouseY, debug);
+        //handler.toggleMute(mouseX, mouseY, debug); temporarily disabled due to new system coming.
         debug("Toggle mute key pressed");
     }
 }
