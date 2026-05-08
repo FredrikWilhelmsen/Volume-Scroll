@@ -10,6 +10,8 @@ export class DefaultHandler {
 
     protected volumeTargets = new WeakMap<HTMLVideoElement, VideoState>();
     protected watchdogs = new WeakSet<HTMLVideoElement>();
+    protected isSettingInternally = false;
+    private static interceptorInjected = false;
 
     // Web Audio API
     protected audioCtx: AudioContext | null = null;
@@ -250,43 +252,142 @@ export class DefaultHandler {
         return difference > 0.001;
     }
 
+    private injectInterceptor(debug: (message: String, extra?: any) => void) {
+        if (DefaultHandler.interceptorInjected) return;
+        DefaultHandler.interceptorInjected = true;
+
+        debug("Injecting page-level volume interceptor");
+
+        const code = `
+            (function() {
+                const volDesc = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, "volume");
+                const muteDesc = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, "muted");
+                if (!volDesc || !muteDesc) return;
+
+                const originalVolSet = volDesc.set;
+                const originalMuteSet = muteDesc.set;
+
+                Object.defineProperty(HTMLMediaElement.prototype, "volume", {
+                    get: function() { return volDesc.get.call(this); },
+                    set: function(val) {
+                        const locked = this.getAttribute("data-vs-locked-volume");
+                        if (locked !== null) {
+                            const target = parseFloat(locked);
+                            if (Math.abs(val - target) > 0.001) {
+                                console.log("Volume Scroll: Intercepted site volume set:", val, "keeping:", target);
+                                return;
+                            }
+                        }
+                        originalVolSet.call(this, val);
+                    },
+                    configurable: true
+                });
+
+                Object.defineProperty(HTMLMediaElement.prototype, "muted", {
+                    get: function() { return muteDesc.get.call(this); },
+                    set: function(val) {
+                        const locked = this.getAttribute("data-vs-locked-mute");
+                        if (locked !== null) {
+                            const target = locked === "true";
+                            if (val !== target) {
+                                console.log("Volume Scroll: Intercepted site mute set:", val, "keeping:", target);
+                                return;
+                            }
+                        }
+                        originalMuteSet.call(this, val);
+                    },
+                    configurable: true
+                });
+            })();
+        `;
+        const script = document.createElement("script");
+        script.textContent = code;
+        (document.head || document.documentElement).appendChild(script);
+        script.remove();
+    }
+
+    private updateLockedAttributes(video: HTMLVideoElement) {
+        const state = this.volumeTargets.get(video);
+        if (!state) return;
+
+        if (this.settings.useMouseWheelVolume) {
+            const target = state.targetVolume > 1 ? 1 : state.targetVolume;
+            video.setAttribute("data-vs-locked-volume", target.toString());
+        } else {
+            video.removeAttribute("data-vs-locked-volume");
+        }
+
+        if (this.settings.useToggleMuteKey) {
+            const targetMute = state.isMuted || state.targetVolume <= 0;
+            video.setAttribute("data-vs-locked-mute", targetMute.toString());
+        } else {
+            video.removeAttribute("data-vs-locked-mute");
+        }
+    }
+
     private attachVolumeWatchdog(video: HTMLVideoElement, debug: (message: String, extra?: any) => void): void {
         this.watchdogs.add(video);
         debug("Attached volume watchdog");
 
-        video.addEventListener("volumechange", () => {
+        // Inject the page-level interceptor once
+        this.injectInterceptor(debug);
+
+        const enforceVolume = () => {
             const state: VideoState | undefined = this.volumeTargets.get(video);
 
             if (state === undefined) return;
 
-            const needsRevert = this.shouldRevertVolume(video, video.volume, state.targetVolume) ||
-                (state.isMuted && !video.muted) ||
-                (state.targetVolume > 1 && video.muted);
+            // Only enforce if the corresponding feature is enabled
+            const enforceVolume = this.settings.useMouseWheelVolume;
+            const enforceMute = this.settings.useToggleMuteKey;
+
+            if (!enforceVolume && !enforceMute) return;
+
+            const needsRevert = (enforceVolume && this.shouldRevertVolume(video, video.volume, state.targetVolume)) ||
+                (enforceMute && ((state.isMuted && !video.muted) || (state.targetVolume > 1 && video.muted)));
 
             if (needsRevert) {
-                debug(`Site tried to change volume/mute to ${video.volume} (muted: ${video.muted}), forcing back to ${state.targetVolume} (muted: ${state.isMuted || state.targetVolume <= 0})`, video);
+                debug(`Site tried to change volume/mute to ${video.volume} (muted: ${video.muted}), forcing back to internal state: ${state.targetVolume} (muted: ${state.isMuted || state.targetVolume <= 0})`, video);
 
-                // Force it back
-                if (state.targetVolume > 1) {
-                    video.volume = 1;
-                    video.muted = false;
-                    // Ensure gain is correct (re-apply boost)
-                    const gainNode = this.getGainNode(video, debug);
-                    if (gainNode) {
-                        gainNode.gain.value = state.targetVolume;
-                    }
-                } else {
-                    video.volume = state.targetVolume;
-                    video.muted = state.isMuted || state.targetVolume <= 0;
+                // Force it back. We use setTimeout to ensure we run after any other site listeners
+                setTimeout(() => {
+                    if (state.targetVolume > 1) {
+                        this.isSettingInternally = true;
+                        video.volume = 1;
+                        video.muted = false;
+                        this.isSettingInternally = false;
+                        // Ensure gain is correct (re-apply boost)
+                        const gainNode = this.getGainNode(video, debug);
+                        if (gainNode) {
+                            gainNode.gain.value = state.targetVolume;
+                        }
+                    } else {
+                        this.isSettingInternally = true;
+                        video.volume = state.targetVolume;
+                        video.muted = state.isMuted || state.targetVolume <= 0;
+                        this.isSettingInternally = false;
 
-                    // Reset gain if exists
-                    const gainNode = this.gainNodes.get(video);
-                    if (gainNode) {
-                        gainNode.gain.value = 1;
+                        // Reset gain if exists
+                        const gainNode = this.gainNodes.get(video);
+                        if (gainNode) {
+                            gainNode.gain.value = 1;
+                        }
                     }
-                }
+
+                    // Alert site of the change we just made.
+                    this.isSettingInternally = true;
+                    video.dispatchEvent(new Event("volumechange"));
+                    this.isSettingInternally = false;
+                }, 0);
             }
-        });
+        };
+
+        video.addEventListener("volumechange", enforceVolume);
+
+        // Some sites reset volume on play/playing without necessarily triggering volumechange correctly,
+        // or they do it right after play starts.
+        video.addEventListener("play", enforceVolume);
+        video.addEventListener("playing", enforceVolume);
     }
 
     protected setVolume(volume: number, video: HTMLVideoElement, debug: (message: String, extra?: any) => void): number {
@@ -315,8 +416,10 @@ export class DefaultHandler {
 
             if (gainNode) {
                 // We can boost
+                this.isSettingInternally = true;
                 video.volume = 1; // Max out the actual video element
                 video.muted = false;
+                this.isSettingInternally = false;
 
                 // 100 = 1x gain. 500 = 5x gain.
                 const gainValue = volume / 100;
@@ -333,8 +436,10 @@ export class DefaultHandler {
             } else {
                 // Fallback if boosting fails (CORS, etc)
                 debug("Boosting failed or not allowed, capping at 100%");
+                this.isSettingInternally = true;
                 video.volume = 1;
                 video.muted = false;
+                this.isSettingInternally = false;
 
                 // Correct the target since we failed to boost
                 state.targetVolume = 1;
@@ -343,8 +448,10 @@ export class DefaultHandler {
             }
         } else {
             // Normal volume logic
+            this.isSettingInternally = true;
             video.volume = volume / 100;
             video.muted = volume <= 0;
+            this.isSettingInternally = false;
 
             // Reset gain if it exists
             const gainNode = this.gainNodes.get(video);
@@ -362,8 +469,13 @@ export class DefaultHandler {
             this.attachVolumeWatchdog(video, debug);
         }
 
+        // Update locked attributes for page-level interceptor
+        this.updateLockedAttributes(video);
+
         // Alert site of change
+        this.isSettingInternally = true;
         video.dispatchEvent(new Event("volumechange"));
+        this.isSettingInternally = false;
 
         return effectiveVolume;
     }
@@ -422,9 +534,9 @@ export class DefaultHandler {
 
         // Rounding the volume to the nearest increment, in case the original volume was not on the increment
         if (newVolume > threshold) {
-            newVolume = newVolume / this.settings.volumeIncrement;
+            newVolume = newVolume / increment;
             newVolume = Math.round(newVolume);
-            newVolume = newVolume * this.settings.volumeIncrement;
+            newVolume = newVolume * increment;
         }
 
         // Limiting the volume to between 0 - max volume
@@ -526,7 +638,9 @@ export class DefaultHandler {
 
         if (this.settings.startMuted) {
             debug("Start muted is enabled, muting video");
+            this.isSettingInternally = true;
             video.muted = true;
+            this.isSettingInternally = false;
             const state = this.volumeTargets.get(video);
             if (state) state.isMuted = true;
         }
@@ -566,16 +680,22 @@ export class DefaultHandler {
             debug(`Unmuting. Restoring volume to ${state.lastUnmutedVolume}`);
             this.setVolume(state.lastUnmutedVolume * 100, video, debug);
             this.updateOverlay(e, videoGroup.display, "unmute", state.lastUnmutedVolume * 100, body, debug);
+            this.isSettingInternally = true;
             video.muted = false;
+            this.isSettingInternally = false;
             state.isMuted = false;
+            this.updateLockedAttributes(video);
         } else {
             // Mute: Save current volume and set to 0
             debug(`Muting. Saving volume ${state.targetVolume} and setting to 0`);
             state.lastUnmutedVolume = state.targetVolume;
             this.setVolume(0, video, debug);
             this.updateOverlay(e, videoGroup.display, "mute", state.lastUnmutedVolume * 100, body, debug);
+            this.isSettingInternally = true;
             video.muted = true;
+            this.isSettingInternally = false;
             state.isMuted = true;
+            this.updateLockedAttributes(video);
         }
 
         return true;
