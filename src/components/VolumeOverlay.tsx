@@ -12,12 +12,26 @@ export interface VolumeOverlayProps {
 
 export const VolumeOverlay: React.FC<VolumeOverlayProps> = ({ type, volume, x, y, settings, animationKey }) => {
     const [lastUnmuteTime, setLastUnmuteTime] = useState(0);
+    const [, setRefreshCount] = useState(0);
 
     useEffect(() => {
         if (type === "unmute") {
             setLastUnmuteTime(Date.now());
         }
-    }, [type]);
+    }, [type, animationKey]);
+
+    const unmuteDuration = settings.overlayDuration === 0 ? 2000 : settings.overlayDuration;
+    const isUnmutedSticky = (type === "unmute" && lastUnmuteTime === 0) || (Date.now() - lastUnmuteTime) < unmuteDuration;
+
+    useEffect(() => {
+        if (isUnmutedSticky && settings.overlayDuration === 0) {
+            const remaining = unmuteDuration - (Date.now() - lastUnmuteTime);
+            const timer = setTimeout(() => {
+                setRefreshCount(prev => prev + 1);
+            }, remaining + 50);
+            return () => clearTimeout(timer);
+        }
+    }, [isUnmutedSticky, lastUnmuteTime, unmuteDuration, settings.overlayDuration]);
 
     const fadeStartPercentage = settings.overlayDuration > 250
         ? Math.round(((settings.overlayDuration - 250) / settings.overlayDuration) * 100)
@@ -42,7 +56,6 @@ export const VolumeOverlay: React.FC<VolumeOverlayProps> = ({ type, volume, x, y
     );
 
     const renderContent = () => {
-        const isUnmutedSticky = (Date.now() - lastUnmuteTime) < settings.overlayDuration;
         const volumeDisplay = Math.round(volume);
 
         if (volumeDisplay === 0) {
@@ -55,7 +68,6 @@ export const VolumeOverlay: React.FC<VolumeOverlayProps> = ({ type, volume, x, y
 
         switch (type) {
             case "unmute":
-                return unmuteContent;
             case "volume":
                 return isUnmutedSticky ? unmuteContent : volumeDisplay;
             case "mute":
