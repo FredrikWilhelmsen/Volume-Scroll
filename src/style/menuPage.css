@@ -1,5 +1,5 @@
 .menuContainer {
-    display: flex;
+	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
@@ -24,9 +24,9 @@ footer a {
 
 #debugIcon {
 	position: absolute;
-    bottom: 0;
-    right: 0;
-    margin: 10px;
+	bottom: 0;
+	right: 0;
+	margin: 10px;
 	width: 16px;
 	height: 16px;
 	border-style: solid;
@@ -34,4 +34,15 @@ footer a {
 	border-radius: 50%;
 	border-color: grey;
 	border-width: 1px;
+	cursor: pointer;
+}
+
+#versionNumber {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	margin: 10px;
+	font-size: 11px;
+	color: gray;
+	pointer-events: auto;
 }

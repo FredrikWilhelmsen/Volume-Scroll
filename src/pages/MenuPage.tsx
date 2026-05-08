@@ -120,6 +120,9 @@ const MenuPage: React.FC<MenuPageInterface> = ({ settings, editSetting, setPage 
                     {settings.doDebugLog && <div id="debugIcon" onClick={handleCopyLogs}></div>}
                 </div>
             </Tooltip>
+            <Tooltip title={`Volume Scroll version ${browser.runtime.getManifest().version}`} placement="top-start" disableInteractive>
+                <Typography id="versionNumber" variant="body2">{`v${browser.runtime.getManifest().version}`}</Typography>
+            </Tooltip>
         </div>
     );
 }
