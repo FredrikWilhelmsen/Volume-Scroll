@@ -11,7 +11,7 @@ export class DefaultHandler {
     protected volumeTargets = new WeakMap<HTMLVideoElement, VideoState>();
     protected watchdogs = new WeakSet<HTMLVideoElement>();
     protected isSettingInternally = false;
-    private static interceptorInjected = false;
+
 
     // Web Audio API
     protected audioCtx: AudioContext | null = null;
@@ -252,59 +252,7 @@ export class DefaultHandler {
         return difference > 0.001;
     }
 
-    private injectInterceptor(debug: (message: String, extra?: any) => void) {
-        if (DefaultHandler.interceptorInjected) return;
-        DefaultHandler.interceptorInjected = true;
 
-        debug("Injecting page-level volume interceptor");
-
-        const code = `
-            (function() {
-                const volDesc = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, "volume");
-                const muteDesc = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, "muted");
-                if (!volDesc || !muteDesc) return;
-
-                const originalVolSet = volDesc.set;
-                const originalMuteSet = muteDesc.set;
-
-                Object.defineProperty(HTMLMediaElement.prototype, "volume", {
-                    get: function() { return volDesc.get.call(this); },
-                    set: function(val) {
-                        const locked = this.getAttribute("data-vs-locked-volume");
-                        if (locked !== null) {
-                            const target = parseFloat(locked);
-                            if (Math.abs(val - target) > 0.001) {
-                                console.log("Volume Scroll: Intercepted site volume set:", val, "keeping:", target);
-                                return;
-                            }
-                        }
-                        originalVolSet.call(this, val);
-                    },
-                    configurable: true
-                });
-
-                Object.defineProperty(HTMLMediaElement.prototype, "muted", {
-                    get: function() { return muteDesc.get.call(this); },
-                    set: function(val) {
-                        const locked = this.getAttribute("data-vs-locked-mute");
-                        if (locked !== null) {
-                            const target = locked === "true";
-                            if (val !== target) {
-                                console.log("Volume Scroll: Intercepted site mute set:", val, "keeping:", target);
-                                return;
-                            }
-                        }
-                        originalMuteSet.call(this, val);
-                    },
-                    configurable: true
-                });
-            })();
-        `;
-        const script = document.createElement("script");
-        script.textContent = code;
-        (document.head || document.documentElement).appendChild(script);
-        script.remove();
-    }
 
     private updateLockedAttributes(video: HTMLVideoElement) {
         const state = this.volumeTargets.get(video);
@@ -328,9 +276,6 @@ export class DefaultHandler {
     private attachVolumeWatchdog(video: HTMLVideoElement, debug: (message: String, extra?: any) => void): void {
         this.watchdogs.add(video);
         debug("Attached volume watchdog");
-
-        // Inject the page-level interceptor once
-        this.injectInterceptor(debug);
 
         const enforceVolume = () => {
             const state: VideoState | undefined = this.volumeTargets.get(video);
