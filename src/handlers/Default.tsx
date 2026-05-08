@@ -252,8 +252,6 @@ export class DefaultHandler {
         return difference > 0.001;
     }
 
-
-
     private updateLockedAttributes(video: HTMLVideoElement) {
         const state = this.volumeTargets.get(video);
         if (!state) return;

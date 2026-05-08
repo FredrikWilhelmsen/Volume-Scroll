@@ -111,6 +111,11 @@ export const init = () => {
                             deltaY: event.data.deltaY,
                             clientX: mouseX,
                             clientY: mouseY,
+                            buttons: event.data.buttons,
+                            ctrlKey: event.data.ctrlKey,
+                            shiftKey: event.data.shiftKey,
+                            altKey: event.data.altKey,
+                            metaKey: event.data.metaKey,
                             preventDefault: () => { },
                             stopPropagation: () => { },
                             stopImmediatePropagation: () => { }
@@ -121,7 +126,22 @@ export const init = () => {
 
                     if (event.data.type === "VOLUME_MUTE_RELAY") {
                         debug("Received Mute Relay");
-                        handler.toggleMute(event as unknown as MouseEvent, body, debug);
+
+                        // Construct synthetic event
+                        const syntheticEvent = {
+                            clientX: mouseX,
+                            clientY: mouseY,
+                            buttons: event.data.buttons,
+                            ctrlKey: event.data.ctrlKey,
+                            shiftKey: event.data.shiftKey,
+                            altKey: event.data.altKey,
+                            metaKey: event.data.metaKey,
+                            preventDefault: () => { },
+                            stopPropagation: () => { },
+                            stopImmediatePropagation: () => { }
+                        } as any as MouseEvent;
+
+                        handler.toggleMute(syntheticEvent, body, debug);
                     }
                 }
 
@@ -269,7 +289,12 @@ export function onScroll(e: WheelEvent): void {
             // "*" allows communication even if the iframe is cross-origin
             window.parent.postMessage({
                 type: "VOLUME_SCROLL_RELAY",
-                deltaY: e.deltaY
+                deltaY: e.deltaY,
+                buttons: e.buttons,
+                ctrlKey: e.ctrlKey,
+                shiftKey: e.shiftKey,
+                altKey: e.altKey,
+                metaKey: e.metaKey
             }, "*");
 
             return;
@@ -323,7 +348,14 @@ export function onMouseDown(e: MouseEvent): void {
                 e.preventDefault();
                 e.stopPropagation();
 
-                window.parent.postMessage({ type: "VOLUME_MUTE_RELAY" }, "*");
+                window.parent.postMessage({
+                    type: "VOLUME_MUTE_RELAY",
+                    buttons: e.buttons,
+                    ctrlKey: e.ctrlKey,
+                    shiftKey: e.shiftKey,
+                    altKey: e.altKey,
+                    metaKey: e.metaKey
+                }, "*");
                 return;
             }
         }
