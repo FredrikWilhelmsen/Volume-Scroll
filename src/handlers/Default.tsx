@@ -433,9 +433,14 @@ export class DefaultHandler {
 
         if (state !== undefined && !isNaN(state.targetVolume)) {
             // If currently muted, we want to scroll relative to the last unmuted volume
-            if (state.isMuted || state.targetVolume === 0) {
+            if (state.isMuted && state.targetVolume > 0) {
                 previousVolume = Math.round(state.lastUnmutedVolume * 100);
                 type = "unmute";
+            } else if (state.targetVolume === 0) {
+                previousVolume = 0;
+                if (direction === 1) {
+                    type = "unmute";
+                }
             } else {
                 previousVolume = Math.round(state.targetVolume * 100);
             }
