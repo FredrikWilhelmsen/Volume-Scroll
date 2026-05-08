@@ -45,6 +45,10 @@ export const VolumeOverlay: React.FC<VolumeOverlayProps> = ({ type, volume, x, y
         const isUnmutedSticky = (Date.now() - lastUnmuteTime) < settings.overlayDuration;
         const volumeDisplay = Math.round(volume);
 
+        if (volumeDisplay === 0) {
+            return <MutedIcon />;
+        }
+
         const unmuteContent = settings.overlayXPos <= 50
             ? <React.Fragment>{volumeDisplay} <UnmutedIcon /></React.Fragment>
             : <React.Fragment><UnmutedIcon /> {volumeDisplay}</React.Fragment>;
