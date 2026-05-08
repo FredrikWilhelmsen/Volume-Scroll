@@ -45,6 +45,10 @@ const ScrollPage: React.FC<ScrollPageInterface> = ({ settings, editSetting, setP
         setincrement(value);
     }
 
+    const handleRoundToNearestIncrementToggle = (_e: Event | React.SyntheticEvent, value: any) => {
+        editSetting("useRoundToNearestIncrement", value);
+    }
+
     const handlePreciseScrollToggle = (_e: Event | React.SyntheticEvent, value: any) => {
         editSetting("usePreciseScroll", value);
     }
@@ -124,6 +128,19 @@ const ScrollPage: React.FC<ScrollPageInterface> = ({ settings, editSetting, setP
                             />
                         </Tooltip>
                     </div>
+                </div>
+                <div id="useRoundToNearestIncrementContainer">
+                    <Tooltip title="Round volume to the nearest increment after scrolling" placement="top" disableInteractive>
+                        <FormControlLabel
+                            onChange={handleRoundToNearestIncrementToggle}
+                            control={
+                                <Switch
+                                    checked={settings.useRoundToNearestIncrement}
+                                    disabled={!settings.useMouseWheelVolume}
+                                />}
+                            label="Round to increment"
+                        />
+                    </Tooltip>
                 </div>
                 <div id="preciseScrollContainer">
                     <Tooltip title="Scroll increment changes to 1 when volume is at or below normal increment" placement="top" disableInteractive>

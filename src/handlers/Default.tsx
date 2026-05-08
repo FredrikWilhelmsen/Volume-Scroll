@@ -533,7 +533,7 @@ export class DefaultHandler {
         let newVolume: number = previousVolume + (increment * direction);
 
         // Rounding the volume to the nearest increment, in case the original volume was not on the increment
-        if (newVolume > threshold) {
+        if (this.settings.useRoundToNearestIncrement && newVolume > threshold) {
             newVolume = newVolume / increment;
             newVolume = Math.round(newVolume);
             newVolume = newVolume * increment;

@@ -5,6 +5,7 @@ export interface Settings {
 
     useMouseWheelVolume: boolean,
     volumeIncrement: number,
+    useRoundToNearestIncrement: boolean,
     useAlternateVolumeIncrement: boolean,
     alternateVolumeIncrement: number,
     alternateVolumeIncrementHotkey: string,
@@ -46,6 +47,7 @@ export const defaultSettings: Settings = {
 
     useMouseWheelVolume: true,
     volumeIncrement: 5,
+    useRoundToNearestIncrement: true,
     useAlternateVolumeIncrement: false,
     alternateVolumeIncrement: 10,
     alternateVolumeIncrementHotkey: "Shift",
