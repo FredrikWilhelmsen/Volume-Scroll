@@ -29,6 +29,9 @@ export class DefaultHandler {
     protected tagNamesToIgnore: string[] = [];
     protected classNamesToIgnore: string[] = [];
 
+    protected scrollAccumulator: number = 0;
+    protected lastScrollTime: number = 0;
+
 
     public updateSettings(newSettings: Settings): void {
         this.settings = newSettings;
@@ -531,7 +534,32 @@ export class DefaultHandler {
         if (e.stopImmediatePropagation) e.stopImmediatePropagation();
 
         // Get scroll direction
-        const direction: number = Math.round(e.deltaY / 100 * -1);
+        // Accumulate scroll deltas until threshold is reached
+        const now = Date.now();
+        if (now - this.lastScrollTime > 500) {
+            this.scrollAccumulator = 0;
+        }
+
+        this.lastScrollTime = now;
+
+        let delta = e.deltaY;
+        if (e.deltaMode === 1) { // Lines
+            delta *= 33.3;
+        } else if (e.deltaMode === 2) { // Pages
+            delta *= 333;
+        }
+
+        this.scrollAccumulator += delta;
+
+        // Haven't reached threshold for a step, wait for more events.
+        if (Math.abs(this.scrollAccumulator) < 50) {
+            return;
+        }
+
+        // Threshold reached, calculate direction and reset accumulator.
+        const direction: number = this.scrollAccumulator > 0 ? -1 : 1;
+        this.scrollAccumulator = 0;
+
         debug("Scroll direction: " + `${direction > 0 ? "UP" : "DOWN"}`, direction);
 
         // Modify volume
