@@ -1,4 +1,5 @@
-import { Settings, videoElements } from "../types";
+import { videoElements } from "../types";
+import { debug } from "../utils";
 import { DefaultHandler } from "./Default";
 
 export class RedditHandler extends DefaultHandler {
@@ -9,8 +10,8 @@ export class RedditHandler extends DefaultHandler {
 
     private lastUserSetVolume: number | null = null;
 
-    protected setVolume(volume: number, video: HTMLVideoElement, debug: (message: String, extra?: any) => void): number {
-        let effectiveVolume = super.setVolume(volume, video, debug);
+    protected setVolume(volume: number, video: HTMLVideoElement): number {
+        let effectiveVolume = super.setVolume(volume, video);
 
         // Defensive check
         if (effectiveVolume === undefined || isNaN(effectiveVolume)) {
@@ -42,8 +43,7 @@ export class RedditHandler extends DefaultHandler {
 
                     // Apply the boost to this video too
                     // We need to use getGainNode. Since we are in an override, we have access to it.
-                    // We'll pass a no-op debug function since we don't have access to the original one easily here.
-                    const gainNode = this.getGainNode(video, () => { });
+                    const gainNode = this.getGainNode(video);
                     if (gainNode) {
                         gainNode.gain.value = this.lastUserSetVolume;
                     }
@@ -84,7 +84,8 @@ export class RedditHandler extends DefaultHandler {
         return super.shouldRevertVolume(video, currentVolume, targetVolume);
     }
 
-    protected startVideoObserver(body: HTMLElement, debug: (message: String, extra?: any) => void) {
+    protected startVideoObserver(body: HTMLElement) {
+
         if (this.observer) return;
 
         debug("Starting MutationObserver");
@@ -97,7 +98,7 @@ export class RedditHandler extends DefaultHandler {
             if (video) {
                 debug("Found video immediately in shadow root: ", video);
                 debug("Setting default volume: " + this.settings.defaultVolume);
-                this.setVolume(this.settings.defaultVolume, video as HTMLVideoElement, debug);
+                this.setVolume(this.settings.defaultVolume, video as HTMLVideoElement);
                 return;
             }
 
@@ -110,7 +111,7 @@ export class RedditHandler extends DefaultHandler {
                 if (lateVideo) {
                     debug("Found video in shadow root", lateVideo);
                     debug("Setting default volume: " + this.settings.defaultVolume);
-                    this.setVolume(this.settings.defaultVolume, lateVideo as HTMLVideoElement, debug);
+                    this.setVolume(this.settings.defaultVolume, lateVideo as HTMLVideoElement);
 
                     // Once found, we don't need to watch this specific shadow root anymore
                     obs.disconnect();
@@ -164,7 +165,8 @@ export class RedditHandler extends DefaultHandler {
         return videos;
     }
 
-    protected getVideo(mouseX: number, mouseY: number, debug: (message: String, extra?: any) => void): videoElements | null {
+    protected getVideo(mouseX: number, mouseY: number): videoElements | null {
+
         const elements = document.elementsFromPoint(mouseX, mouseY);
 
         for (const element of elements) {

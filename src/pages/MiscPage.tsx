@@ -9,6 +9,7 @@ import Switch from '@mui/material/Switch/Switch';
 import "../style/miscPage.css"
 import { Button, TextField, IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { getMouseKey } from '../utils';
 
 interface MiscPageInterface {
     settings: Settings,
@@ -51,19 +52,24 @@ const MiscPage: React.FC<MiscPageInterface> = ({ settings, editSetting, setPage 
             e.preventDefault();
             e.stopPropagation();
 
-            const getMouseKey = (key: number): string | undefined => {
-                switch (key) {
-                    case 0: return "Left Mouse";
-                    case 1: return "Middle Mouse";
-                    case 2: return "Right Mouse";
-                    case 3: return "Mouse 4";
-                    case 4: return "Mouse 5";
-                    default: return undefined;
-                }
-            }
 
-            if (isSettingAlternateIncrementKey) {
-                editSetting("alternateVolumeIncrementHotkey", getMouseKey(e.button));
+            const mouseKey = getMouseKey(e.button);
+            if (!mouseKey) return;
+
+            editSetting("alternateVolumeIncrementHotkey", mouseKey);
+            setIsSettingAlternateIncrementKey(false);
+            lastSetTime.current = Date.now();
+        };
+
+        const handleMouseMove = (e: MouseEvent) => {
+            if (!isSettingAlternateIncrementKey) return;
+
+            let detectedKey: string | undefined;
+            if (e.buttons & 8) detectedKey = "Mouse 4";
+            else if (e.buttons & 16) detectedKey = "Mouse 5";
+
+            if (detectedKey) {
+                editSetting("alternateVolumeIncrementHotkey", detectedKey);
                 setIsSettingAlternateIncrementKey(false);
                 lastSetTime.current = Date.now();
             }
@@ -82,12 +88,18 @@ const MiscPage: React.FC<MiscPageInterface> = ({ settings, editSetting, setPage 
         window.addEventListener("keydown", handleKeyDown);
         window.addEventListener("keyup", handleKeyUp);
         window.addEventListener("mousedown", handleMouseDown);
+        window.addEventListener("auxclick", handleMouseDown);
+        window.addEventListener("mousemove", handleMouseMove);
+        window.addEventListener("pointermove", handleMouseMove);
 
         return () => {
             window.removeEventListener("contextmenu", handleContextMenu);
             window.removeEventListener("keydown", handleKeyDown);
             window.removeEventListener("keyup", handleKeyUp);
             window.removeEventListener("mousedown", handleMouseDown);
+            window.removeEventListener("auxclick", handleMouseDown);
+            window.removeEventListener("mousemove", handleMouseMove);
+            window.removeEventListener("pointermove", handleMouseMove);
         };
     }, [isSettingAlternateIncrementKey, editSetting]);
 

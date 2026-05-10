@@ -1,5 +1,8 @@
 import browser from "webextension-polyfill";
-import { Settings, defaultSettings, logElement } from "./types";
+import { isHotkeyPressed, getMouseKey, debug, setUtilSettings, getLogList, addLog } from "./utils";
+
+
+import { Settings, defaultSettings } from "./types";
 
 import { DefaultHandler } from "./handlers/Default";
 import { YoutubeHandler } from "./handlers/Youtube";
@@ -35,67 +38,13 @@ let mouseX: number = 0;
 let mouseY: number = 0;
 let preventContextMenu: boolean = false;
 let preventMiddleClick: boolean = false;
-let logList: logElement[] = [];
-
-const deepSanitize = (obj: any): any => {
-    if (obj === null || typeof obj !== "object") {
-        return obj;
-    }
-
-    if (obj instanceof HTMLElement) {
-        return `<${obj.tagName.toLowerCase()}${obj.id ? ` id="${obj.id}"` : ""}${obj.className ? ` class="${obj.className}"` : ""}>`;
-    }
-
-    if (obj instanceof Event) {
-        return `Event: ${obj.type}`;
-    }
-
-    if (Array.isArray(obj)) {
-        return obj.map(deepSanitize);
-    }
-
-    const sanitizedObj: any = {};
-    for (const key in obj) {
-        if (Object.prototype.hasOwnProperty.call(obj, key)) {
-            sanitizedObj[key] = deepSanitize(obj[key]);
-        }
-    }
-    return sanitizedObj;
-};
-
-const debug = function (message: String, extra?: any): void {
-    const sanitizedExtra = deepSanitize(extra);
-
-    logList.push({ text: message, extra: sanitizedExtra });
-
-    // If we are in an iframe, relay the log to the parent
-    if (window.self !== window.top) {
-        window.parent.postMessage({
-            type: "VOLUME_LOG_RELAY",
-            log: { text: `[Frame: ${window.location.hostname}] ${message}`, extra: sanitizedExtra }
-        }, "*");
-    }
-
-    if (!settings.doDebugLog) return;
-
-    if (extra) {
-        console.log("Volume Scroll: " + message, extra);
-    }
-    else {
-        console.log("Volume Scroll: " + message);
-    }
-}
 
 export const init = () => {
     browser.storage.sync.get("settings")
         .then((result) => {
-            if (result.settings) {
-                settings = { ...defaultSettings, ...result.settings };
-            } else {
-                settings = defaultSettings;
-            }
-
+            settings = result.settings ? { ...defaultSettings, ...result.settings } : defaultSettings;
             const { domainList, ...settingsToLog } = settings;
+            setUtilSettings(settings);
             debug("Settings loaded: ", settingsToLog);
             handler.updateSettings(settings);
 
@@ -109,6 +58,7 @@ export const init = () => {
                         // Construct synthetic event
                         const syntheticEvent = {
                             deltaY: event.data.deltaY,
+                            deltaMode: event.data.deltaMode,
                             clientX: mouseX,
                             clientY: mouseY,
                             buttons: event.data.buttons,
@@ -141,7 +91,8 @@ export const init = () => {
                             stopImmediatePropagation: () => { }
                         } as any as MouseEvent;
 
-                        handler.toggleMute(syntheticEvent, body, debug);
+                        handler.toggleMute(syntheticEvent, body);
+
                     }
                 }
 
@@ -149,7 +100,7 @@ export const init = () => {
                 if (event.data.type === "VOLUME_LOG_RELAY") {
                     if (window.top === window.self) {
                         // We are at the top, aggregate it
-                        logList.push(event.data.log);
+                        addLog(event.data.log);
                     } else {
                         // Relay it to the next parent
                         window.parent.postMessage(event.data, "*");
@@ -171,6 +122,7 @@ browser.storage.onChanged.addListener((changes, areaName) => {
     if (!changes.settings) return;
 
     settings = changes.settings.newValue as Settings;
+    setUtilSettings(settings);
     handler.updateSettings(settings);
     const { domainList, ...settingsToLog } = settings;
     debug("Settings reapplied: ", settingsToLog);
@@ -185,26 +137,13 @@ browser.runtime.onMessage.addListener((message: any) => {
         const { domainList, ...settingsToLog } = settings;
         const debugData = {
             settings: settingsToLog,
-            logs: logList
+            logs: getLogList()
         };
 
         return Promise.resolve(debugData);
     }
 });
 
-const isHotkeyPressed = (e: MouseEvent | WheelEvent, hotkey: string): boolean => {
-    switch (hotkey) {
-        case "Left Mouse": return (e.buttons & 1) !== 0;
-        case "Right Mouse": return (e.buttons & 2) !== 0;
-        case "Middle Mouse": return (e.buttons & 4) !== 0;
-        case "Mouse 4": return (e.buttons & 8) !== 0;
-        case "Mouse 5": return (e.buttons & 16) !== 0;
-        case "Shift": return e.shiftKey;
-        case "Alt": return e.altKey;
-        case "Control": return e.ctrlKey;
-        default: return false;
-    }
-}
 
 const isFullscreen = function (): boolean {
     return document.fullscreenElement != null;
@@ -271,7 +210,7 @@ export function onScroll(e: WheelEvent): void {
         const elementsAtPoint = document.elementsFromPoint(e.clientX, e.clientY);
 
         // If the handler says this area should be ignored, then we respect that and allow default scrolling
-        if (handler.isIgnored(elementsAtPoint, debug)) {
+        if (handler.isIgnored(elementsAtPoint)) {
             debug("Area is blacklisted by handler, allowing default scroll");
             return;
         }
@@ -290,6 +229,7 @@ export function onScroll(e: WheelEvent): void {
             window.parent.postMessage({
                 type: "VOLUME_SCROLL_RELAY",
                 deltaY: e.deltaY,
+                deltaMode: e.deltaMode,
                 buttons: e.buttons,
                 ctrlKey: e.ctrlKey,
                 shiftKey: e.shiftKey,
@@ -317,18 +257,8 @@ export function onScroll(e: WheelEvent): void {
         preventMiddleClick = true;
     }
 
-    handler.scroll(e, body, isAltVolumeKeyPressed, debug);
-}
+    handler.scroll(e, body);
 
-const getMouseKey = (key: number): string | undefined => {
-    switch (key) {
-        case 0: return "Left Mouse";
-        case 1: return "Middle Mouse";
-        case 2: return "Right Mouse";
-        case 3: return "Mouse 4";
-        case 4: return "Mouse 5";
-        default: return undefined;
-    }
 }
 
 export function onMouseDown(e: MouseEvent): void {
@@ -361,7 +291,8 @@ export function onMouseDown(e: MouseEvent): void {
         }
 
         e.preventDefault();
-        const result: boolean = handler.toggleMute(e, body, debug);
+        const result: boolean = handler.toggleMute(e, body);
+
         debug("Toggle mute key pressed");
 
         if (getMouseKey(e.button) === "Right Mouse") {
@@ -391,7 +322,8 @@ export function onPageLoad(): void {
     if (!settings.useDefaultVolume) return;
     debug("Using handler: " + handler.getName());
     debug("Hostname: " + window.location.hostname);
-    handler.setDefaultVolume(body, debug);
+    handler.setDefaultVolume(body);
+
 }
 
 export function onContextMenu(e: MouseEvent): void {

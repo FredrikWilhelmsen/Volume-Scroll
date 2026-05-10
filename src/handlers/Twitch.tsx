@@ -1,4 +1,5 @@
-import { Settings, videoElements } from "../types";
+import { videoElements } from "../types";
+import { debug } from "../utils";
 import { DefaultHandler } from "./Default";
 
 export class TwitchHandler extends DefaultHandler {
@@ -12,7 +13,8 @@ export class TwitchHandler extends DefaultHandler {
 
 
 
-    protected setVolume(volume: number, video: HTMLVideoElement, debug: (message: String, extra?: any) => void): number {
+    protected setVolume(volume: number, video: HTMLVideoElement): number {
+
         // If the video is hidden (no dimensions), do not unmute it.
         if (video.offsetWidth === 0 && video.offsetHeight === 0) {
             debug("Video is hidden (0 dimensions), ignoring setVolume/unmute", video);
@@ -34,10 +36,11 @@ export class TwitchHandler extends DefaultHandler {
             return 0;
         }
 
-        return super.setVolume(volume, video, debug);
+        return super.setVolume(volume, video);
     }
 
-    protected getVideo(mouseX: number, mouseY: number, debug: (message: String, extra?: any) => void): videoElements | null {
+    protected getVideo(mouseX: number, mouseY: number): videoElements | null {
+
         const video = document.getElementsByTagName("VIDEO")[0];
         debug("Got video: ", video);
 
