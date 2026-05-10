@@ -1,4 +1,4 @@
-import { Settings, videoElements } from "../types";
+import { videoElements } from "../types";
 import { DefaultHandler } from "./Default";
 
 export class YTMusicHandler extends DefaultHandler {
@@ -7,7 +7,7 @@ export class YTMusicHandler extends DefaultHandler {
         "music.youtube.com"
     ];
 
-    protected getVideo(mouseX: number, mouseY: number, debug: (message: String, extra?: any) => void): videoElements | null {
+    protected getVideo(mouseX: number, mouseY: number): videoElements | null {
         const video = document.getElementsByTagName("VIDEO")[0];
         const bar = document.getElementsByTagName("YTMUSIC-PLAYER-BAR")[0];
         const player = document.getElementsByTagName("YTMUSIC-PLAYER")[0];

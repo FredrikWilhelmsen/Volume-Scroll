@@ -1,4 +1,6 @@
 import { Settings, videoElements, defaultSettings, VideoState, OverlayType } from "../types";
+import { isHotkeyPressed, debug } from "../utils";
+
 import { createRoot, Root } from "react-dom/client";
 import { VolumeOverlay } from "../components/VolumeOverlay";
 
@@ -51,7 +53,8 @@ export class DefaultHandler {
         }
     }
 
-    protected getGainNode(video: HTMLVideoElement, debug: (message: String, extra?: any) => void): GainNode | null {
+    protected getGainNode(video: HTMLVideoElement): GainNode | null {
+
         // Check invalid domains
         if (this.invalidDomains.some(d => window.location.hostname.includes(d))) {
             debug("Current domain is in invalidDomains list, skipping Web Audio API");
@@ -130,7 +133,8 @@ export class DefaultHandler {
         return false;
     }
 
-    public isIgnored(elements: Element[], debug: (message: String, extra?: any) => void): boolean {
+    public isIgnored(elements: Element[]): boolean {
+
         const scrollLists = elements.find(el =>
             this.tagNamesToIgnore.includes(el.tagName) ||
             this.classNamesToIgnore.some(className => el.classList.contains(className))
@@ -139,7 +143,8 @@ export class DefaultHandler {
         return !!scrollLists;
     }
 
-    protected getVideoFromElements(elements: Element[], debug: (message: String, extra?: any) => void): videoElements | null {
+    protected getVideoFromElements(elements: Element[]): videoElements | null {
+
         const video = elements.find(el => el.tagName === "VIDEO") as HTMLVideoElement | undefined;
 
         return video ? {
@@ -148,15 +153,15 @@ export class DefaultHandler {
         } : null;
     }
 
-    protected getVideo(mouseX: number, mouseY: number, debug: (message: String, extra?: any) => void): videoElements | null {
+    protected getVideo(mouseX: number, mouseY: number): videoElements | null {
         const elements = document.elementsFromPoint(mouseX, mouseY);
 
-        if (this.isIgnored(elements, debug)) {
+        if (this.isIgnored(elements)) {
             debug("Found blacklisted overlay, aborting scroll");
             return null;
         }
 
-        return this.getVideoFromElements(elements, debug);
+        return this.getVideoFromElements(elements);
     }
 
     protected getAllVideos(): HTMLCollectionOf<Element> | HTMLVideoElement[] {
@@ -168,7 +173,8 @@ export class DefaultHandler {
     }
 
     private updateOverlay(e: MouseEvent, display: HTMLElement, type: OverlayType, volume: number,
-        body: HTMLElement, debug: (message: String, extra?: any) => void): void {
+        body: HTMLElement): void {
+
 
         if (!this.settings.useOverlay) return;
 
@@ -274,7 +280,8 @@ export class DefaultHandler {
         }
     }
 
-    private attachVolumeWatchdog(video: HTMLVideoElement, debug: (message: String, extra?: any) => void): void {
+    private attachVolumeWatchdog(video: HTMLVideoElement): void {
+
         this.watchdogs.add(video);
         debug("Attached volume watchdog");
 
@@ -303,7 +310,8 @@ export class DefaultHandler {
                         video.muted = false;
                         this.isSettingInternally = false;
                         // Ensure gain is correct (re-apply boost)
-                        const gainNode = this.getGainNode(video, debug);
+                        const gainNode = this.getGainNode(video);
+
                         if (gainNode) {
                             gainNode.gain.value = state.targetVolume;
                         }
@@ -336,7 +344,8 @@ export class DefaultHandler {
         video.addEventListener("playing", enforceVolume);
     }
 
-    protected setVolume(volume: number, video: HTMLVideoElement, debug: (message: String, extra?: any) => void): number {
+    protected setVolume(volume: number, video: HTMLVideoElement): number {
+
         debug(`New volume set to: ${volume}`)
 
         // Set volume initially
@@ -358,7 +367,7 @@ export class DefaultHandler {
 
         if (volume > 100) {
             // Uncapped volume logic
-            const gainNode = this.getGainNode(video, debug);
+            const gainNode = this.getGainNode(video);
 
             if (gainNode) {
                 // We can boost
@@ -412,7 +421,7 @@ export class DefaultHandler {
         }
 
         if (!this.watchdogs.has(video)) {
-            this.attachVolumeWatchdog(video, debug);
+            this.attachVolumeWatchdog(video);
         }
 
         // Update locked attributes for page-level interceptor
@@ -427,7 +436,8 @@ export class DefaultHandler {
     }
 
     private updateVolume(e: WheelEvent, videoGroup: videoElements, direction: number,
-        body: HTMLElement, isAltVolumeKeyPressed: boolean, debug: (message: String, extra?: any) => void): void {
+        body: HTMLElement): void {
+
 
         // Retrieve stored previous volume
         const state: VideoState | undefined = this.volumeTargets.get(videoGroup.video);
@@ -458,6 +468,7 @@ export class DefaultHandler {
         debug(`Previous volume was: ${previousVolume}`);
         let increment: number = this.settings.volumeIncrement;
         let threshold: number = this.settings.volumeIncrement;
+        const isAltVolumeKeyPressed = isHotkeyPressed(e, this.settings.alternateVolumeIncrementHotkey);
 
         if (this.settings.useAlternateVolumeIncrement && isAltVolumeKeyPressed) {
             increment = this.settings.alternateVolumeIncrement;
@@ -502,19 +513,22 @@ export class DefaultHandler {
 
         newVolume = Math.min(newVolume, maxVolume);
 
-        let effectiveVolume = this.setVolume(newVolume, videoGroup.video, debug);
+        let effectiveVolume = this.setVolume(newVolume, videoGroup.video);
+
 
         // Defensive check: if setVolume returns undefined/NaN (e.g. build issue), fallback to newVolume
         if (effectiveVolume === undefined || isNaN(effectiveVolume)) {
             effectiveVolume = newVolume;
         }
 
-        this.updateOverlay(e, videoGroup.display, type, effectiveVolume, body, debug);
+        this.updateOverlay(e, videoGroup.display, type, effectiveVolume, body);
+
     }
 
-    public scroll(e: WheelEvent, body: HTMLElement, isAltVolumeKeyPressed: boolean, debug: (message: String, extra?: any) => void): void {
+    public scroll(e: WheelEvent, body: HTMLElement): void {
         // Get video
-        const videoGroup: videoElements | null = this.getVideo(e.clientX, e.clientY, debug);
+        const videoGroup: videoElements | null = this.getVideo(e.clientX, e.clientY);
+
 
         if (videoGroup === null) {
             debug("Video group was null, returning");
@@ -563,10 +577,11 @@ export class DefaultHandler {
         debug("Scroll direction: " + `${direction > 0 ? "UP" : "DOWN"}`, direction);
 
         // Modify volume
-        this.updateVolume(e, videoGroup, direction, body, isAltVolumeKeyPressed, debug);
+        this.updateVolume(e, videoGroup, direction, body);
     }
 
-    protected startVideoObserver(body: HTMLElement, debug: (message: String, extra?: any) => void) {
+    protected startVideoObserver(body: HTMLElement) {
+
         if (this.observer) return; // Observer already running
 
         debug("Starting MutationObserver");
@@ -583,7 +598,8 @@ export class DefaultHandler {
                             if (this.volumeTargets.has(video)) {
                                 debug("Already tracking this video, skipping default volume reset", video);
                             } else {
-                                this.applyDefaultVolume(video, debug);
+                                this.applyDefaultVolume(video);
+
                             }
                         }
                         // Check if the added node contains videos (e.g. a div with a video inside)
@@ -594,7 +610,8 @@ export class DefaultHandler {
                                 if (this.volumeTargets.has(videoElement)) {
                                     debug("Already tracking this nested video, skipping default volume reset", videoElement);
                                 } else {
-                                    this.applyDefaultVolume(videoElement, debug);
+                                    this.applyDefaultVolume(videoElement);
+
                                 }
                             }
                         }
@@ -607,10 +624,11 @@ export class DefaultHandler {
         this.observer.observe(body, { childList: true, subtree: true });
     }
 
-    private applyDefaultVolume(video: HTMLVideoElement, debug: (message: String, extra?: any) => void) {
+    private applyDefaultVolume(video: HTMLVideoElement) {
         debug("New video found: ", video);
         debug("Default volume set to: ", this.settings.defaultVolume);
-        this.setVolume(this.settings.defaultVolume, video, debug);
+        this.setVolume(this.settings.defaultVolume, video);
+
 
         if (this.settings.startMuted) {
             debug("Start muted is enabled, muting video");
@@ -622,20 +640,21 @@ export class DefaultHandler {
         }
     }
 
-    public setDefaultVolume(body: HTMLElement, debug: (message: String, extra?: any) => void) {
+    public setDefaultVolume(body: HTMLElement) {
         const videoCollection: HTMLVideoElement[] = this.getAllVideos() as HTMLVideoElement[];
         debug("Setting default volume for: ", videoCollection);
 
         for (let tag of videoCollection) {
             let video: HTMLVideoElement = tag as HTMLVideoElement;
-            this.applyDefaultVolume(video, debug);
+            this.applyDefaultVolume(video);
         }
 
-        this.startVideoObserver(body, debug);
+        this.startVideoObserver(body);
     }
 
-    public toggleMute(e: MouseEvent, body: HTMLElement, debug: (message: String, extra?: any) => void): boolean {
-        const videoGroup: videoElements | null = this.getVideo(e.clientX, e.clientY, debug);
+    public toggleMute(e: MouseEvent, body: HTMLElement): boolean {
+        const videoGroup: videoElements | null = this.getVideo(e.clientX, e.clientY);
+
 
         if (!videoGroup) return false;
 
@@ -654,8 +673,9 @@ export class DefaultHandler {
         if (video.muted || state.isMuted) {
             // Unmute: Restore last unmuted volume
             debug(`Unmuting. Restoring volume to ${state.lastUnmutedVolume}`);
-            this.setVolume(state.lastUnmutedVolume * 100, video, debug);
-            this.updateOverlay(e, videoGroup.display, "unmute", state.lastUnmutedVolume * 100, body, debug);
+            this.setVolume(state.lastUnmutedVolume * 100, video);
+            this.updateOverlay(e, videoGroup.display, "unmute", state.lastUnmutedVolume * 100, body);
+
             this.isSettingInternally = true;
             video.muted = false;
             this.isSettingInternally = false;
@@ -665,8 +685,9 @@ export class DefaultHandler {
             // Mute: Save current volume and set to 0
             debug(`Muting. Saving volume ${state.targetVolume} and setting to 0`);
             state.lastUnmutedVolume = state.targetVolume;
-            this.setVolume(0, video, debug);
-            this.updateOverlay(e, videoGroup.display, "mute", state.lastUnmutedVolume * 100, body, debug);
+            this.setVolume(0, video);
+            this.updateOverlay(e, videoGroup.display, "mute", state.lastUnmutedVolume * 100, body);
+
             this.isSettingInternally = true;
             video.muted = true;
             this.isSettingInternally = false;
