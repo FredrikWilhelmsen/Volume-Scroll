@@ -109,6 +109,7 @@ export const init = () => {
                         // Construct synthetic event
                         const syntheticEvent = {
                             deltaY: event.data.deltaY,
+                            deltaMode: event.data.deltaMode,
                             clientX: mouseX,
                             clientY: mouseY,
                             buttons: event.data.buttons,
@@ -290,6 +291,7 @@ export function onScroll(e: WheelEvent): void {
             window.parent.postMessage({
                 type: "VOLUME_SCROLL_RELAY",
                 deltaY: e.deltaY,
+                deltaMode: e.deltaMode,
                 buttons: e.buttons,
                 ctrlKey: e.ctrlKey,
                 shiftKey: e.shiftKey,
