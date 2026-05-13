@@ -162,10 +162,12 @@ const MiscPage: React.FC<MiscPageInterface> = ({ settings, editSetting, setPage 
     }
 
     const handleBoostColorChange = (color: any) => {
+        if (!settings.useMouseWheelVolume || !settings.doBoostVolume) return;
         editSetting("boostedColor", color.hex);
     }
 
     const handleBoostColorPickerClick = () => {
+        if (!settings.useMouseWheelVolume || !settings.doBoostVolume) return;
         setIsBoostColorPickerVisible(!isBoostColorPickerVisible);
     }
 
@@ -329,18 +331,24 @@ const MiscPage: React.FC<MiscPageInterface> = ({ settings, editSetting, setPage 
                     </div>
                 </div>
                 <div id="boostColorPickerContainer">
-                    <div id="colorDisplay">
+                    <div id="colorDisplay" style={{ opacity: (!settings.useMouseWheelVolume || !settings.doBoostVolume) ? 0.5 : 1 }}>
                         <Paper elevation={2} sx={
-                            { bgcolor: settings.boostedColor, width: 40, height: 20, mr: 1 }
+                            {
+                                bgcolor: settings.boostedColor,
+                                width: 40,
+                                height: 20,
+                                mr: 1,
+                                cursor: (!settings.useMouseWheelVolume || !settings.doBoostVolume) ? 'default' : 'pointer'
+                            }
                         }
                             onClick={handleBoostColorPickerClick}
                         />
                         <Typography variant="body1">
-                            Boosted state color
+                            Boosted color
                         </Typography>
                     </div>
 
-                    {isBoostColorPickerVisible && <TwitterPicker colors={colors} color={settings.boostedColor} onChange={handleBoostColorChange} width="220px" />}
+                    {isBoostColorPickerVisible && !(!settings.useMouseWheelVolume || !settings.doBoostVolume) && <TwitterPicker colors={colors} color={settings.boostedColor} onChange={handleBoostColorChange} width="220px" />}
                 </div>
                 <div id="alternateIncrementContainer">
                     <div id="alternateIncrementToggleContainer">
