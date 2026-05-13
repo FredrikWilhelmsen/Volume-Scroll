@@ -57,10 +57,12 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({ settings, editSetting, setP
                 setIsSettingModifierKey(false);
                 lastSetTime.current = Date.now();
             } else if (isSettingMuteKey) {
+                if (mouseKey === "Mouse 4" || mouseKey === "Mouse 5") return;
                 editSetting("toggleMuteKey", mouseKey);
                 setIsSettingMuteKey(false);
                 lastSetTime.current = Date.now();
             } else if (isSettingPauseKey) {
+                if (mouseKey === "Mouse 4" || mouseKey === "Mouse 5") return;
                 editSetting("togglePauseKey", mouseKey);
                 setIsSettingPauseKey(false);
                 lastSetTime.current = Date.now();
@@ -78,14 +80,8 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({ settings, editSetting, setP
                 if (isSettingModifierKey) {
                     editSetting("modifierKey", detectedKey);
                     setIsSettingModifierKey(false);
-                } else if (isSettingMuteKey) {
-                    editSetting("toggleMuteKey", detectedKey);
-                    setIsSettingMuteKey(false);
-                } else if (isSettingPauseKey) {
-                    editSetting("togglePauseKey", detectedKey);
-                    setIsSettingPauseKey(false);
+                    lastSetTime.current = Date.now();
                 }
-                lastSetTime.current = Date.now();
             }
         };
 
@@ -207,7 +203,7 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({ settings, editSetting, setP
                             label="Toggle mute key"
                         />
                     </Tooltip>
-                    <Tooltip title="Click to change mute hotkey. Limited to mouse buttons." placement="top" disableInteractive>
+                    <Tooltip title="Click to change mute hotkey. Limited to mouse buttons (excluding Mouse 4 & 5)." placement="top" disableInteractive>
                         <Button
                             onClick={handleMuteKeyClick}
                             className="button"
@@ -231,7 +227,7 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({ settings, editSetting, setP
                             label="Toggle pause key"
                         />
                     </Tooltip>
-                    <Tooltip title="Click to change pause hotkey. Limited to mouse buttons." placement="top" disableInteractive>
+                    <Tooltip title="Click to change pause hotkey. Limited to mouse buttons (excluding Mouse 4 & 5)." placement="top" disableInteractive>
                         <Button
                             onClick={handlePauseKeyClick}
                             className="button"
