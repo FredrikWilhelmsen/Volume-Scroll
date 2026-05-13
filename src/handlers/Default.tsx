@@ -517,21 +517,21 @@ export class DefaultHandler {
 
     }
 
-    public scroll(e: WheelEvent, body: HTMLElement): void {
+    public scroll(e: WheelEvent, body: HTMLElement): boolean {
         // Get video
         const videoGroup: videoElements | null = this.getVideo(e.clientX, e.clientY);
 
 
         if (videoGroup === null) {
             debug("Video group was null, returning");
-            return;
+            return false;
         }
 
         debug("Got video group: ", videoGroup);
 
         if (!this.hasAudio(videoGroup.video)) {
             debug("Video has no audio track, returning");
-            return;
+            return false;
         }
 
         // Video found, prevent default scroll behaviour and stop propagation to site listeners
@@ -559,7 +559,7 @@ export class DefaultHandler {
 
         // Haven't reached threshold for a step, wait for more events.
         if (Math.abs(this.scrollAccumulator) < 50) {
-            return;
+            return true;
         }
 
         // Threshold reached, calculate direction and reset accumulator.
@@ -570,6 +570,7 @@ export class DefaultHandler {
 
         // Modify volume
         this.updateVolume(e, videoGroup, direction, body);
+        return true;
     }
 
     protected startVideoObserver(body: HTMLElement) {

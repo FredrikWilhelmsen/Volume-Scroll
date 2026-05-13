@@ -37,8 +37,12 @@ let mouseX: number = 0;
 let mouseY: number = 0;
 let preventContextMenu: boolean = false;
 let preventMiddleClick: boolean = false;
+let isInitialized: boolean = false;
+const processedMessageIds = new Set<string>();
 
 export const init = () => {
+    if (isInitialized) return;
+    isInitialized = true;
     browser.storage.sync.get("settings")
         .then((result) => {
             settings = result.settings ? { ...defaultSettings, ...result.settings } : defaultSettings;
@@ -53,49 +57,58 @@ export const init = () => {
                 const isRelayMessage = event.data.type === "VOLUME_SCROLL_RELAY" || event.data.type === "VOLUME_MUTE_RELAY";
 
                 if (isRelayMessage) {
-                    const localVideo = document.getElementsByTagName("video")[0];
+                    if (event.data.messageId) {
+                        if (processedMessageIds.has(event.data.messageId)) return;
+                        processedMessageIds.add(event.data.messageId);
+                        setTimeout(() => processedMessageIds.delete(event.data.messageId), 1000);
+                    }
 
-                    if (window.top === window.self || localVideo) {
-                        debug(`Handling ${event.data.type} in this frame`, event.data);
+                    const x = event.data.clientX !== undefined ? event.data.clientX : mouseX;
+                    const y = event.data.clientY !== undefined ? event.data.clientY : mouseY;
+                    const isTop = window.top === window.self;
 
-                        if (event.data.type === "VOLUME_SCROLL_RELAY") {
-                            // Construct synthetic event
-                            const syntheticEvent = {
-                                deltaY: event.data.deltaY,
-                                deltaMode: event.data.deltaMode,
-                                clientX: event.data.clientX !== undefined ? event.data.clientX : mouseX,
-                                clientY: event.data.clientY !== undefined ? event.data.clientY : mouseY,
-                                buttons: event.data.buttons,
-                                ctrlKey: event.data.ctrlKey,
-                                shiftKey: event.data.shiftKey,
-                                altKey: event.data.altKey,
-                                metaKey: event.data.metaKey,
-                                preventDefault: () => { },
-                                stopPropagation: () => { },
-                                stopImmediatePropagation: () => { }
-                            } as any as WheelEvent;
+                    debug(`Handling ${event.data.type} in this frame`, event.data);
 
-                            onScroll(syntheticEvent);
-                        }
+                    let handled = false;
+                    if (event.data.type === "VOLUME_SCROLL_RELAY") {
+                        // Construct synthetic event
+                        const syntheticEvent = {
+                            deltaY: event.data.deltaY,
+                            deltaMode: event.data.deltaMode,
+                            clientX: x,
+                            clientY: y,
+                            buttons: event.data.buttons,
+                            ctrlKey: event.data.ctrlKey,
+                            shiftKey: event.data.shiftKey,
+                            altKey: event.data.altKey,
+                            metaKey: event.data.metaKey,
+                            preventDefault: () => { },
+                            stopPropagation: () => { },
+                            stopImmediatePropagation: () => { }
+                        } as any as WheelEvent;
 
-                        if (event.data.type === "VOLUME_MUTE_RELAY") {
-                            // Construct synthetic event
-                            const syntheticEvent = {
-                                clientX: event.data.clientX !== undefined ? event.data.clientX : mouseX,
-                                clientY: event.data.clientY !== undefined ? event.data.clientY : mouseY,
-                                buttons: event.data.buttons,
-                                ctrlKey: event.data.ctrlKey,
-                                shiftKey: event.data.shiftKey,
-                                altKey: event.data.altKey,
-                                metaKey: event.data.metaKey,
-                                preventDefault: () => { },
-                                stopPropagation: () => { },
-                                stopImmediatePropagation: () => { }
-                            } as any as MouseEvent;
+                        handled = handler.scroll(syntheticEvent, body);
+                    }
 
-                            handler.toggleMute(syntheticEvent, body);
-                        }
-                    } else {
+                    if (event.data.type === "VOLUME_MUTE_RELAY") {
+                        // Construct synthetic event
+                        const syntheticEvent = {
+                            clientX: x,
+                            clientY: y,
+                            buttons: event.data.buttons,
+                            ctrlKey: event.data.ctrlKey,
+                            shiftKey: event.data.shiftKey,
+                            altKey: event.data.altKey,
+                            metaKey: event.data.metaKey,
+                            preventDefault: () => { },
+                            stopPropagation: () => { },
+                            stopImmediatePropagation: () => { }
+                        } as any as MouseEvent;
+
+                        handled = handler.toggleMute(syntheticEvent, body);
+                    }
+
+                    if (!handled && !isTop) {
                         // Relay it to the next parent
                         debug(`Relaying ${event.data.type} up to parent`);
                         window.parent.postMessage(event.data, "*");
@@ -200,6 +213,12 @@ const doVolumeScroll = function (e: WheelEvent): boolean {
 }
 
 export function onScroll(e: WheelEvent): void {
+    // If the event target is an iframe, let the iframe's extension handle it (or relay it)
+    if (e.target instanceof HTMLIFrameElement) {
+        debug("Scroll target is an iframe, ignoring in this frame");
+        return;
+    }
+
     debug("Scrolled!");
 
     const isModifierKeyPressed = isHotkeyPressed(e, settings.modifierKey);
@@ -235,6 +254,7 @@ export function onScroll(e: WheelEvent): void {
             // "*" allows communication even if the iframe is cross-origin
             window.parent.postMessage({
                 type: "VOLUME_SCROLL_RELAY",
+                messageId: Math.random().toString(36).slice(2, 11),
                 deltaY: e.deltaY,
                 deltaMode: e.deltaMode,
                 clientX: e.clientX,
@@ -270,6 +290,12 @@ export function onScroll(e: WheelEvent): void {
 }
 
 export function onMouseDown(e: MouseEvent): void {
+    // If the event target is an iframe, let the iframe's extension handle it (or relay it)
+    if (e.target instanceof HTMLIFrameElement) {
+        debug("MouseDown target is an iframe, ignoring in this frame");
+        return;
+    }
+
     debug("Mouse down!");
 
     // Reset context menu prevention on new click.
@@ -288,6 +314,7 @@ export function onMouseDown(e: MouseEvent): void {
 
                 window.parent.postMessage({
                     type: "VOLUME_MUTE_RELAY",
+                    messageId: Math.random().toString(36).slice(2, 11),
                     clientX: e.clientX,
                     clientY: e.clientY,
                     buttons: e.buttons,
