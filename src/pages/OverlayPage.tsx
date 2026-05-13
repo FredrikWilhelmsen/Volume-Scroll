@@ -112,8 +112,8 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
         handleOverlayBackgroundOpacityChange(e, newValue);
     };
 
-    const handleColorChange = (color: any) => {
-        editSetting("fontColor", color.hex);
+    const handleOverlayColorChange = (color: any) => {
+        editSetting("overlayColor", color.hex);
         console.log(color.hex);
     }
 
@@ -302,7 +302,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
                 <div id="overlayColorPickerContainer">
                     <div id="colorDisplay">
                         <Paper elevation={2} sx={
-                            { bgcolor: settings.fontColor, width: 40, height: 20, mr: 1 }
+                            { bgcolor: settings.overlayColor, width: 40, height: 20, mr: 1 }
                         }
                             onClick={handleColorPickerClick}
                         />
@@ -311,7 +311,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
                         </Typography>
                     </div>
 
-                    {isColorpickerVisible && <TwitterPicker colors={colors} color={settings.fontColor} onChange={handleColorChange} width="220px" />}
+                    {isColorpickerVisible && <TwitterPicker colors={colors} color={settings.overlayColor} onChange={handleOverlayColorChange} width="220px" />}
                 </div>
                 <div id="overlayPositionDropdownContainer">
                     <Tooltip title="Set overlay position">
