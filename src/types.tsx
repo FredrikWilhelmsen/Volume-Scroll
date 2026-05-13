@@ -24,6 +24,9 @@ export interface Settings {
     toggleMuteKey: string,
     useToggleMuteKey: boolean,
 
+    togglePauseKey: string,
+    useTogglePauseKey: boolean,
+
     fullscreenOnly: boolean,
 
     fontColor: string,
@@ -65,6 +68,9 @@ export const defaultSettings: Settings = {
 
     toggleMuteKey: "Middle Mouse",
     useToggleMuteKey: false,
+
+    togglePauseKey: "Left Mouse",
+    useTogglePauseKey: false,
 
     fullscreenOnly: false,
 
