@@ -54,7 +54,7 @@ export const init = () => {
             window.addEventListener("message", (event) => {
                 if (!event.data) return;
 
-                const isRelayMessage = event.data.type === "VOLUME_SCROLL_RELAY" || event.data.type === "VOLUME_MUTE_RELAY";
+                const isRelayMessage = event.data.type === "VOLUME_SCROLL_RELAY" || event.data.type === "VOLUME_MUTE_RELAY" || event.data.type === "VOLUME_PAUSE_RELAY";
 
                 if (isRelayMessage) {
                     if (event.data.messageId) {
@@ -124,6 +124,24 @@ export const init = () => {
                         } as any as MouseEvent;
 
                         handled = handler.toggleMute(syntheticEvent, body);
+                    }
+
+                    if (event.data.type === "VOLUME_PAUSE_RELAY") {
+                        // Construct synthetic event
+                        const syntheticEvent = {
+                            clientX: x,
+                            clientY: y,
+                            buttons: event.data.buttons,
+                            ctrlKey: event.data.ctrlKey,
+                            shiftKey: event.data.shiftKey,
+                            altKey: event.data.altKey,
+                            metaKey: event.data.metaKey,
+                            preventDefault: () => { },
+                            stopPropagation: () => { },
+                            stopImmediatePropagation: () => { }
+                        } as any as MouseEvent;
+
+                        handled = handler.togglePause(syntheticEvent, body);
                     }
 
                     if (!handled && !isTop) {
@@ -362,6 +380,50 @@ export function onMouseDown(e: MouseEvent): void {
         const result: boolean = handler.toggleMute(e, body);
 
         debug("Toggle mute key pressed");
+
+        if (getMouseKey(e.button) === "Right Mouse") {
+            preventContextMenu = result;
+        } else if (getMouseKey(e.button) === "Middle Mouse") {
+            preventMiddleClick = result;
+        }
+    }
+
+    if (settings.togglePauseKey === getMouseKey(e.button) && settings.useTogglePauseKey) {
+
+        if (window.self !== window.top) {
+            const elementsAtPoint = document.elementsFromPoint(e.clientX, e.clientY);
+
+            // If the handler says this area should be ignored, then we respect that and allow default behavior
+            if (handler.isIgnored(elementsAtPoint)) {
+                debug("Area is blacklisted by handler, allowing default pause toggle behavior");
+                return;
+            }
+
+            const localVideo = document.getElementsByTagName("video")[0];
+            if (!localVideo) {
+                debug("In iframe, relaying Pause Toggle to parent");
+                e.preventDefault();
+                e.stopPropagation();
+
+                window.parent.postMessage({
+                    type: "VOLUME_PAUSE_RELAY",
+                    messageId: Math.random().toString(36).slice(2, 11),
+                    clientX: e.clientX,
+                    clientY: e.clientY,
+                    buttons: e.buttons,
+                    ctrlKey: e.ctrlKey,
+                    shiftKey: e.shiftKey,
+                    altKey: e.altKey,
+                    metaKey: e.metaKey
+                }, "*");
+                return;
+            }
+        }
+
+        e.preventDefault();
+        const result: boolean = handler.togglePause(e, body);
+
+        debug("Toggle pause key pressed");
 
         if (getMouseKey(e.button) === "Right Mouse") {
             preventContextMenu = result;

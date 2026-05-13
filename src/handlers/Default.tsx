@@ -173,7 +173,7 @@ export class DefaultHandler {
     }
 
     private updateOverlay(e: MouseEvent, display: HTMLElement, type: OverlayType, volume: number,
-        body: HTMLElement): void {
+        body: HTMLElement, video: HTMLVideoElement): void {
 
 
         if (!this.settings.useOverlay) return;
@@ -243,6 +243,8 @@ export class DefaultHandler {
                 volume={volume}
                 x={x}
                 y={y}
+                isMuted={video.muted}
+                isPaused={video.paused}
                 settings={this.settings}
                 type={type}
                 animationKey={this.animationKey}
@@ -353,7 +355,8 @@ export class DefaultHandler {
         if (!state) {
             state = {
                 targetVolume: volume / 100,
-                isMuted: isMuted !== undefined ? isMuted : (volume <= 0)
+                isMuted: isMuted !== undefined ? isMuted : (volume <= 0),
+                isPaused: video.paused
             };
             this.volumeTargets.set(video, state);
         } else {
@@ -513,7 +516,7 @@ export class DefaultHandler {
             effectiveVolume = newVolume;
         }
 
-        this.updateOverlay(e, videoGroup.display, type, effectiveVolume, body);
+        this.updateOverlay(e, videoGroup.display, type, effectiveVolume, body, videoGroup.video);
 
     }
 
@@ -647,7 +650,8 @@ export class DefaultHandler {
         if (!state) {
             state = {
                 targetVolume: video.volume,
-                isMuted: video.muted
+                isMuted: video.muted,
+                isPaused: video.paused
             };
             this.volumeTargets.set(video, state);
         }
@@ -661,13 +665,48 @@ export class DefaultHandler {
 
             debug(`Unmuting. Restoring volume to ${restoreVolume}`);
             this.setVolume(restoreVolume, video, false);
-            this.updateOverlay(e, videoGroup.display, "unmute", restoreVolume, body);
+            this.updateOverlay(e, videoGroup.display, "unmute", restoreVolume, body, videoGroup.video);
         } else {
             // Mute: Keep current target volume
             debug(`Muting. Saving volume ${state.targetVolume} and muting`);
             this.setVolume(state.targetVolume * 100, video, true);
-            this.updateOverlay(e, videoGroup.display, "mute", state.targetVolume * 100, body);
+            this.updateOverlay(e, videoGroup.display, "mute", state.targetVolume * 100, body, videoGroup.video);
         }
+
+        return true;
+    }
+
+    public togglePause(e: MouseEvent, body: HTMLElement): boolean {
+        const videoGroup: videoElements | null = this.getVideo(e.clientX, e.clientY);
+
+        if (!videoGroup) return false;
+
+        const video = videoGroup.video;
+        debug(`Found video: ${video}`);
+        let state = this.volumeTargets.get(video)
+
+        if (!state) {
+            state = {
+                targetVolume: video.volume,
+                isMuted: video.muted,
+                isPaused: video.paused
+            };
+            this.volumeTargets.set(video, state);
+        }
+        debug(`Video state: ${state}`);
+
+        if (video.paused) {
+            debug(`Unpausing`);
+            state.isPaused = false;
+            this.updateOverlay(e, videoGroup.display, "play", state.targetVolume * 100, body, videoGroup.video);
+        } else {
+            debug(`Pausing`);
+            state.isPaused = true;
+            this.updateOverlay(e, videoGroup.display, "pause", state.targetVolume * 100, body, videoGroup.video);
+        }
+
+        this.volumeTargets.set(video, state);
+        state.isPaused ? video.pause() : video.play();
 
         return true;
     }

@@ -24,6 +24,9 @@ export interface Settings {
     toggleMuteKey: string,
     useToggleMuteKey: boolean,
 
+    togglePauseKey: string,
+    useTogglePauseKey: boolean,
+
     fullscreenOnly: boolean,
 
     fontColor: string,
@@ -66,6 +69,9 @@ export const defaultSettings: Settings = {
     toggleMuteKey: "Middle Mouse",
     useToggleMuteKey: false,
 
+    togglePauseKey: "Left Mouse",
+    useTogglePauseKey: false,
+
     fullscreenOnly: false,
 
     fontColor: "#FCB900",
@@ -83,7 +89,7 @@ export const defaultSettings: Settings = {
 };
 
 export type Pages = "menu" | "scroll" | "hotkeys" | "overlay" | "misc";
-export type OverlayType = "volume" | "mute" | "unmute";
+export type OverlayType = "volume" | "mute" | "unmute" | "pause" | "play";
 
 export interface videoElements {
     display: HTMLBaseElement;
@@ -98,4 +104,5 @@ export interface logElement {
 export interface VideoState {
     targetVolume: number; // Ratio 0-1 (or > 1 for boost)
     isMuted: boolean; // Tracking if we have forced mute
+    isPaused: boolean; // Tracking if we have forced pause
 }
