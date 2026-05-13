@@ -80,7 +80,7 @@ export const defaultSettings: Settings = {
     fontSize: 40,
     useOverlay: true,
     useOverlayBackground: false,
-    overlayBackgroundOpacity: 0.5,
+    overlayBackgroundOpacity: 50,
     overlayPosition: "tl",
     overlayXPos: 5,
     overlayYPos: 5,

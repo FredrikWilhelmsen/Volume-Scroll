@@ -104,9 +104,9 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
         let newValue: number = overlayBackgroundOpacity;
 
         if (e.deltaY < 0) {
-            newValue = Math.min(newValue + 5, 90);
+            newValue = Math.min(newValue + 5, 100);
         } else {
-            newValue = Math.max(newValue - 5, 10);
+            newValue = Math.max(newValue - 5, 5);
         }
 
         handleOverlayBackgroundOpacityChange(e, newValue);
@@ -287,8 +287,8 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
                     <div onWheel={handleOverlayBackgroundOpacityScroll}>
                         <Tooltip title="Set how transparent the overlay is" disableInteractive>
                             <Slider
-                                min={10}
-                                max={90}
+                                min={5}
+                                max={100}
                                 step={5}
                                 aria-label="Overlay Background Opacity"
                                 value={overlayBackgroundOpacity}
