@@ -18,17 +18,19 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({ settings, editSetting, setP
 
     const [isSettingModifierKey, setIsSettingModifierKey] = useState(false);
     const [isSettingMuteKey, setIsSettingMuteKey] = useState(false);
+    const [isSettingPauseKey, setIsSettingPauseKey] = useState(false);
     const lastSetTime = useRef(0);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (!isSettingModifierKey && !isSettingMuteKey) return;
+            if (!isSettingModifierKey && !isSettingMuteKey && !isSettingPauseKey) return;
 
             e.preventDefault();
 
             if (e.key === "Escape") {
                 setIsSettingModifierKey(false);
                 setIsSettingMuteKey(false);
+                setIsSettingPauseKey(false);
                 lastSetTime.current = Date.now();
                 return;
             }
@@ -43,10 +45,9 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({ settings, editSetting, setP
         };
 
         const handleMouseDown = (e: MouseEvent) => {
-            if (!isSettingModifierKey && !isSettingMuteKey) return;
+            if (!isSettingModifierKey && !isSettingMuteKey && !isSettingPauseKey) return;
             e.preventDefault();
             e.stopPropagation();
-
 
             const mouseKey = getMouseKey(e.button);
             if (!mouseKey) return;
@@ -59,11 +60,15 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({ settings, editSetting, setP
                 editSetting("toggleMuteKey", mouseKey);
                 setIsSettingMuteKey(false);
                 lastSetTime.current = Date.now();
+            } else if (isSettingPauseKey) {
+                editSetting("togglePauseKey", mouseKey);
+                setIsSettingPauseKey(false);
+                lastSetTime.current = Date.now();
             }
         };
 
         const handleMouseMove = (e: MouseEvent) => {
-            if (!isSettingModifierKey && !isSettingMuteKey) return;
+            if (!isSettingModifierKey && !isSettingMuteKey && !isSettingPauseKey) return;
 
             let detectedKey: string | undefined;
             if (e.buttons & 8) detectedKey = "Mouse 4";
@@ -76,13 +81,16 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({ settings, editSetting, setP
                 } else if (isSettingMuteKey) {
                     editSetting("toggleMuteKey", detectedKey);
                     setIsSettingMuteKey(false);
+                } else if (isSettingPauseKey) {
+                    editSetting("togglePauseKey", detectedKey);
+                    setIsSettingPauseKey(false);
                 }
                 lastSetTime.current = Date.now();
             }
         };
 
         const handleContextMenu = (e: MouseEvent) => {
-            if (!isSettingModifierKey && !isSettingMuteKey) return;
+            if (!isSettingModifierKey && !isSettingMuteKey && !isSettingPauseKey) return;
             e.preventDefault();
         };
 
@@ -107,14 +115,14 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({ settings, editSetting, setP
             window.removeEventListener("mousemove", handleMouseMove);
             window.removeEventListener("pointermove", handleMouseMove);
         };
-    }, [isSettingModifierKey, isSettingMuteKey, editSetting]);
+    }, [isSettingModifierKey, isSettingMuteKey, isSettingPauseKey, editSetting]);
 
     const handleModifierKeyToggle = (_e: Event | React.SyntheticEvent, value: any) => {
         editSetting("useModifierKey", value);
     }
 
     const handleModifierKeyClick = (_e: Event | React.SyntheticEvent) => {
-        if (isSettingModifierKey || isSettingMuteKey || Date.now() - lastSetTime.current < 100) return;
+        if (isSettingModifierKey || isSettingMuteKey || isSettingPauseKey || Date.now() - lastSetTime.current < 100) return;
 
         setIsSettingModifierKey(true);
     }
@@ -128,9 +136,19 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({ settings, editSetting, setP
     }
 
     const handleMuteKeyClick = (_e: Event | React.SyntheticEvent) => {
-        if (isSettingModifierKey || isSettingMuteKey || Date.now() - lastSetTime.current < 100) return;
+        if (isSettingModifierKey || isSettingMuteKey || isSettingPauseKey || Date.now() - lastSetTime.current < 100) return;
 
         setIsSettingMuteKey(true);
+    }
+
+    const handlePauseKeyToggle = (_e: Event | React.SyntheticEvent, value: any) => {
+        editSetting("useTogglePauseKey", value);
+    }
+
+    const handlePauseKeyClick = (_e: Event | React.SyntheticEvent) => {
+        if (isSettingModifierKey || isSettingMuteKey || isSettingPauseKey || Date.now() - lastSetTime.current < 100) return;
+
+        setIsSettingPauseKey(true);
     }
 
     return (
@@ -198,6 +216,30 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({ settings, editSetting, setP
                             disabled={!settings.useMouseWheelVolume || !settings.useToggleMuteKey}
                         >
                             {isSettingMuteKey ? "-----" : (settings.toggleMuteKey === " " ? "Space" : settings.toggleMuteKey)}
+                        </Button>
+                    </Tooltip>
+                </div>
+                <div id="togglePauseKeyContainer">
+                    <Tooltip title="Set a key that will pause or play the video when pressed" placement="top" disableInteractive>
+                        <FormControlLabel
+                            onChange={handlePauseKeyToggle}
+                            control={
+                                <Switch
+                                    checked={settings.useTogglePauseKey}
+                                    disabled={!settings.useMouseWheelVolume}
+                                />}
+                            label="Toggle pause key"
+                        />
+                    </Tooltip>
+                    <Tooltip title="Click to change pause hotkey. Limited to mouse buttons." placement="top" disableInteractive>
+                        <Button
+                            onClick={handlePauseKeyClick}
+                            className="button"
+                            variant="outlined"
+                            sx={{ color: "white" }}
+                            disabled={!settings.useMouseWheelVolume || !settings.useTogglePauseKey}
+                        >
+                            {isSettingPauseKey ? "-----" : (settings.togglePauseKey === " " ? "Space" : settings.togglePauseKey)}
                         </Button>
                     </Tooltip>
                 </div>
