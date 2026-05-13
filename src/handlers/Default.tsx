@@ -24,10 +24,6 @@ export class DefaultHandler {
     protected overlayContainer: HTMLElement | null = null;
     protected animationKey: number = 0;
 
-    protected invalidDomains: string[] = [
-        "clips.twitch.tv"
-    ];
-
     protected tagNamesToIgnore: string[] = [];
     protected classNamesToIgnore: string[] = [];
 
@@ -54,13 +50,6 @@ export class DefaultHandler {
     }
 
     protected getGainNode(video: HTMLVideoElement): GainNode | null {
-
-        // Check invalid domains
-        if (this.invalidDomains.some(d => window.location.hostname.includes(d))) {
-            debug("Current domain is in invalidDomains list, skipping Web Audio API");
-            return null;
-        }
-
         this.initAudioContext();
 
         if (!this.audioCtx) {
