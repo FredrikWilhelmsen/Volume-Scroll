@@ -638,7 +638,6 @@ export class DefaultHandler {
     public toggleMute(e: MouseEvent, body: HTMLElement): boolean {
         const videoGroup: videoElements | null = this.getVideo(e.clientX, e.clientY);
 
-
         if (!videoGroup) return false;
 
         const video = videoGroup.video;
