@@ -1,4 +1,5 @@
-.sliderDisplay {
+.sliderDisplay,
+#overlayBackgroundDisplay {
     display: inline-block;
     min-width: 17px;
     background-color: #757575;
@@ -9,7 +10,8 @@
     text-align: center;
 }
 
-.sliderDisplayContainer {
+.sliderDisplayContainer,
+#overlayBackgroundToggleContainer {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -20,7 +22,8 @@
     margin-top: 16px;
 }
 
-#overlayPositionSelector, #overlayPositionDropdownContainer {
+#overlayPositionSelector,
+#overlayPositionDropdownContainer {
     width: 100%;
 }
 
@@ -28,11 +31,12 @@
     background-color: #191b21 !important;
 }
 
-.twitter-picker > div:nth-child(1), .twitter-picker > div:nth-child(2) {
+.twitter-picker>div:nth-child(1),
+.twitter-picker>div:nth-child(2) {
     border-bottom-color: #191b21 !important;
 }
 
-.twitter-picker > div:nth-child(3) {
+.twitter-picker>div:nth-child(3) {
     padding-left: 23px !important;
     padding-right: 17px !important;
     padding-top: 23px !important;
