@@ -89,3 +89,14 @@ export const isHotkeyPressed = (e: MouseEvent | WheelEvent, hotkey: string): boo
         default: return false;
     }
 }
+
+export const findScrollableParent = (el: HTMLElement | null): HTMLElement | null => {
+    while (el) {
+        if (el.scrollHeight > el.clientHeight) {
+            const overflow = window.getComputedStyle(el).overflowY;
+            if (overflow === 'auto' || overflow === 'scroll') return el;
+        }
+        el = el.parentElement;
+    }
+    return null;
+};
