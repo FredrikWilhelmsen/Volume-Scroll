@@ -148,7 +148,7 @@ export const VolumeOverlay: React.FC<VolumeOverlayProps> = ({ type, volume, x, y
                     left: `${x}px`,
                     top: `${y}px`,
                     fontSize: `${settings.fontSize}px`,
-                    color: settings.fontColor,
+                    color: volume > 100 ? settings.boostedColor : settings.overlayColor,
                     backgroundColor: settings.useOverlayBackground ? `rgba(30, 30, 30, ${settings.overlayBackgroundOpacity / 100})` : 'transparent',
                     padding: settings.useOverlayBackground ? '0.1em 0.3em' : '0',
                     borderRadius: '4px'
