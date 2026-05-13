@@ -50,50 +50,58 @@ export const init = () => {
 
             window.addEventListener("message", (event) => {
                 if (!event.data) return;
-                if (window.top === window.self) {
-                    // Ensure the data object exists and is ours
-                    if (event.data.type === "VOLUME_SCROLL_RELAY") {
-                        debug("Received direct postMessage relay", event.data);
 
-                        // Construct synthetic event
-                        const syntheticEvent = {
-                            deltaY: event.data.deltaY,
-                            deltaMode: event.data.deltaMode,
-                            clientX: mouseX,
-                            clientY: mouseY,
-                            buttons: event.data.buttons,
-                            ctrlKey: event.data.ctrlKey,
-                            shiftKey: event.data.shiftKey,
-                            altKey: event.data.altKey,
-                            metaKey: event.data.metaKey,
-                            preventDefault: () => { },
-                            stopPropagation: () => { },
-                            stopImmediatePropagation: () => { }
-                        } as any as WheelEvent;
+                const isRelayMessage = event.data.type === "VOLUME_SCROLL_RELAY" || event.data.type === "VOLUME_MUTE_RELAY";
 
-                        onScroll(syntheticEvent);
+                if (isRelayMessage) {
+                    const localVideo = document.getElementsByTagName("video")[0];
+
+                    if (window.top === window.self || localVideo) {
+                        debug(`Handling ${event.data.type} in this frame`, event.data);
+
+                        if (event.data.type === "VOLUME_SCROLL_RELAY") {
+                            // Construct synthetic event
+                            const syntheticEvent = {
+                                deltaY: event.data.deltaY,
+                                deltaMode: event.data.deltaMode,
+                                clientX: event.data.clientX !== undefined ? event.data.clientX : mouseX,
+                                clientY: event.data.clientY !== undefined ? event.data.clientY : mouseY,
+                                buttons: event.data.buttons,
+                                ctrlKey: event.data.ctrlKey,
+                                shiftKey: event.data.shiftKey,
+                                altKey: event.data.altKey,
+                                metaKey: event.data.metaKey,
+                                preventDefault: () => { },
+                                stopPropagation: () => { },
+                                stopImmediatePropagation: () => { }
+                            } as any as WheelEvent;
+
+                            onScroll(syntheticEvent);
+                        }
+
+                        if (event.data.type === "VOLUME_MUTE_RELAY") {
+                            // Construct synthetic event
+                            const syntheticEvent = {
+                                clientX: event.data.clientX !== undefined ? event.data.clientX : mouseX,
+                                clientY: event.data.clientY !== undefined ? event.data.clientY : mouseY,
+                                buttons: event.data.buttons,
+                                ctrlKey: event.data.ctrlKey,
+                                shiftKey: event.data.shiftKey,
+                                altKey: event.data.altKey,
+                                metaKey: event.data.metaKey,
+                                preventDefault: () => { },
+                                stopPropagation: () => { },
+                                stopImmediatePropagation: () => { }
+                            } as any as MouseEvent;
+
+                            handler.toggleMute(syntheticEvent, body);
+                        }
+                    } else {
+                        // Relay it to the next parent
+                        debug(`Relaying ${event.data.type} up to parent`);
+                        window.parent.postMessage(event.data, "*");
                     }
-
-                    if (event.data.type === "VOLUME_MUTE_RELAY") {
-                        debug("Received Mute Relay");
-
-                        // Construct synthetic event
-                        const syntheticEvent = {
-                            clientX: mouseX,
-                            clientY: mouseY,
-                            buttons: event.data.buttons,
-                            ctrlKey: event.data.ctrlKey,
-                            shiftKey: event.data.shiftKey,
-                            altKey: event.data.altKey,
-                            metaKey: event.data.metaKey,
-                            preventDefault: () => { },
-                            stopPropagation: () => { },
-                            stopImmediatePropagation: () => { }
-                        } as any as MouseEvent;
-
-                        handler.toggleMute(syntheticEvent, body);
-
-                    }
+                    return;
                 }
 
                 // VOLUME_LOG_RELAY must be handled by EVERY frame to ensure it bubbles up to the top
@@ -230,6 +238,8 @@ export function onScroll(e: WheelEvent): void {
                 type: "VOLUME_SCROLL_RELAY",
                 deltaY: e.deltaY,
                 deltaMode: e.deltaMode,
+                clientX: e.clientX,
+                clientY: e.clientY,
                 buttons: e.buttons,
                 ctrlKey: e.ctrlKey,
                 shiftKey: e.shiftKey,
@@ -280,6 +290,8 @@ export function onMouseDown(e: MouseEvent): void {
 
                 window.parent.postMessage({
                     type: "VOLUME_MUTE_RELAY",
+                    clientX: e.clientX,
+                    clientY: e.clientY,
                     buttons: e.buttons,
                     ctrlKey: e.ctrlKey,
                     shiftKey: e.shiftKey,
