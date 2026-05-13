@@ -16,6 +16,7 @@ export interface Settings {
 
     doBoostVolume: boolean,
     volumeBoostAmount: number,
+    boostedColor: string,
 
     modifierKey: string,
     useModifierKey: boolean,
@@ -29,7 +30,7 @@ export interface Settings {
 
     fullscreenOnly: boolean,
 
-    fontColor: string,
+    overlayColor: string,
     fontSize: number,
     useOverlay: boolean,
     useOverlayBackground: boolean,
@@ -63,6 +64,7 @@ export const defaultSettings: Settings = {
 
     doBoostVolume: false,
     volumeBoostAmount: 200,
+    boostedColor: "#EB144C",
 
     modifierKey: "Right Mouse",
     useModifierKey: false,
@@ -76,7 +78,7 @@ export const defaultSettings: Settings = {
 
     fullscreenOnly: false,
 
-    fontColor: "#FCB900",
+    overlayColor: "#FCB900",
     fontSize: 40,
     useOverlay: true,
     useOverlayBackground: false,
