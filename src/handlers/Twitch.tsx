@@ -13,7 +13,7 @@ export class TwitchHandler extends DefaultHandler {
 
 
 
-    protected setVolume(volume: number, video: HTMLVideoElement): number {
+    protected setVolume(volume: number, video: HTMLVideoElement, isMuted?: boolean): number {
 
         // If the video is hidden (no dimensions), do not unmute it.
         if (video.offsetWidth === 0 && video.offsetHeight === 0) {
@@ -36,7 +36,7 @@ export class TwitchHandler extends DefaultHandler {
             return 0;
         }
 
-        return super.setVolume(volume, video);
+        return super.setVolume(volume, video, isMuted);
     }
 
     protected getVideo(mouseX: number, mouseY: number): videoElements | null {

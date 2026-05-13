@@ -10,8 +10,8 @@ export class RedditHandler extends DefaultHandler {
 
     private lastUserSetVolume: number | null = null;
 
-    protected setVolume(volume: number, video: HTMLVideoElement): number {
-        let effectiveVolume = super.setVolume(volume, video);
+    protected setVolume(volume: number, video: HTMLVideoElement, isMuted?: boolean): number {
+        let effectiveVolume = super.setVolume(volume, video, isMuted);
 
         // Defensive check
         if (effectiveVolume === undefined || isNaN(effectiveVolume)) {
@@ -37,7 +37,6 @@ export class RedditHandler extends DefaultHandler {
                     let state = this.volumeTargets.get(video);
                     if (state) {
                         state.targetVolume = this.lastUserSetVolume;
-                        state.lastUnmutedVolume = this.lastUserSetVolume;
                         state.isMuted = false;
                     }
 
@@ -62,7 +61,6 @@ export class RedditHandler extends DefaultHandler {
                     if (state) {
                         state.targetVolume = this.lastUserSetVolume;
                         if (this.lastUserSetVolume > 0) {
-                            state.lastUnmutedVolume = this.lastUserSetVolume;
                             state.isMuted = false;
                         } else {
                             state.isMuted = true;

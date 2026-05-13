@@ -1,7 +1,6 @@
 import browser from "webextension-polyfill";
 import { isHotkeyPressed, getMouseKey, debug, setUtilSettings, getLogList, addLog } from "./utils";
 
-
 import { Settings, defaultSettings } from "./types";
 
 import { DefaultHandler } from "./handlers/Default";
@@ -38,8 +37,12 @@ let mouseX: number = 0;
 let mouseY: number = 0;
 let preventContextMenu: boolean = false;
 let preventMiddleClick: boolean = false;
+let isInitialized: boolean = false;
+const processedMessageIds = new Set<string>();
 
 export const init = () => {
+    if (isInitialized) return;
+    isInitialized = true;
     browser.storage.sync.get("settings")
         .then((result) => {
             settings = result.settings ? { ...defaultSettings, ...result.settings } : defaultSettings;
@@ -50,17 +53,30 @@ export const init = () => {
 
             window.addEventListener("message", (event) => {
                 if (!event.data) return;
-                if (window.top === window.self) {
-                    // Ensure the data object exists and is ours
-                    if (event.data.type === "VOLUME_SCROLL_RELAY") {
-                        debug("Received direct postMessage relay", event.data);
 
+                const isRelayMessage = event.data.type === "VOLUME_SCROLL_RELAY" || event.data.type === "VOLUME_MUTE_RELAY";
+
+                if (isRelayMessage) {
+                    if (event.data.messageId) {
+                        if (processedMessageIds.has(event.data.messageId)) return;
+                        processedMessageIds.add(event.data.messageId);
+                        setTimeout(() => processedMessageIds.delete(event.data.messageId), 1000);
+                    }
+
+                    const x = event.data.clientX !== undefined ? event.data.clientX : mouseX;
+                    const y = event.data.clientY !== undefined ? event.data.clientY : mouseY;
+                    const isTop = window.top === window.self;
+
+                    debug(`Handling ${event.data.type} in this frame`, event.data);
+
+                    let handled = false;
+                    if (event.data.type === "VOLUME_SCROLL_RELAY") {
                         // Construct synthetic event
                         const syntheticEvent = {
                             deltaY: event.data.deltaY,
                             deltaMode: event.data.deltaMode,
-                            clientX: mouseX,
-                            clientY: mouseY,
+                            clientX: x,
+                            clientY: y,
                             buttons: event.data.buttons,
                             ctrlKey: event.data.ctrlKey,
                             shiftKey: event.data.shiftKey,
@@ -71,16 +87,14 @@ export const init = () => {
                             stopImmediatePropagation: () => { }
                         } as any as WheelEvent;
 
-                        onScroll(syntheticEvent);
+                        handled = handler.scroll(syntheticEvent, body);
                     }
 
                     if (event.data.type === "VOLUME_MUTE_RELAY") {
-                        debug("Received Mute Relay");
-
                         // Construct synthetic event
                         const syntheticEvent = {
-                            clientX: mouseX,
-                            clientY: mouseY,
+                            clientX: x,
+                            clientY: y,
                             buttons: event.data.buttons,
                             ctrlKey: event.data.ctrlKey,
                             shiftKey: event.data.shiftKey,
@@ -91,9 +105,15 @@ export const init = () => {
                             stopImmediatePropagation: () => { }
                         } as any as MouseEvent;
 
-                        handler.toggleMute(syntheticEvent, body);
-
+                        handled = handler.toggleMute(syntheticEvent, body);
                     }
+
+                    if (!handled && !isTop) {
+                        // Relay it to the next parent
+                        debug(`Relaying ${event.data.type} up to parent`);
+                        window.parent.postMessage(event.data, "*");
+                    }
+                    return;
                 }
 
                 // VOLUME_LOG_RELAY must be handled by EVERY frame to ensure it bubbles up to the top
@@ -193,6 +213,12 @@ const doVolumeScroll = function (e: WheelEvent): boolean {
 }
 
 export function onScroll(e: WheelEvent): void {
+    // If the event target is an iframe, let the iframe's extension handle it (or relay it)
+    if (e.target instanceof HTMLIFrameElement) {
+        debug("Scroll target is an iframe, ignoring in this frame");
+        return;
+    }
+
     debug("Scrolled!");
 
     const isModifierKeyPressed = isHotkeyPressed(e, settings.modifierKey);
@@ -228,8 +254,11 @@ export function onScroll(e: WheelEvent): void {
             // "*" allows communication even if the iframe is cross-origin
             window.parent.postMessage({
                 type: "VOLUME_SCROLL_RELAY",
+                messageId: Math.random().toString(36).slice(2, 11),
                 deltaY: e.deltaY,
                 deltaMode: e.deltaMode,
+                clientX: e.clientX,
+                clientY: e.clientY,
                 buttons: e.buttons,
                 ctrlKey: e.ctrlKey,
                 shiftKey: e.shiftKey,
@@ -258,10 +287,15 @@ export function onScroll(e: WheelEvent): void {
     }
 
     handler.scroll(e, body);
-
 }
 
 export function onMouseDown(e: MouseEvent): void {
+    // If the event target is an iframe, let the iframe's extension handle it (or relay it)
+    if (e.target instanceof HTMLIFrameElement) {
+        debug("MouseDown target is an iframe, ignoring in this frame");
+        return;
+    }
+
     debug("Mouse down!");
 
     // Reset context menu prevention on new click.
@@ -280,6 +314,9 @@ export function onMouseDown(e: MouseEvent): void {
 
                 window.parent.postMessage({
                     type: "VOLUME_MUTE_RELAY",
+                    messageId: Math.random().toString(36).slice(2, 11),
+                    clientX: e.clientX,
+                    clientY: e.clientY,
                     buttons: e.buttons,
                     ctrlKey: e.ctrlKey,
                     shiftKey: e.shiftKey,
@@ -323,7 +360,6 @@ export function onPageLoad(): void {
     debug("Using handler: " + handler.getName());
     debug("Hostname: " + window.location.hostname);
     handler.setDefaultVolume(body);
-
 }
 
 export function onContextMenu(e: MouseEvent): void {
