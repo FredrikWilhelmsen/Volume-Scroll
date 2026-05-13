@@ -657,7 +657,7 @@ export class DefaultHandler {
             // Unmute: Restore target volume (or 1 increment if at 0)
             let restoreVolume = state.targetVolume > 0
                 ? state.targetVolume * 100
-                : this.settings.volumeIncrement;
+                : (this.settings.usePreciseScroll ? 1 : this.settings.volumeIncrement);
 
             debug(`Unmuting. Restoring volume to ${restoreVolume}`);
             this.setVolume(restoreVolume, video, false);
