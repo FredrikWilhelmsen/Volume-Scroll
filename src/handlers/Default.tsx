@@ -307,7 +307,7 @@ export class DefaultHandler {
                     if (state.targetVolume > 1) {
                         this.isSettingInternally = true;
                         video.volume = 1;
-                        video.muted = false;
+                        video.muted = state.isMuted;
                         this.isSettingInternally = false;
                         // Ensure gain is correct (re-apply boost)
                         const gainNode = this.getGainNode(video);
@@ -344,23 +344,21 @@ export class DefaultHandler {
         video.addEventListener("playing", enforceVolume);
     }
 
-    protected setVolume(volume: number, video: HTMLVideoElement): number {
+    protected setVolume(volume: number, video: HTMLVideoElement, isMuted?: boolean): number {
 
         debug(`New volume set to: ${volume}`)
 
         // Set volume initially
         let state = this.volumeTargets.get(video);
         if (!state) {
-            state = { targetVolume: volume / 100, lastUnmutedVolume: volume / 100, isMuted: video.muted };
+            state = {
+                targetVolume: volume / 100,
+                isMuted: isMuted !== undefined ? isMuted : (volume <= 0)
+            };
             this.volumeTargets.set(video, state);
         } else {
             state.targetVolume = volume / 100;
-            if (volume > 0) {
-                state.lastUnmutedVolume = volume / 100;
-                state.isMuted = false;
-            } else {
-                state.isMuted = true;
-            }
+            state.isMuted = isMuted !== undefined ? isMuted : (volume <= 0);
         }
 
         let effectiveVolume = volume;
@@ -373,7 +371,7 @@ export class DefaultHandler {
                 // We can boost
                 this.isSettingInternally = true;
                 video.volume = 1; // Max out the actual video element
-                video.muted = false;
+                video.muted = state.isMuted;
                 this.isSettingInternally = false;
 
                 // 100 = 1x gain. 500 = 5x gain.
@@ -393,19 +391,18 @@ export class DefaultHandler {
                 debug("Boosting failed or not allowed, capping at 100%");
                 this.isSettingInternally = true;
                 video.volume = 1;
-                video.muted = false;
+                video.muted = state.isMuted;
                 this.isSettingInternally = false;
 
                 // Correct the target since we failed to boost
                 state.targetVolume = 1;
-                state.lastUnmutedVolume = 1;
                 effectiveVolume = 100;
             }
         } else {
             // Normal volume logic
             this.isSettingInternally = true;
             video.volume = volume / 100;
-            video.muted = volume <= 0;
+            video.muted = state.isMuted;
             this.isSettingInternally = false;
 
             // Reset gain if it exists
@@ -445,15 +442,10 @@ export class DefaultHandler {
         let type: OverlayType = "volume";
 
         if (state !== undefined && !isNaN(state.targetVolume)) {
-            // If currently muted, we want to scroll relative to the last unmuted volume
-            if (state.isMuted && state.targetVolume > 0) {
-                previousVolume = Math.round(state.lastUnmutedVolume * 100);
+            // If currently muted, we want to scroll relative to the unmuted target volume
+            if (state.isMuted) {
+                previousVolume = Math.round(state.targetVolume * 100);
                 type = "unmute";
-            } else if (state.targetVolume === 0) {
-                previousVolume = 0;
-                if (direction === 1) {
-                    type = "unmute";
-                }
             } else {
                 previousVolume = Math.round(state.targetVolume * 100);
             }
@@ -627,17 +619,7 @@ export class DefaultHandler {
     private applyDefaultVolume(video: HTMLVideoElement) {
         debug("New video found: ", video);
         debug("Default volume set to: ", this.settings.defaultVolume);
-        this.setVolume(this.settings.defaultVolume, video);
-
-
-        if (this.settings.startMuted) {
-            debug("Start muted is enabled, muting video");
-            this.isSettingInternally = true;
-            video.muted = true;
-            this.isSettingInternally = false;
-            const state = this.volumeTargets.get(video);
-            if (state) state.isMuted = true;
-        }
+        this.setVolume(this.settings.defaultVolume, video, this.settings.startMuted);
     }
 
     public setDefaultVolume(body: HTMLElement) {
@@ -664,35 +646,25 @@ export class DefaultHandler {
         if (!state) {
             state = {
                 targetVolume: video.volume,
-                lastUnmutedVolume: video.volume > 0 ? video.volume : (this.settings.defaultVolume / 100),
                 isMuted: video.muted
             };
             this.volumeTargets.set(video, state);
         }
 
         if (video.muted || state.isMuted) {
-            // Unmute: Restore last unmuted volume
-            debug(`Unmuting. Restoring volume to ${state.lastUnmutedVolume}`);
-            this.setVolume(state.lastUnmutedVolume * 100, video);
-            this.updateOverlay(e, videoGroup.display, "unmute", state.lastUnmutedVolume * 100, body);
+            // Unmute: Restore target volume (or 1 increment if at 0)
+            let restoreVolume = state.targetVolume > 0
+                ? state.targetVolume * 100
+                : this.settings.volumeIncrement;
 
-            this.isSettingInternally = true;
-            video.muted = false;
-            this.isSettingInternally = false;
-            state.isMuted = false;
-            this.updateLockedAttributes(video);
+            debug(`Unmuting. Restoring volume to ${restoreVolume}`);
+            this.setVolume(restoreVolume, video, false);
+            this.updateOverlay(e, videoGroup.display, "unmute", restoreVolume, body);
         } else {
-            // Mute: Save current volume and set to 0
-            debug(`Muting. Saving volume ${state.targetVolume} and setting to 0`);
-            state.lastUnmutedVolume = state.targetVolume;
-            this.setVolume(0, video);
-            this.updateOverlay(e, videoGroup.display, "mute", state.lastUnmutedVolume * 100, body);
-
-            this.isSettingInternally = true;
-            video.muted = true;
-            this.isSettingInternally = false;
-            state.isMuted = true;
-            this.updateLockedAttributes(video);
+            // Mute: Keep current target volume
+            debug(`Muting. Saving volume ${state.targetVolume} and muting`);
+            this.setVolume(state.targetVolume * 100, video, true);
+            this.updateOverlay(e, videoGroup.display, "mute", state.targetVolume * 100, body);
         }
 
         return true;
