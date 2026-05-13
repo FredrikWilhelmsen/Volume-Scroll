@@ -642,7 +642,8 @@ export class DefaultHandler {
         if (!videoGroup) return false;
 
         const video = videoGroup.video;
-        let state = this.volumeTargets.get(video);
+        debug(`Found video: ${video}`);
+        let state = this.volumeTargets.get(video)
 
         if (!state) {
             state = {
@@ -651,6 +652,7 @@ export class DefaultHandler {
             };
             this.volumeTargets.set(video, state);
         }
+        debug(`Video state: ${state}`);
 
         if (video.muted || state.isMuted) {
             // Unmute: Restore target volume (or 1 increment if at 0)
