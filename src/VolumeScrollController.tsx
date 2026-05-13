@@ -63,8 +63,26 @@ export const init = () => {
                         setTimeout(() => processedMessageIds.delete(event.data.messageId), 1000);
                     }
 
-                    const x = event.data.clientX !== undefined ? event.data.clientX : mouseX;
-                    const y = event.data.clientY !== undefined ? event.data.clientY : mouseY;
+                    let x = event.data.clientX !== undefined ? event.data.clientX : mouseX;
+                    let y = event.data.clientY !== undefined ? event.data.clientY : mouseY;
+
+                    // Adjust coordinates if this came from a sub-frame
+                    if (event.source && event.source !== window) {
+                        const iframes = document.getElementsByTagName("iframe");
+                        for (let i = 0; i < iframes.length; i++) {
+                            try {
+                                if (iframes[i].contentWindow === event.source) {
+                                    const rect = iframes[i].getBoundingClientRect();
+                                    x += rect.left;
+                                    y += rect.top;
+                                    break;
+                                }
+                            } catch (e) {
+                                // Ignore cross-origin errors
+                            }
+                        }
+                    }
+
                     const isTop = window.top === window.self;
 
                     debug(`Handling ${event.data.type} in this frame`, event.data);
@@ -111,7 +129,12 @@ export const init = () => {
                     if (!handled && !isTop) {
                         // Relay it to the next parent
                         debug(`Relaying ${event.data.type} up to parent`);
-                        window.parent.postMessage(event.data, "*");
+                        const relayData = {
+                            ...event.data,
+                            clientX: x,
+                            clientY: y
+                        };
+                        window.parent.postMessage(relayData, "*");
                     }
                     return;
                 }
@@ -306,6 +329,14 @@ export function onMouseDown(e: MouseEvent): void {
     if (settings.toggleMuteKey === getMouseKey(e.button) && settings.useToggleMuteKey) {
 
         if (window.self !== window.top) {
+            const elementsAtPoint = document.elementsFromPoint(e.clientX, e.clientY);
+
+            // If the handler says this area should be ignored, then we respect that and allow default behavior
+            if (handler.isIgnored(elementsAtPoint)) {
+                debug("Area is blacklisted by handler, allowing default mute toggle behavior");
+                return;
+            }
+
             const localVideo = document.getElementsByTagName("video")[0];
             if (!localVideo) {
                 debug("In iframe, relaying Mute Toggle to parent");
