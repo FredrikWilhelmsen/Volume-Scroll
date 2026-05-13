@@ -1,5 +1,5 @@
 import browser from "webextension-polyfill";
-import { isHotkeyPressed, getMouseKey, debug, setUtilSettings, getLogList, addLog } from "./utils";
+import { isHotkeyPressed, getMouseKey, debug, setUtilSettings, getLogList, addLog, findScrollableParent } from "./utils";
 
 import { Settings, defaultSettings } from "./types";
 
@@ -284,35 +284,88 @@ export function onScroll(e: WheelEvent): void {
 
         const localVideo = document.getElementsByTagName("video")[0];
 
+
         // If no video here, assume we are an overlay and shout to the parent
         if (!localVideo) {
-            debug("In iframe without video, posting message to parent");
-            if (!isDisabledOnSite()) {
+            if (doVolumeScroll(e)) {
+                debug("In iframe without video, posting message to parent");
                 e.preventDefault();
                 e.stopPropagation();
-            }
 
-            // "*" allows communication even if the iframe is cross-origin
-            window.parent.postMessage({
-                type: "VOLUME_SCROLL_RELAY",
-                messageId: Math.random().toString(36).slice(2, 11),
-                deltaY: e.deltaY,
-                deltaMode: e.deltaMode,
-                clientX: e.clientX,
-                clientY: e.clientY,
-                buttons: e.buttons,
-                ctrlKey: e.ctrlKey,
-                shiftKey: e.shiftKey,
-                altKey: e.altKey,
-                metaKey: e.metaKey
-            }, "*");
+                // "*" allows communication even if the iframe is cross-origin
+                window.parent.postMessage({
+                    type: "VOLUME_SCROLL_RELAY",
+                    messageId: Math.random().toString(36).slice(2, 11),
+                    deltaY: e.deltaY,
+                    deltaMode: e.deltaMode,
+                    clientX: e.clientX,
+                    clientY: e.clientY,
+                    buttons: e.buttons,
+                    ctrlKey: e.ctrlKey,
+                    shiftKey: e.shiftKey,
+                    altKey: e.altKey,
+                    metaKey: e.metaKey
+                }, "*");
+            } else {
+                // If a modifier key that is set to Inverted is being used,
+                // the user likely wants to scroll the page normally (vertically),
+                // but Shift/Ctrl would normally trigger horizontal scroll or zoom.
+                const isShiftInverted = settings.useModifierKey && settings.invertModifierKey && settings.modifierKey === "Shift" && e.shiftKey;
+                const isCtrlInverted = settings.useModifierKey && settings.invertModifierKey && settings.modifierKey === "Control" && e.ctrlKey;
+
+                if (isShiftInverted || isCtrlInverted) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    let delta = e.deltaY !== 0 ? e.deltaY : e.deltaX;
+                    if (e.deltaMode === 1) delta *= 33.3;
+                    else if (e.deltaMode === 2) delta *= 333;
+
+                    const scrollTarget = findScrollableParent(e.target as HTMLElement) || document.scrollingElement || document.documentElement;
+                    scrollTarget.scrollBy({ top: delta, behavior: 'auto' });
+                }
+            }
 
             return;
         }
     }
 
     // Check settings
-    if (!doVolumeScroll(e)) return;
+    if (!doVolumeScroll(e)) {
+        // If a modifier key that is set to Inverted is being used, 
+        // the user likely wants to scroll the page normally (vertically),
+        // but Shift/Ctrl would normally trigger horizontal scroll or zoom.
+        const isShiftInverted = settings.useModifierKey && settings.invertModifierKey && settings.modifierKey === "Shift" && e.shiftKey;
+        const isCtrlInverted = settings.useModifierKey && settings.invertModifierKey && settings.modifierKey === "Control" && e.ctrlKey;
+
+        if (isShiftInverted || isCtrlInverted) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            let delta = e.deltaY !== 0 ? e.deltaY : e.deltaX;
+            if (e.deltaMode === 1) delta *= 33.3;
+            else if (e.deltaMode === 2) delta *= 333;
+
+
+            const scrollTarget = findScrollableParent(e.target as HTMLElement) || document.scrollingElement || document.documentElement;
+            scrollTarget.scrollBy({ top: delta, behavior: 'auto' });
+        }
+        return;
+    }
+
+    // Prevent default browser behavior for Shift (horizontal scroll) or Control (zoom)
+    // if they are being used as trigger keys.
+    const isShiftTrigger = (settings.useModifierKey && settings.modifierKey === "Shift" && e.shiftKey) ||
+        (settings.useAlternateVolumeIncrement && settings.alternateVolumeIncrementHotkey === "Shift" && isAltVolumeKeyPressed);
+    const isCtrlTrigger = (settings.useModifierKey && settings.modifierKey === "Control" && e.ctrlKey) ||
+        (settings.useAlternateVolumeIncrement && settings.alternateVolumeIncrementHotkey === "Control" && isAltVolumeKeyPressed);
+
+    if (isShiftTrigger || isCtrlTrigger) {
+        debug(`Blocking browser default for ${isShiftTrigger ? "Shift" : "Control"} trigger`);
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+    }
 
     // Check if we utilized the Right Mouse button as an alternate increment hotkey for this scroll
     if (settings.useAlternateVolumeIncrement && settings.alternateVolumeIncrementHotkey === "Right Mouse" && isAltVolumeKeyPressed) {
