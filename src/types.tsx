@@ -89,7 +89,7 @@ export const defaultSettings: Settings = {
 };
 
 export type Pages = "menu" | "scroll" | "hotkeys" | "overlay" | "misc";
-export type OverlayType = "volume" | "mute" | "unmute";
+export type OverlayType = "volume" | "mute" | "unmute" | "pause" | "play";
 
 export interface videoElements {
     display: HTMLBaseElement;
