@@ -638,7 +638,6 @@ export class DefaultHandler {
     public toggleMute(e: MouseEvent, body: HTMLElement): boolean {
         const videoGroup: videoElements | null = this.getVideo(e.clientX, e.clientY);
 
-
         if (!videoGroup) return false;
 
         const video = videoGroup.video;
@@ -658,7 +657,7 @@ export class DefaultHandler {
             // Unmute: Restore target volume (or 1 increment if at 0)
             let restoreVolume = state.targetVolume > 0
                 ? state.targetVolume * 100
-                : this.settings.volumeIncrement;
+                : (this.settings.usePreciseScroll ? 1 : this.settings.volumeIncrement);
 
             debug(`Unmuting. Restoring volume to ${restoreVolume}`);
             this.setVolume(restoreVolume, video, false);
