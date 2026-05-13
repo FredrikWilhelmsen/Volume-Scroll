@@ -92,14 +92,14 @@ export const VolumeOverlay: React.FC<VolumeOverlayProps> = ({ type, volume, x, y
 
         const icons: React.ReactNode[] = [];
 
-        // 1. Handle Mute/Unmute state
+        // Handle Mute/Unmute state
         if (currentIsMuted) {
             icons.push(<MutedIcon key="mute" />);
         } else if (isMuteSticky && lastMuteStickyType === "unmute") {
             icons.push(<UnmutedIcon key="unmute" />);
         }
 
-        // 2. Handle Pause/Play state
+        // Handle Pause/Play state
         if (isPauseSticky && lastPauseStickyType) {
             const icon = lastPauseStickyType === "play" ? <PlayIcon key="play" /> : <PauseIcon key="pause" />;
             icons.push(icon);
@@ -148,7 +148,10 @@ export const VolumeOverlay: React.FC<VolumeOverlayProps> = ({ type, volume, x, y
                     left: `${x}px`,
                     top: `${y}px`,
                     fontSize: `${settings.fontSize}px`,
-                    color: settings.fontColor
+                    color: settings.fontColor,
+                    backgroundColor: settings.useOverlayBackground ? `rgba(30, 30, 30, ${settings.overlayBackgroundOpacity / 100})` : 'transparent',
+                    padding: settings.useOverlayBackground ? '0.1em 0.3em' : '0',
+                    borderRadius: '4px'
                 }}
             >
                 {renderContent()}

@@ -22,6 +22,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
     const [yPos, setYPos] = useState(settings.overlayYPos);
     const [fontSize, setFontSize] = useState(settings.fontSize);
     const [overlayDuration, setOverlayDuration] = useState(settings.overlayDuration);
+    const [overlayBackgroundOpacity, setOverlayBackgroundOpacity] = useState(settings.overlayBackgroundOpacity);
 
     const [isColorpickerVisible, setIsColorpickerVisible] = useState(false);
 
@@ -84,6 +85,31 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
         }
 
         handleOverlayDurationChange(e, newValue);
+    };
+
+    const handleOverlayBackgroundToggle = (_e: Event | React.SyntheticEvent, value: any) => {
+        editSetting("useOverlayBackground", value);
+    }
+
+    const handleOverlayBackgroundOpacityChange = (_e: Event | React.SyntheticEvent, value: any) => {
+        editSetting("overlayBackgroundOpacity", value);
+        setOverlayBackgroundOpacity(value);
+    };
+
+    const handleOverlayBackgroundOpacityScroll = (e: React.WheelEvent) => {
+        if (!settings.useMouseWheelVolume || !settings.useOverlay || !settings.useOverlayBackground) return;
+
+        e.preventDefault();
+
+        let newValue: number = overlayBackgroundOpacity;
+
+        if (e.deltaY < 0) {
+            newValue = Math.min(newValue + 5, 100);
+        } else {
+            newValue = Math.max(newValue - 5, 5);
+        }
+
+        handleOverlayBackgroundOpacityChange(e, newValue);
     };
 
     const handleColorChange = (color: any) => {
@@ -185,9 +211,9 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
                 <div id="overlayFontSizeContainer">
                     <div id="overlayFontSizeDisplay" className="sliderDisplayContainer">
                         <Typography variant="body1">
-                            Overlay size
+                            Size
                         </Typography>
-                        <Tooltip title="Current increment" placement="top" disableInteractive>
+                        <Tooltip title="Current font size" placement="top" disableInteractive>
                             <div id="fontSizeDisplay" className="sliderDisplay">
                                 <Typography variant="body2">
                                     {settings.fontSize}
@@ -213,7 +239,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
                 <div id="overlayDurationContainer">
                     <div id="overlayDurationDisplay" className="sliderDisplayContainer">
                         <Typography variant="body1">
-                            Overlay duration
+                            Duration
                         </Typography>
                         <Tooltip title="Current duration in seconds" placement="top" disableInteractive>
                             <div id="overlayDurationValueDisplay" className="sliderDisplay">
@@ -238,6 +264,41 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
                         </Tooltip>
                     </div>
                 </div>
+                <div id="overlayBackgroundContainer">
+                    <div id="overlayBackgroundToggleContainer">
+                        <Tooltip title="Enable or disable overlay background" placement="top" disableInteractive>
+                            <FormControlLabel
+                                onChange={handleOverlayBackgroundToggle}
+                                control={
+                                    <Switch
+                                        checked={settings.useOverlayBackground}
+                                    />}
+                                label="Background"
+                            />
+                        </Tooltip>
+                        <Tooltip title="Current background opacity" placement="top" disableInteractive>
+                            <div id="overlayBackgroundDisplay">
+                                <Typography variant="body2">
+                                    {overlayBackgroundOpacity}%
+                                </Typography>
+                            </div>
+                        </Tooltip>
+                    </div>
+                    <div onWheel={handleOverlayBackgroundOpacityScroll}>
+                        <Tooltip title="Set how transparent the overlay is" disableInteractive>
+                            <Slider
+                                min={5}
+                                max={100}
+                                step={5}
+                                aria-label="Overlay Background Opacity"
+                                value={overlayBackgroundOpacity}
+                                valueLabelDisplay="off"
+                                disabled={!settings.useMouseWheelVolume || !settings.useOverlay}
+                                onChange={handleOverlayBackgroundOpacityChange}
+                            />
+                        </Tooltip>
+                    </div>
+                </div>
                 <div id="overlayColorPickerContainer">
                     <div id="colorDisplay">
                         <Paper elevation={2} sx={
@@ -246,7 +307,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
                             onClick={handleColorPickerClick}
                         />
                         <Typography variant="body1">
-                            Overlay color
+                            Color
                         </Typography>
                     </div>
 
