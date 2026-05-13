@@ -6,32 +6,51 @@ export interface VolumeOverlayProps {
     volume: number;
     x: number;
     y: number;
+    isMuted?: boolean;
+    isPaused?: boolean;
     settings: Settings;
     animationKey: number;
 }
 
-export const VolumeOverlay: React.FC<VolumeOverlayProps> = ({ type, volume, x, y, settings, animationKey }) => {
-    const [lastUnmuteTime, setLastUnmuteTime] = useState(0);
+export const VolumeOverlay: React.FC<VolumeOverlayProps> = ({ type, volume, x, y, isMuted, isPaused, settings, animationKey }) => {
+    const [lastMuteStickyTime, setLastMuteStickyTime] = useState(0);
+    const [lastMuteStickyType, setLastMuteStickyType] = useState<OverlayType | null>(null);
+    const [lastPauseStickyTime, setLastPauseStickyTime] = useState(0);
+    const [lastPauseStickyType, setLastPauseStickyType] = useState<OverlayType | null>(null);
+
     const [, setRefreshCount] = useState(0);
 
     useEffect(() => {
-        if (type === "unmute") {
-            setLastUnmuteTime(Date.now());
+        if (type === "unmute" || type === "mute") {
+            setLastMuteStickyTime(Date.now());
+            setLastMuteStickyType(type);
+        }
+        if (type === "pause" || type === "play") {
+            setLastPauseStickyTime(Date.now());
+            setLastPauseStickyType(type);
         }
     }, [type, animationKey]);
 
-    const unmuteDuration = settings.overlayDuration === 0 ? 2000 : settings.overlayDuration;
-    const isUnmutedSticky = (type === "unmute" && lastUnmuteTime === 0) || (Date.now() - lastUnmuteTime) < unmuteDuration;
+    const stickyDuration = settings.overlayDuration === 0 ? 2000 : settings.overlayDuration;
+    const isMuteSticky = (lastMuteStickyTime !== 0 && (Date.now() - lastMuteStickyTime) < stickyDuration);
+    const isPauseSticky = (lastPauseStickyTime !== 0 && (Date.now() - lastPauseStickyTime) < stickyDuration);
 
     useEffect(() => {
-        if (isUnmutedSticky && settings.overlayDuration === 0) {
-            const remaining = unmuteDuration - (Date.now() - lastUnmuteTime);
-            const timer = setTimeout(() => {
-                setRefreshCount(prev => prev + 1);
-            }, remaining + 50);
-            return () => clearTimeout(timer);
+        const now = Date.now();
+        const timers: any[] = [];
+
+        if (isMuteSticky && settings.overlayDuration === 0) {
+            const remaining = stickyDuration - (now - lastMuteStickyTime);
+            timers.push(setTimeout(() => setRefreshCount(prev => prev + 1), remaining + 50));
         }
-    }, [isUnmutedSticky, lastUnmuteTime, unmuteDuration, settings.overlayDuration]);
+
+        if (isPauseSticky && settings.overlayDuration === 0) {
+            const remaining = stickyDuration - (now - lastPauseStickyTime);
+            timers.push(setTimeout(() => setRefreshCount(prev => prev + 1), remaining + 50));
+        }
+
+        return () => timers.forEach(clearTimeout);
+    }, [isMuteSticky, isPauseSticky, lastMuteStickyTime, lastPauseStickyTime, stickyDuration, settings.overlayDuration]);
 
     const fadeStartPercentage = settings.overlayDuration > 250
         ? Math.round(((settings.overlayDuration - 250) / settings.overlayDuration) * 100)
@@ -55,24 +74,42 @@ export const VolumeOverlay: React.FC<VolumeOverlayProps> = ({ type, volume, x, y
         </svg>
     );
 
+    const PauseIcon = () => (
+        <svg viewBox="0 -960 960 960" width="1.2em" height="1.2em" fill="currentColor" style={iconStyle}>
+            <path d="M520-200v-560h240v560H520Zm-320 0v-560h240v560H200Zm400-80h80v-400h-80v400Zm-320 0h80v-400h-80v400Zm0-400v400-400Zm320 0v400-400Z" />
+        </svg>
+    );
+
+    const PlayIcon = () => (
+        <svg viewBox="0 -960 960 960" width="1.2em" height="1.2em" fill="currentColor" style={iconStyle}>
+            <path d="M320-200v-560l440 280-440 280Zm80-280Zm0 134 210-134-210-134v268Z" />
+        </svg>
+    );
+
     const renderContent = () => {
         const volumeDisplay = Math.round(volume);
+        const currentIsMuted = isMuted || volumeDisplay === 0;
 
-        if (volumeDisplay === 0) {
-            return <MutedIcon />;
+        const icons: React.ReactNode[] = [];
+
+        // 1. Handle Mute/Unmute state
+        if (currentIsMuted) {
+            icons.push(<MutedIcon key="mute" />);
+        } else if (isMuteSticky && lastMuteStickyType === "unmute") {
+            icons.push(<UnmutedIcon key="unmute" />);
         }
 
-        const unmuteContent = settings.overlayXPos <= 50
-            ? <React.Fragment>{volumeDisplay} <UnmutedIcon /></React.Fragment>
-            : <React.Fragment><UnmutedIcon /> {volumeDisplay}</React.Fragment>;
-
-        switch (type) {
-            case "unmute":
-            case "volume":
-                return isUnmutedSticky ? unmuteContent : volumeDisplay;
-            case "mute":
-                return <MutedIcon />;
+        // 2. Handle Pause/Play state
+        if (isPauseSticky && lastPauseStickyType) {
+            const icon = lastPauseStickyType === "play" ? <PlayIcon key="play" /> : <PauseIcon key="pause" />;
+            icons.push(icon);
         }
+
+        if (icons.length === 0) return volumeDisplay;
+
+        return settings.overlayXPos <= 50
+            ? <React.Fragment>{volumeDisplay} {icons}</React.Fragment>
+            : <React.Fragment>{icons} {volumeDisplay}</React.Fragment>;
     }
 
     return (
