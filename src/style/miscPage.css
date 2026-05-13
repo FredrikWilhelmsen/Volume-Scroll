@@ -51,3 +51,31 @@
 .manualDomainInput .MuiInputLabel-root.MuiInputLabel-shrink {
     color: #1976d2;
 }
+
+#boostColorPickerContainer {
+    margin-top: 8px;
+    margin-bottom: 16px;
+}
+
+#colorDisplay {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.twitter-picker {
+    background-color: #191b21 !important;
+}
+
+.twitter-picker>div:nth-child(1),
+.twitter-picker>div:nth-child(2) {
+    border-bottom-color: #191b21 !important;
+}
+
+.twitter-picker>div:nth-child(3) {
+    padding-left: 23px !important;
+    padding-right: 17px !important;
+    padding-top: 23px !important;
+    padding-bottom: 17px !important
+}

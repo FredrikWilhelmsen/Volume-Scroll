@@ -112,12 +112,14 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
         handleOverlayBackgroundOpacityChange(e, newValue);
     };
 
-    const handleColorChange = (color: any) => {
-        editSetting("fontColor", color.hex);
+    const handleOverlayColorChange = (color: any) => {
+        if (!settings.useMouseWheelVolume || !settings.useOverlay) return;
+        editSetting("overlayColor", color.hex);
         console.log(color.hex);
     }
 
     const handleColorPickerClick = () => {
+        if (!settings.useMouseWheelVolume || !settings.useOverlay) return;
         setIsColorpickerVisible(!isColorpickerVisible);
     }
 
@@ -300,9 +302,15 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
                     </div>
                 </div>
                 <div id="overlayColorPickerContainer">
-                    <div id="colorDisplay">
+                    <div id="colorDisplay" style={{ opacity: (!settings.useMouseWheelVolume || !settings.useOverlay) ? 0.5 : 1 }}>
                         <Paper elevation={2} sx={
-                            { bgcolor: settings.fontColor, width: 40, height: 20, mr: 1 }
+                            {
+                                bgcolor: settings.overlayColor,
+                                width: 40,
+                                height: 20,
+                                mr: 1,
+                                cursor: (!settings.useMouseWheelVolume || !settings.useOverlay) ? 'default' : 'pointer'
+                            }
                         }
                             onClick={handleColorPickerClick}
                         />
@@ -310,8 +318,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
                             Color
                         </Typography>
                     </div>
-
-                    {isColorpickerVisible && <TwitterPicker colors={colors} color={settings.fontColor} onChange={handleColorChange} width="220px" />}
+                    {isColorpickerVisible && !(!settings.useMouseWheelVolume || !settings.useOverlay) && <TwitterPicker colors={colors} color={settings.overlayColor} onChange={handleOverlayColorChange} width="220px" />}
                 </div>
                 <div id="overlayPositionDropdownContainer">
                     <Tooltip title="Set overlay position">

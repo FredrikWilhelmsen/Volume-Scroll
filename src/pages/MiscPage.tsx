@@ -10,6 +10,9 @@ import "../style/miscPage.css"
 import { Button, TextField, IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { getMouseKey } from '../utils';
+import Paper from '@mui/material/Paper';
+import { TwitterPicker } from "@hello-pangea/color-picker";
+
 
 interface MiscPageInterface {
     settings: Settings,
@@ -25,6 +28,22 @@ const MiscPage: React.FC<MiscPageInterface> = ({ settings, editSetting, setPage 
     const [isSettingAlternateIncrementKey, setIsSettingAlternateIncrementKey] = useState(false);
     const [domainListInput, setdomainListInput] = useState("");
     const lastSetTime = useRef(0);
+    const [isBoostColorPickerVisible, setIsBoostColorPickerVisible] = useState(false);
+
+    const colors: string[] = [
+        "#FF6900",
+        "#FCB900",
+        "#7BDCB5",
+        "#00D084",
+        "#8ED1FC",
+        "#0693E3",
+        "#ABB8C3",
+        "#EB144C",
+        "#F78DA7",
+        "#9900EF",
+        "#DABDAB"
+    ];
+
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -140,6 +159,16 @@ const MiscPage: React.FC<MiscPageInterface> = ({ settings, editSetting, setPage 
     const handleBoostVolumeChange = (_e: Event | React.SyntheticEvent, value: any) => {
         setVolumeBoostAmount(value);
         editSetting("volumeBoostAmount", value);
+    }
+
+    const handleBoostColorChange = (color: any) => {
+        if (!settings.useMouseWheelVolume || !settings.doBoostVolume) return;
+        editSetting("boostedColor", color.hex);
+    }
+
+    const handleBoostColorPickerClick = () => {
+        if (!settings.useMouseWheelVolume || !settings.doBoostVolume) return;
+        setIsBoostColorPickerVisible(!isBoostColorPickerVisible);
     }
 
     const handleBoostVolumeScroll = (e: React.WheelEvent) => {
@@ -300,6 +329,26 @@ const MiscPage: React.FC<MiscPageInterface> = ({ settings, editSetting, setPage 
                             />
                         </Tooltip>
                     </div>
+                </div>
+                <div id="boostColorPickerContainer">
+                    <div id="colorDisplay" style={{ opacity: (!settings.useMouseWheelVolume || !settings.doBoostVolume) ? 0.5 : 1 }}>
+                        <Paper elevation={2} sx={
+                            {
+                                bgcolor: settings.boostedColor,
+                                width: 40,
+                                height: 20,
+                                mr: 1,
+                                cursor: (!settings.useMouseWheelVolume || !settings.doBoostVolume) ? 'default' : 'pointer'
+                            }
+                        }
+                            onClick={handleBoostColorPickerClick}
+                        />
+                        <Typography variant="body1">
+                            Boosted color
+                        </Typography>
+                    </div>
+
+                    {isBoostColorPickerVisible && !(!settings.useMouseWheelVolume || !settings.doBoostVolume) && <TwitterPicker colors={colors} color={settings.boostedColor} onChange={handleBoostColorChange} width="220px" />}
                 </div>
                 <div id="alternateIncrementContainer">
                     <div id="alternateIncrementToggleContainer">
