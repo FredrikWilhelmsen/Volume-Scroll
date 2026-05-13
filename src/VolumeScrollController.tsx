@@ -1,7 +1,6 @@
 import browser from "webextension-polyfill";
 import { isHotkeyPressed, getMouseKey, debug, setUtilSettings, getLogList, addLog } from "./utils";
 
-
 import { Settings, defaultSettings } from "./types";
 
 import { DefaultHandler } from "./handlers/Default";
@@ -268,7 +267,6 @@ export function onScroll(e: WheelEvent): void {
     }
 
     handler.scroll(e, body);
-
 }
 
 export function onMouseDown(e: MouseEvent): void {
@@ -335,7 +333,6 @@ export function onPageLoad(): void {
     debug("Using handler: " + handler.getName());
     debug("Hostname: " + window.location.hostname);
     handler.setDefaultVolume(body);
-
 }
 
 export function onContextMenu(e: MouseEvent): void {
