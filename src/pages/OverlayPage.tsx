@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { Settings, Pages } from '../types';
 import BackButton from '../components/BackButton';
 import Tooltip from '@mui/material/Tooltip/Tooltip';
-import FormControlLabel from '@mui/material/FormControlLabel/FormControlLabel';
-import Switch from '@mui/material/Switch/Switch';
 import Typography from '@mui/material/Typography/Typography';
 import "../style/overlayPage.css";
-import Slider from '@mui/material/Slider/Slider';
 import Paper from '@mui/material/Paper';
 import { TwitterPicker } from "@hello-pangea/color-picker";
+import SettingsSlider from '../components/SettingsSlider';
+import SettingsSwitch from '../components/SettingsSwitch';
+import SettingsValueDisplay from '../components/SettingsValueDisplay';
 
 interface OverlayPageInterface {
     settings: Settings,
@@ -40,76 +40,27 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
         "#DABDAB"
     ];
 
-    const handleUseOverlayToggle = (_e: Event | React.SyntheticEvent, value: any) => {
+    const handleUseOverlayToggle = (value: boolean) => {
         editSetting("useOverlay", value);
     }
 
-    const handleOverlaySizeChange = (_e: Event | React.SyntheticEvent, value: any) => {
+    const handleOverlaySizeChange = (value: number) => {
         editSetting("fontSize", value);
         setFontSize(value);
     }
 
-    const handleFontSizeScroll = (e: React.WheelEvent) => {
-        if (!settings.useMouseWheelVolume || !settings.useOverlay) return;
-
-        e.preventDefault();
-
-        let newValue: number = fontSize;
-
-        if (e.deltaY < 0) {
-            newValue = Math.min(fontSize + 5, 90);
-        } else {
-            newValue = Math.max(fontSize - 5, 10);
-        }
-
-        setFontSize(newValue);
-        editSetting("fontSize", newValue);
-    };
-
-    const handleOverlayDurationChange = (_e: Event | React.SyntheticEvent, value: any) => {
+    const handleOverlayDurationChange = (value: number) => {
         editSetting("overlayDuration", value);
         setOverlayDuration(value);
     }
 
-    const handleOverlayDurationScroll = (e: React.WheelEvent) => {
-        if (!settings.useMouseWheelVolume || !settings.useOverlay) return;
-
-        e.preventDefault();
-
-        let newValue: number = overlayDuration;
-
-        if (e.deltaY < 0) {
-            newValue = Math.min(newValue + 500, 10000);
-        } else {
-            newValue = Math.max(newValue - 500, 0);
-        }
-
-        handleOverlayDurationChange(e, newValue);
-    };
-
-    const handleOverlayBackgroundToggle = (_e: Event | React.SyntheticEvent, value: any) => {
+    const handleOverlayBackgroundToggle = (value: boolean) => {
         editSetting("useOverlayBackground", value);
     }
 
-    const handleOverlayBackgroundOpacityChange = (_e: Event | React.SyntheticEvent, value: any) => {
+    const handleOverlayBackgroundOpacityChange = (value: number) => {
         editSetting("overlayBackgroundOpacity", value);
         setOverlayBackgroundOpacity(value);
-    };
-
-    const handleOverlayBackgroundOpacityScroll = (e: React.WheelEvent) => {
-        if (!settings.useMouseWheelVolume || !settings.useOverlay || !settings.useOverlayBackground) return;
-
-        e.preventDefault();
-
-        let newValue: number = overlayBackgroundOpacity;
-
-        if (e.deltaY < 0) {
-            newValue = Math.min(newValue + 5, 100);
-        } else {
-            newValue = Math.max(newValue - 5, 5);
-        }
-
-        handleOverlayBackgroundOpacityChange(e, newValue);
     };
 
     const handleOverlayColorChange = (color: any) => {
@@ -147,49 +98,15 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
         }
     }
 
-    const handleXChange = (_e: Event | React.SyntheticEvent, value: any) => {
+    const handleXChange = (value: number) => {
         editSetting("overlayXPos", value);
         setXPos(value);
     }
 
-    const handleHorizontalScroll = (e: React.WheelEvent) => {
-        if (!settings.useMouseWheelVolume || settings.overlayPosition != "custom" || !settings.useOverlay) return;
-
-        e.preventDefault();
-
-        let newValue: number = xPos;
-
-        if (e.deltaY < 0) {
-            newValue = Math.min(xPos + 5, 95);
-        } else {
-            newValue = Math.max(xPos - 5, 5);
-        }
-
-        setXPos(newValue);
-        editSetting("overlayXPos", newValue);
-    };
-
-    const handleYChange = (_e: Event | React.SyntheticEvent, value: any) => {
+    const handleYChange = (value: number) => {
         editSetting("overlayYPos", value);
         setYPos(value);
     }
-
-    const handleVerticalScroll = (e: React.WheelEvent) => {
-        if (!settings.useMouseWheelVolume || settings.overlayPosition != "custom" || !settings.useOverlay) return;
-
-        e.preventDefault();
-
-        let newValue: number = yPos;
-
-        if (e.deltaY < 0) {
-            newValue = Math.min(yPos + 5, 95);
-        } else {
-            newValue = Math.max(yPos - 5, 5);
-        }
-
-        setYPos(newValue);
-        editSetting("overlayYPos", newValue);
-    };
 
     return (
         <div>
@@ -199,107 +116,84 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
 
             <div className="settingsContainer">
                 <div id="useOverlayContainer">
-                    <Tooltip title="Enable or disable the overlay" placement="top" disableInteractive>
-                        <FormControlLabel
-                            onChange={handleUseOverlayToggle}
-                            control={
-                                <Switch
-                                    checked={settings.useOverlay}
-                                />}
-                            label="Overlay"
-                        />
-                    </Tooltip>
+                    <SettingsSwitch
+                        label="Overlay"
+                        checked={settings.useOverlay}
+                        onChange={handleUseOverlayToggle}
+                        tooltip="Enable or disable the overlay"
+                    />
                 </div>
                 <div id="overlayFontSizeContainer">
                     <div id="overlayFontSizeDisplay" className="sliderDisplayContainer">
                         <Typography variant="body1">
                             Size
                         </Typography>
-                        <Tooltip title="Current font size" placement="top" disableInteractive>
-                            <div id="fontSizeDisplay" className="sliderDisplay">
-                                <Typography variant="body2">
-                                    {settings.fontSize}
-                                </Typography>
-                            </div>
-                        </Tooltip>
+                        <SettingsValueDisplay
+                            id="fontSizeDisplay"
+                            className="sliderDisplay"
+                            value={settings.fontSize}
+                            tooltip="Current font size"
+                        />
                     </div>
-                    <div onWheel={handleFontSizeScroll}>
-                        <Tooltip title="Set the text size of the overlay" disableInteractive>
-                            <Slider
-                                min={10}
-                                max={90}
-                                step={5}
-                                aria-label="Overlay Size"
-                                value={fontSize}
-                                valueLabelDisplay="off"
-                                disabled={!settings.useMouseWheelVolume || !settings.useOverlay}
-                                onChange={handleOverlaySizeChange}
-                            />
-                        </Tooltip>
-                    </div>
+                    <SettingsSlider
+                        min={10}
+                        max={90}
+                        step={5}
+                        ariaLabel="Overlay Size"
+                        value={fontSize}
+                        disabled={!settings.useMouseWheelVolume || !settings.useOverlay}
+                        onChange={handleOverlaySizeChange}
+                        tooltip="Set the text size of the overlay"
+                    />
                 </div>
                 <div id="overlayDurationContainer">
                     <div id="overlayDurationDisplay" className="sliderDisplayContainer">
                         <Typography variant="body1">
                             Duration
                         </Typography>
-                        <Tooltip title="Current duration in seconds" placement="top" disableInteractive>
-                            <div id="overlayDurationValueDisplay" className="sliderDisplay">
-                                <Typography variant="body2" sx={settings.overlayDuration === 0 ? { fontSize: '1.3rem', lineHeight: 1 } : {}}>
-                                    {settings.overlayDuration === 0 ? "∞" : (settings.overlayDuration / 1000).toFixed(1)}
-                                </Typography>
-                            </div>
-                        </Tooltip>
+                        <SettingsValueDisplay
+                            id="overlayDurationValueDisplay"
+                            className="sliderDisplay"
+                            value={settings.overlayDuration === 0 ? "∞" : (settings.overlayDuration / 1000).toFixed(1)}
+                            tooltip="Current duration in seconds"
+                            sx={settings.overlayDuration === 0 ? { fontSize: '1.3rem', lineHeight: 1 } : {}}
+                        />
                     </div>
-                    <div onWheel={handleOverlayDurationScroll}>
-                        <Tooltip title="Set how long the overlay is visible in seconds. Set to 0 for infinite." disableInteractive>
-                            <Slider
-                                min={0}
-                                max={10000}
-                                step={500}
-                                aria-label="Overlay Duration"
-                                value={overlayDuration}
-                                valueLabelDisplay="off"
-                                disabled={!settings.useMouseWheelVolume || !settings.useOverlay}
-                                onChange={handleOverlayDurationChange}
-                            />
-                        </Tooltip>
-                    </div>
+                    <SettingsSlider
+                        min={0}
+                        max={10000}
+                        step={500}
+                        ariaLabel="Overlay Duration"
+                        value={overlayDuration}
+                        disabled={!settings.useMouseWheelVolume || !settings.useOverlay}
+                        onChange={handleOverlayDurationChange}
+                        tooltip="Set how long the overlay is visible in seconds. Set to 0 for infinite."
+                    />
                 </div>
                 <div id="overlayBackgroundContainer">
                     <div id="overlayBackgroundToggleContainer">
-                        <Tooltip title="Enable or disable overlay background" placement="top" disableInteractive>
-                            <FormControlLabel
-                                onChange={handleOverlayBackgroundToggle}
-                                control={
-                                    <Switch
-                                        checked={settings.useOverlayBackground}
-                                    />}
-                                label="Background"
-                            />
-                        </Tooltip>
-                        <Tooltip title="Current background opacity" placement="top" disableInteractive>
-                            <div id="overlayBackgroundDisplay">
-                                <Typography variant="body2">
-                                    {overlayBackgroundOpacity}%
-                                </Typography>
-                            </div>
-                        </Tooltip>
+                        <SettingsSwitch
+                            label="Background"
+                            checked={settings.useOverlayBackground}
+                            onChange={handleOverlayBackgroundToggle}
+                            tooltip="Enable or disable overlay background"
+                        />
+                        <SettingsValueDisplay
+                            id="overlayBackgroundDisplay"
+                            value={`${overlayBackgroundOpacity}%`}
+                            tooltip="Current background opacity"
+                        />
                     </div>
-                    <div onWheel={handleOverlayBackgroundOpacityScroll}>
-                        <Tooltip title="Set how transparent the overlay is" disableInteractive>
-                            <Slider
-                                min={5}
-                                max={100}
-                                step={5}
-                                aria-label="Overlay Background Opacity"
-                                value={overlayBackgroundOpacity}
-                                valueLabelDisplay="off"
-                                disabled={!settings.useMouseWheelVolume || !settings.useOverlay}
-                                onChange={handleOverlayBackgroundOpacityChange}
-                            />
-                        </Tooltip>
-                    </div>
+                    <SettingsSlider
+                        min={5}
+                        max={100}
+                        step={5}
+                        ariaLabel="Overlay Background Opacity"
+                        value={overlayBackgroundOpacity}
+                        disabled={!settings.useMouseWheelVolume || !settings.useOverlay || !settings.useOverlayBackground}
+                        onChange={handleOverlayBackgroundOpacityChange}
+                        tooltip="Set how transparent the overlay is"
+                    />
                 </div>
                 <div id="overlayColorPickerContainer">
                     <div id="colorDisplay" style={{ opacity: (!settings.useMouseWheelVolume || !settings.useOverlay) ? 0.5 : 1 }}>
@@ -340,58 +234,46 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
                         <Typography variant="body1">
                             Horizontal position
                         </Typography>
-                        <Tooltip title="Current increment" placement="top" disableInteractive>
-                            <div id="overlayXPosDisplay" className="sliderDisplay">
-                                <Typography variant="body2">
-                                    {settings.overlayXPos}
-                                </Typography>
-                            </div>
-                        </Tooltip>
+                        <SettingsValueDisplay
+                            id="overlayXPosDisplay"
+                            className="sliderDisplay"
+                            value={settings.overlayXPos}
+                            tooltip="Current increment"
+                        />
                     </div>
-                    <div onWheel={handleHorizontalScroll}>
-                        <Tooltip title="The horizontal position of the overlay" placement="bottom-start" disableInteractive>
-                            <Slider
-                                id="xSlider"
-                                min={5}
-                                max={95}
-                                step={5}
-                                aria-label="Horizontal position"
-                                value={xPos}
-                                valueLabelDisplay="off"
-                                disabled={!settings.useMouseWheelVolume || settings.overlayPosition !== "custom" || !settings.useOverlay}
-                                onChange={handleXChange}
-                            />
-                        </Tooltip>
-                    </div>
+                    <SettingsSlider
+                        min={5}
+                        max={95}
+                        step={5}
+                        ariaLabel="Horizontal position"
+                        value={xPos}
+                        disabled={!settings.useMouseWheelVolume || settings.overlayPosition !== "custom" || !settings.useOverlay}
+                        onChange={handleXChange}
+                        tooltip="The horizontal position of the overlay"
+                    />
                 </div>
                 <div id="overlayYContainer">
                     <div id="overlayYPos" className="sliderDisplayContainer">
                         <Typography variant="body1">
                             Vertical position
                         </Typography>
-                        <Tooltip title="Current increment" placement="top" disableInteractive>
-                            <div id="overlayYPosDisplay" className="sliderDisplay">
-                                <Typography variant="body2">
-                                    {settings.overlayYPos}
-                                </Typography>
-                            </div>
-                        </Tooltip>
+                        <SettingsValueDisplay
+                            id="overlayYPosDisplay"
+                            className="sliderDisplay"
+                            value={settings.overlayYPos}
+                            tooltip="Current increment"
+                        />
                     </div>
-                    <div onWheel={handleVerticalScroll}>
-                        <Tooltip title="The vertical position of the overlay" placement="bottom-start" disableInteractive>
-                            <Slider
-                                id="ySlider"
-                                min={5}
-                                max={95}
-                                step={5}
-                                aria-label="Horizontal position"
-                                value={yPos}
-                                valueLabelDisplay="off"
-                                disabled={!settings.useMouseWheelVolume || settings.overlayPosition !== "custom" || !settings.useOverlay}
-                                onChange={handleYChange}
-                            />
-                        </Tooltip>
-                    </div>
+                    <SettingsSlider
+                        min={5}
+                        max={95}
+                        step={5}
+                        ariaLabel="Vertical position"
+                        value={yPos}
+                        disabled={!settings.useMouseWheelVolume || settings.overlayPosition !== "custom" || !settings.useOverlay}
+                        onChange={handleYChange}
+                        tooltip="The vertical position of the overlay"
+                    />
                 </div>
             </div>
         </div>

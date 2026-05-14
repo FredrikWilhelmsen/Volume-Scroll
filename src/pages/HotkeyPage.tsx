@@ -1,12 +1,9 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React from 'react';
 import { Settings, Pages } from '../types';
 import BackButton from '../components/BackButton';
-import Tooltip from '@mui/material/Tooltip/Tooltip';
-import FormControlLabel from '@mui/material/FormControlLabel/FormControlLabel';
-import Switch from '@mui/material/Switch/Switch';
-import Button from '@mui/material/Button/Button';
 import "../style/hotkeyPage.css";
-import { getMouseKey } from '../utils';
+import SettingsSwitch from '../components/SettingsSwitch';
+import HotkeyButton from '../components/HotkeyButton';
 
 interface HotkeyPageInterface {
     settings: Settings,
@@ -16,135 +13,32 @@ interface HotkeyPageInterface {
 
 const HotkeyPage: React.FC<HotkeyPageInterface> = ({ settings, editSetting, setPage }) => {
 
-    const [isSettingModifierKey, setIsSettingModifierKey] = useState(false);
-    const [isSettingMuteKey, setIsSettingMuteKey] = useState(false);
-    const [isSettingPauseKey, setIsSettingPauseKey] = useState(false);
-    const lastSetTime = useRef(0);
-
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (!isSettingModifierKey && !isSettingMuteKey && !isSettingPauseKey) return;
-
-            e.preventDefault();
-
-            if (e.key === "Escape") {
-                setIsSettingModifierKey(false);
-                setIsSettingMuteKey(false);
-                setIsSettingPauseKey(false);
-                lastSetTime.current = Date.now();
-                return;
-            }
-
-            const allowedKeys = ["Shift", "Alt", "Control"];
-
-            if (isSettingModifierKey && allowedKeys.includes(e.key)) {
-                editSetting("modifierKey", e.key);
-                setIsSettingModifierKey(false);
-                lastSetTime.current = Date.now();
-            }
-        };
-
-        const handleMouseDown = (e: MouseEvent) => {
-            if (!isSettingModifierKey && !isSettingMuteKey && !isSettingPauseKey) return;
-            e.preventDefault();
-            e.stopPropagation();
-
-            const mouseKey = getMouseKey(e.button);
-            if (!mouseKey) return;
-
-            if (isSettingModifierKey) {
-                editSetting("modifierKey", mouseKey);
-                setIsSettingModifierKey(false);
-                lastSetTime.current = Date.now();
-            } else if (isSettingMuteKey) {
-                if (mouseKey === "Mouse 4" || mouseKey === "Mouse 5") return;
-                editSetting("toggleMuteKey", mouseKey);
-                setIsSettingMuteKey(false);
-                lastSetTime.current = Date.now();
-            } else if (isSettingPauseKey) {
-                if (mouseKey === "Mouse 4" || mouseKey === "Mouse 5") return;
-                editSetting("togglePauseKey", mouseKey);
-                setIsSettingPauseKey(false);
-                lastSetTime.current = Date.now();
-            }
-        };
-
-        const handleMouseMove = (e: MouseEvent) => {
-            if (!isSettingModifierKey && !isSettingMuteKey && !isSettingPauseKey) return;
-
-            let detectedKey: string | undefined;
-            if (e.buttons & 8) detectedKey = "Mouse 4";
-            else if (e.buttons & 16) detectedKey = "Mouse 5";
-
-            if (detectedKey) {
-                if (isSettingModifierKey) {
-                    editSetting("modifierKey", detectedKey);
-                    setIsSettingModifierKey(false);
-                    lastSetTime.current = Date.now();
-                }
-            }
-        };
-
-        const handleContextMenu = (e: MouseEvent) => {
-            if (!isSettingModifierKey && !isSettingMuteKey && !isSettingPauseKey) return;
-            e.preventDefault();
-        };
-
-        const handleKeyUp = (e: KeyboardEvent) => {
-            if (e.key === "Alt") e.preventDefault();
-        };
-
-        window.addEventListener("contextmenu", handleContextMenu, { capture: true });
-        window.addEventListener("keydown", handleKeyDown);
-        window.addEventListener("keyup", handleKeyUp);
-        window.addEventListener("mousedown", handleMouseDown);
-        window.addEventListener("auxclick", handleMouseDown);
-        window.addEventListener("mousemove", handleMouseMove);
-        window.addEventListener("pointermove", handleMouseMove);
-
-        return () => {
-            window.removeEventListener("contextmenu", handleContextMenu);
-            window.removeEventListener("keydown", handleKeyDown);
-            window.removeEventListener("keyup", handleKeyUp);
-            window.removeEventListener("mousedown", handleMouseDown);
-            window.removeEventListener("auxclick", handleMouseDown);
-            window.removeEventListener("mousemove", handleMouseMove);
-            window.removeEventListener("pointermove", handleMouseMove);
-        };
-    }, [isSettingModifierKey, isSettingMuteKey, isSettingPauseKey, editSetting]);
-
-    const handleModifierKeyToggle = (_e: Event | React.SyntheticEvent, value: any) => {
+    const handleModifierKeyToggle = (value: boolean) => {
         editSetting("useModifierKey", value);
     }
 
-    const handleModifierKeyClick = (_e: Event | React.SyntheticEvent) => {
-        if (isSettingModifierKey || isSettingMuteKey || isSettingPauseKey || Date.now() - lastSetTime.current < 100) return;
-
-        setIsSettingModifierKey(true);
+    const handleModifierKeySet = (value: string) => {
+        editSetting("modifierKey", value);
     }
 
-    const handleInvertModifierKeyToggle = (_e: Event | React.SyntheticEvent, value: any) => {
+    const handleInvertModifierKeyToggle = (value: boolean) => {
         editSetting("invertModifierKey", value);
     }
 
-    const handleMuteKeyToggle = (_e: Event | React.SyntheticEvent, value: any) => {
+    const handleMuteKeyToggle = (value: boolean) => {
         editSetting("useToggleMuteKey", value);
     }
 
-    const handleMuteKeyClick = (_e: Event | React.SyntheticEvent) => {
-        if (isSettingModifierKey || isSettingMuteKey || isSettingPauseKey || Date.now() - lastSetTime.current < 100) return;
-
-        setIsSettingMuteKey(true);
+    const handleMuteKeySet = (value: string) => {
+        editSetting("toggleMuteKey", value);
     }
 
-    const handlePauseKeyToggle = (_e: Event | React.SyntheticEvent, value: any) => {
+    const handlePauseKeyToggle = (value: boolean) => {
         editSetting("useTogglePauseKey", value);
     }
 
-    const handlePauseKeyClick = (_e: Event | React.SyntheticEvent) => {
-        if (isSettingModifierKey || isSettingMuteKey || isSettingPauseKey || Date.now() - lastSetTime.current < 100) return;
-
-        setIsSettingPauseKey(true);
+    const handlePauseKeySet = (value: string) => {
+        editSetting("togglePauseKey", value);
     }
 
     return (
@@ -155,89 +49,64 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({ settings, editSetting, setP
 
             <div className="settingsContainer">
                 <div id="modifierKeyContainer">
-                    <Tooltip title="Set a key that must be held down for Volume Scroll to work" placement="top" disableInteractive>
-                        <FormControlLabel
-                            onChange={handleModifierKeyToggle}
-                            control={
-                                <Switch
-                                    checked={settings.useModifierKey}
-                                    disabled={!settings.useMouseWheelVolume}
-                                />}
-                            label="Modifier key"
-                        />
-                    </Tooltip>
-                    <Tooltip title="Click to change modifier hotkey. Limited to mouse buttons and modifier keys (Alt, Ctrl, Shift)." placement="top" disableInteractive>
-                        <Button
-                            onClick={handleModifierKeyClick}
-                            className="button"
-                            variant="outlined"
-                            sx={{ color: "white" }}
-                            disabled={!settings.useMouseWheelVolume || !settings.useModifierKey}
-                        >
-                            {isSettingModifierKey ? "-----" : (settings.modifierKey === " " ? "Space" : settings.modifierKey)}
-                        </Button>
-                    </Tooltip>
+                    <SettingsSwitch
+                        label="Modifier key"
+                        checked={settings.useModifierKey}
+                        onChange={handleModifierKeyToggle}
+                        disabled={!settings.useMouseWheelVolume}
+                        tooltip="Set a key that must be held down for Volume Scroll to work"
+                    />
+                    <HotkeyButton
+                        value={settings.modifierKey}
+                        onSet={handleModifierKeySet}
+                        disabled={!settings.useMouseWheelVolume || !settings.useModifierKey}
+                        tooltip="Click to change modifier hotkey. Limited to mouse buttons and modifier keys (Alt, Ctrl, Shift)."
+                        allowedKeys={["Shift", "Alt", "Control"]}
+                        allowMouse45={true}
+                    />
                 </div>
                 <div id="invertedModifierKeyContainer">
-                    <Tooltip title="If enabled, holding the modifier key will stop Volume Scroll from working" placement="top" disableInteractive>
-                        <FormControlLabel
-                            onChange={handleInvertModifierKeyToggle}
-                            control={
-                                <Switch
-                                    checked={settings.invertModifierKey}
-                                    disabled={!settings.useMouseWheelVolume || !settings.useModifierKey}
-                                />}
-                            label="Inverted"
-                        />
-                    </Tooltip>
+                    <SettingsSwitch
+                        label="Inverted"
+                        checked={settings.invertModifierKey}
+                        onChange={handleInvertModifierKeyToggle}
+                        disabled={!settings.useMouseWheelVolume || !settings.useModifierKey}
+                        tooltip="If enabled, holding the modifier key will stop Volume Scroll from working"
+                    />
                 </div>
                 <div id="toggleMuteKeyContainer">
-                    <Tooltip title="Set a key that will mute or unmute the video when pressed" placement="top" disableInteractive>
-                        <FormControlLabel
-                            onChange={handleMuteKeyToggle}
-                            control={
-                                <Switch
-                                    checked={settings.useToggleMuteKey}
-                                    disabled={!settings.useMouseWheelVolume}
-                                />}
-                            label="Toggle mute key"
-                        />
-                    </Tooltip>
-                    <Tooltip title="Click to change mute hotkey. Limited to mouse buttons (excluding Mouse 4 & 5)." placement="top" disableInteractive>
-                        <Button
-                            onClick={handleMuteKeyClick}
-                            className="button"
-                            variant="outlined"
-                            sx={{ color: "white" }}
-                            disabled={!settings.useMouseWheelVolume || !settings.useToggleMuteKey}
-                        >
-                            {isSettingMuteKey ? "-----" : (settings.toggleMuteKey === " " ? "Space" : settings.toggleMuteKey)}
-                        </Button>
-                    </Tooltip>
+                    <SettingsSwitch
+                        label="Toggle mute key"
+                        checked={settings.useToggleMuteKey}
+                        onChange={handleMuteKeyToggle}
+                        disabled={!settings.useMouseWheelVolume}
+                        tooltip="Set a key that will mute or unmute the video when pressed"
+                    />
+                    <HotkeyButton
+                        value={settings.toggleMuteKey}
+                        onSet={handleMuteKeySet}
+                        disabled={!settings.useMouseWheelVolume || !settings.useToggleMuteKey}
+                        tooltip="Click to change mute hotkey. Limited to mouse buttons (excluding Mouse 4 & 5)."
+                        allowedKeys={[]}
+                        allowMouse45={false}
+                    />
                 </div>
                 <div id="togglePauseKeyContainer">
-                    <Tooltip title="Set a key that will pause or play the video when pressed" placement="top" disableInteractive>
-                        <FormControlLabel
-                            onChange={handlePauseKeyToggle}
-                            control={
-                                <Switch
-                                    checked={settings.useTogglePauseKey}
-                                    disabled={!settings.useMouseWheelVolume}
-                                />}
-                            label="Toggle pause key"
-                        />
-                    </Tooltip>
-                    <Tooltip title="Click to change pause hotkey. Limited to mouse buttons (excluding Mouse 4 & 5)." placement="top" disableInteractive>
-                        <Button
-                            onClick={handlePauseKeyClick}
-                            className="button"
-                            variant="outlined"
-                            sx={{ color: "white" }}
-                            disabled={!settings.useMouseWheelVolume || !settings.useTogglePauseKey}
-                        >
-                            {isSettingPauseKey ? "-----" : (settings.togglePauseKey === " " ? "Space" : settings.togglePauseKey)}
-                        </Button>
-                    </Tooltip>
+                    <SettingsSwitch
+                        label="Toggle pause key"
+                        checked={settings.useTogglePauseKey}
+                        onChange={handlePauseKeyToggle}
+                        disabled={!settings.useMouseWheelVolume}
+                        tooltip="Set a key that will pause or play the video when pressed"
+                    />
+                    <HotkeyButton
+                        value={settings.togglePauseKey}
+                        onSet={handlePauseKeySet}
+                        disabled={!settings.useMouseWheelVolume || !settings.useTogglePauseKey}
+                        tooltip="Click to change pause hotkey. Limited to mouse buttons (excluding Mouse 4 & 5)."
+                        allowedKeys={[]}
+                        allowMouse45={false}
+                    />
                 </div>
             </div>
         </div>

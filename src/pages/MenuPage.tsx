@@ -6,8 +6,7 @@ import Typography from '@mui/material/Typography/Typography';
 import ButtonGroup from '@mui/material/ButtonGroup/ButtonGroup';
 import Button from '@mui/material/Button/Button';
 import Tooltip from '@mui/material/Tooltip/Tooltip';
-import FormControlLabel from '@mui/material/FormControlLabel/FormControlLabel';
-import Switch from '@mui/material/Switch/Switch';
+import SettingsSwitch from '../components/SettingsSwitch';
 
 interface MenuPageInterface {
     settings: Settings,
@@ -59,7 +58,7 @@ const MenuPage: React.FC<MenuPageInterface> = ({ settings, editSetting, setPage 
 
     const isEnabled = settings.domainList?.[hostname.toLowerCase()] ?? settings.enableDefault;
 
-    const handleEnableToggle = (_e: Event | React.SyntheticEvent, value: any) => {
+    const handleEnableToggle = (value: boolean) => {
         editSetting("domainList", { ...settings.domainList, [hostname.toLowerCase()]: value });
     }
 
@@ -85,16 +84,13 @@ const MenuPage: React.FC<MenuPageInterface> = ({ settings, editSetting, setPage 
     return (
         <div className="menuContainer">
             <div id="blacklistContainer">
-                <Tooltip title="Enable or disable Volume Scroll for this site" placement="bottom" disableInteractive>
-                    <FormControlLabel
-                        onChange={handleEnableToggle}
-                        control={
-                            <Switch
-                                checked={isEnabled}
-                            />}
-                        label={isEnabled ? "Enabled on this site" : "Disabled on this site"}
-                    />
-                </Tooltip>
+                <SettingsSwitch
+                    label={isEnabled ? "Enabled on this site" : "Disabled on this site"}
+                    checked={isEnabled}
+                    onChange={handleEnableToggle}
+                    tooltip="Enable or disable Volume Scroll for this site"
+                    placement="bottom"
+                />
             </div>
 
             <ButtonGroup
