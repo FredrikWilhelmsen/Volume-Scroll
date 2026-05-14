@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import BackButton from '../components/BackButton';
 import { Settings, Pages } from "../types";
-import Tooltip from '@mui/material/Tooltip/Tooltip';
-import Slider from '@mui/material/Slider/Slider';
-import FormControlLabel from '@mui/material/FormControlLabel/FormControlLabel';
-import Switch from '@mui/material/Switch/Switch';
 import "../style/scrollPage.css"
-import Typography from '@mui/material/Typography/Typography';
+import SettingsSlider from '../components/SettingsSlider';
+import SettingsSwitch from '../components/SettingsSwitch';
+import SettingsValueDisplay from '../components/SettingsValueDisplay';
 
 interface ScrollPageInterface {
     settings: Settings,
@@ -19,71 +17,37 @@ const ScrollPage: React.FC<ScrollPageInterface> = ({ settings, editSetting, setP
     const [increment, setincrement] = useState(settings.volumeIncrement);
     const [customPreciseScrollThreshold, setCustomPreciseScrollThreshold] = useState(settings.customPreciseScrollThreshold);
 
-    const handleIncrementToggle = (_e: Event | React.SyntheticEvent, value: any) => {
+    const handleIncrementToggle = (value: boolean) => {
         editSetting("useMouseWheelVolume", value);
     }
 
-    const handleIncrementScroll = (e: React.WheelEvent) => {
-        if (!settings.useMouseWheelVolume) return;
-
-        e.preventDefault();
-
-        let newValue: number = increment;
-
-        if (e.deltaY < 0) {
-            newValue = Math.min(increment + 1, 20);
-        } else {
-            newValue = Math.max(increment - 1, 0);
-        }
-
-        setincrement(newValue);
-        editSetting("volumeIncrement", newValue);
-    };
-
-    const handleIncrementChange = (_e: Event | React.SyntheticEvent, value: any) => {
+    const handleIncrementChange = (value: number) => {
         editSetting("volumeIncrement", value);
         setincrement(value);
     }
 
-    const handleRoundToNearestIncrementToggle = (_e: Event | React.SyntheticEvent, value: any) => {
+    const handleRoundToNearestIncrementToggle = (value: boolean) => {
         editSetting("useRoundToNearestIncrement", value);
     }
 
-    const handlePreciseScrollToggle = (_e: Event | React.SyntheticEvent, value: any) => {
+    const handlePreciseScrollToggle = (value: boolean) => {
         editSetting("usePreciseScroll", value);
     }
 
-    const handleCustomPreciseScrollThresholdToggle = (_e: Event | React.SyntheticEvent, value: any) => {
+    const handleCustomPreciseScrollThresholdToggle = (value: boolean) => {
         editSetting("useCustomPreciseScrollThreshold", value);
     }
 
-    const handleCustomPreciseScrollThresholdChange = (_e: Event | React.SyntheticEvent, value: any) => {
+    const handleCustomPreciseScrollThresholdChange = (value: number) => {
         setCustomPreciseScrollThreshold(value);
         editSetting("customPreciseScrollThreshold", value);
     }
 
-    const handleCustomPreciseScrollThresholdScroll = (e: React.WheelEvent) => {
-        if (!settings.useMouseWheelVolume || !settings.useCustomPreciseScrollThreshold || !settings.usePreciseScroll) return;
-
-        e.preventDefault();
-
-        let newValue: number = customPreciseScrollThreshold;
-
-        if (e.deltaY < 0) {
-            newValue = Math.min(customPreciseScrollThreshold + 1, 100);
-        } else {
-            newValue = Math.max(customPreciseScrollThreshold - 1, 0);
-        }
-
-        setCustomPreciseScrollThreshold(newValue);
-        editSetting("customPreciseScrollThreshold", newValue);
-    }
-
-    const handleEnableToggle = (_e: Event | React.SyntheticEvent, value: any) => {
+    const handleEnableToggle = (value: boolean) => {
         editSetting("enableDefault", value);
     }
 
-    const handleFullscreenOnlyToggle = (_e: Event | React.SyntheticEvent, value: any) => {
+    const handleFullscreenOnlyToggle = (value: boolean) => {
         editSetting("fullscreenOnly", value);
     }
 
@@ -96,129 +60,89 @@ const ScrollPage: React.FC<ScrollPageInterface> = ({ settings, editSetting, setP
             <div className="settingsContainer">
                 <div id="scrollIncrementContainer">
                     <div id="incrementToggleContainer">
-                        <Tooltip title="Enable or disable Volume Scroll" placement="top" disableInteractive>
-                            <FormControlLabel
-                                onChange={handleIncrementToggle}
-                                control={
-                                    <Switch
-                                        checked={settings.useMouseWheelVolume}
-                                    />}
-                                label="Volume Scroll"
-                            />
-                        </Tooltip>
-                        <Tooltip title="Current increment" placement="top" disableInteractive>
-                            <div id="incrementDisplay">
-                                <Typography variant="body2">
-                                    {increment}
-                                </Typography>
-                            </div>
-                        </Tooltip>
+                        <SettingsSwitch
+                            label="Volume Scroll"
+                            checked={settings.useMouseWheelVolume}
+                            onChange={handleIncrementToggle}
+                            tooltip="Enable or disable Volume Scroll"
+                        />
+                        <SettingsValueDisplay
+                            id="incrementDisplay"
+                            value={increment}
+                            tooltip="Current increment"
+                        />
                     </div>
-                    <div onWheel={handleIncrementScroll}>
-                        <Tooltip title="Set how much the volume will change per step when scrolling" disableInteractive>
-                            <Slider
-                                min={1}
-                                max={20}
-                                step={1}
-                                aria-label="Scroll increment"
-                                value={increment}
-                                valueLabelDisplay="off"
-                                disabled={!settings.useMouseWheelVolume}
-                                onChange={handleIncrementChange}
-                            />
-                        </Tooltip>
-                    </div>
+                    <SettingsSlider
+                        min={1}
+                        max={20}
+                        step={1}
+                        ariaLabel="Scroll increment"
+                        value={increment}
+                        disabled={!settings.useMouseWheelVolume}
+                        onChange={handleIncrementChange}
+                        tooltip="Set how much the volume will change per step when scrolling"
+                    />
                 </div>
                 <div id="useRoundToNearestIncrementContainer">
-                    <Tooltip title="Round volume to the nearest increment after scrolling" placement="top" disableInteractive>
-                        <FormControlLabel
-                            onChange={handleRoundToNearestIncrementToggle}
-                            control={
-                                <Switch
-                                    checked={settings.useRoundToNearestIncrement}
-                                    disabled={!settings.useMouseWheelVolume}
-                                />}
-                            label="Round to increment"
-                        />
-                    </Tooltip>
+                    <SettingsSwitch
+                        label="Round to increment"
+                        checked={settings.useRoundToNearestIncrement}
+                        onChange={handleRoundToNearestIncrementToggle}
+                        disabled={!settings.useMouseWheelVolume}
+                        tooltip="Round volume to the nearest increment after scrolling"
+                    />
                 </div>
                 <div id="preciseScrollContainer">
-                    <Tooltip title="Scroll increment changes to 1 when volume is at or below normal increment" placement="top" disableInteractive>
-                        <FormControlLabel
-                            onChange={handlePreciseScrollToggle}
-                            control={
-                                <Switch
-                                    checked={settings.usePreciseScroll}
-                                    disabled={!settings.useMouseWheelVolume}
-                                />}
-                            label="Precise scroll"
-                        />
-                    </Tooltip>
+                    <SettingsSwitch
+                        label="Precise scroll"
+                        checked={settings.usePreciseScroll}
+                        onChange={handlePreciseScrollToggle}
+                        disabled={!settings.useMouseWheelVolume}
+                        tooltip="Scroll increment changes to 1 when volume is at or below normal increment"
+                    />
                 </div>
                 <div id="customPreciseScrollContainer">
                     <div id="customPreciseScrollThresholdToggleContainer">
-                        <Tooltip title="Precise scroll will start at this volume threshold" placement="top" disableInteractive>
-                            <FormControlLabel
-                                onChange={handleCustomPreciseScrollThresholdToggle}
-                                control={
-                                    <Switch
-                                        checked={settings.useCustomPreciseScrollThreshold}
-                                        disabled={!settings.usePreciseScroll}
-                                    />}
-                                label="Precision start"
-                            />
-                        </Tooltip>
-                        <Tooltip title="Current threshold" placement="top" disableInteractive>
-                            <div id="customPreciseScrollThresholdDisplay">
-                                <Typography variant="body2">
-                                    {settings.customPreciseScrollThreshold}
-                                </Typography>
-                            </div>
-                        </Tooltip>
+                        <SettingsSwitch
+                            label="Precision start"
+                            checked={settings.useCustomPreciseScrollThreshold}
+                            onChange={handleCustomPreciseScrollThresholdToggle}
+                            disabled={!settings.usePreciseScroll}
+                            tooltip="Precise scroll will start at this volume threshold"
+                        />
+                        <SettingsValueDisplay
+                            id="customPreciseScrollThresholdDisplay"
+                            value={settings.customPreciseScrollThreshold}
+                            tooltip="Current threshold"
+                        />
                     </div>
-                    <div onWheel={handleCustomPreciseScrollThresholdScroll}>
-                        <Tooltip title="Set the threshold for precise scroll" disableInteractive>
-                            <Slider
-                                min={0}
-                                max={100}
-                                step={1}
-                                aria-label="Custom precise scroll threshold"
-                                value={customPreciseScrollThreshold}
-                                valueLabelDisplay="off"
-                                disabled={!settings.useMouseWheelVolume || !settings.usePreciseScroll || !settings.useCustomPreciseScrollThreshold}
-                                onChange={handleCustomPreciseScrollThresholdChange}
-                            />
-                        </Tooltip>
-                    </div>
+                    <SettingsSlider
+                        min={0}
+                        max={100}
+                        step={1}
+                        ariaLabel="Custom precise scroll threshold"
+                        value={customPreciseScrollThreshold}
+                        disabled={!settings.useMouseWheelVolume || !settings.usePreciseScroll || !settings.useCustomPreciseScrollThreshold}
+                        onChange={handleCustomPreciseScrollThresholdChange}
+                        tooltip="Set the threshold for precise scroll"
+                    />
                 </div>
                 <div id="blacklistContainer">
-                    <Tooltip title={
-                        settings.enableDefault
-                            ? "VolumeScroll will be enabled by default for every page"
-                            : "VolumeScroll will be disabled by default for every page"
-                    } placement="top" disableInteractive>
-                        <FormControlLabel
-                            onChange={handleEnableToggle}
-                            control={
-                                <Switch
-                                    checked={settings.enableDefault}
-                                />}
-                            label={settings.enableDefault ? "Enabled by default" : "Disabled by default"}
-                        />
-                    </Tooltip>
+                    <SettingsSwitch
+                        label={settings.enableDefault ? "Enabled by default" : "Disabled by default"}
+                        checked={settings.enableDefault}
+                        onChange={handleEnableToggle}
+                        tooltip={settings.enableDefault ? "VolumeScroll will be enabled by default for every page" : "VolumeScroll will be disabled by default for every page"}
+                    />
                 </div>
                 <div id="fullscreenOnlyContainer">
-                    <Tooltip title="Volume scroll will only be enabled when video is in fullscreen mode" placement="top" disableInteractive>
-                        <FormControlLabel
-                            onChange={handleFullscreenOnlyToggle}
-                            control={
-                                <Switch
-                                    checked={settings.fullscreenOnly}
-                                    disabled={!settings.useMouseWheelVolume}
-                                />}
-                            label="Fullscreen only"
-                        />
-                    </Tooltip>
+                    <SettingsSwitch
+                        label="Fullscreen only"
+                        checked={settings.fullscreenOnly}
+                        onChange={handleFullscreenOnlyToggle}
+                        disabled={!settings.useMouseWheelVolume}
+                        tooltip="Volume scroll will only be enabled when video is in fullscreen mode"
+                    />
                 </div>
             </div>
         </div>
