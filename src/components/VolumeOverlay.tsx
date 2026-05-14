@@ -18,18 +18,24 @@ export const VolumeOverlay: React.FC<VolumeOverlayProps> = ({ type, volume, x, y
     const [lastPauseStickyTime, setLastPauseStickyTime] = useState(0);
     const [lastPauseStickyType, setLastPauseStickyType] = useState<OverlayType | null>(null);
 
-    const [, setRefreshCount] = useState(0);
+    const [refreshCount, setRefreshCount] = useState(0);
+    const volumeDisplay = Math.round(volume);
+    const currentIsMuted = isMuted || volumeDisplay === 0;
 
     useEffect(() => {
         if (type === "unmute" || type === "mute") {
             setLastMuteStickyTime(Date.now());
             setLastMuteStickyType(type);
+        } else if (type === "volume" && currentIsMuted) {
+            setLastMuteStickyTime(Date.now());
+            setLastMuteStickyType("mute");
         }
+
         if (type === "pause" || type === "play") {
             setLastPauseStickyTime(Date.now());
             setLastPauseStickyType(type);
         }
-    }, [type, animationKey]);
+    }, [type, animationKey, currentIsMuted]);
 
     const stickyDuration = settings.overlayDuration === 0 ? 2000 : settings.overlayDuration;
     const isMuteSticky = (lastMuteStickyTime !== 0 && (Date.now() - lastMuteStickyTime) < stickyDuration);
@@ -87,16 +93,12 @@ export const VolumeOverlay: React.FC<VolumeOverlayProps> = ({ type, volume, x, y
     );
 
     const renderContent = () => {
-        const volumeDisplay = Math.round(volume);
-        const currentIsMuted = isMuted || volumeDisplay === 0;
-
         const icons: React.ReactNode[] = [];
 
         // Handle Mute/Unmute state
-        if (currentIsMuted) {
-            icons.push(<MutedIcon key="mute" />);
-        } else if (isMuteSticky && lastMuteStickyType === "unmute") {
-            icons.push(<UnmutedIcon key="unmute" />);
+        if (isMuteSticky && lastMuteStickyType) {
+            const icon = lastMuteStickyType === "mute" ? <MutedIcon key="mute" /> : <UnmutedIcon key="unmute" />;
+            icons.push(icon);
         }
 
         // Handle Pause/Play state
