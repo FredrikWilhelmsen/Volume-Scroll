@@ -41,7 +41,7 @@
     },
     "browserslist": [
         "Firefox >= 109",
-        "Chrome >= 109"
+        "Chrome >= 111"
     ],
     "@parcel/bundler-default": {
         "minBundles": 100000
