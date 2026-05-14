@@ -21,7 +21,7 @@ const isEdge = userAgent.includes('edg/');
 const reviewLink = isFirefox
     ? "https://addons.mozilla.org/en-GB/firefox/addon/volume-scroll/reviews/2585522/"
     : isEdge
-        ? "" // TODO: Add Edge Webstore link here
+        ? "https://microsoftedge.microsoft.com/addons/detail/volume-scroll/mjmfahcdmfdlnhbmahfkelaeecdnopgn"
         : "https://chromewebstore.google.com/detail/volume-scroll/gkmagiadkkhdilnaicdnngcjhmhaeaoh/reviews";
 
 const MenuPage: React.FC<MenuPageInterface> = ({ settings, editSetting, setPage }) => {
