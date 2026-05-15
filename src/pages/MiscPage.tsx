@@ -211,7 +211,7 @@ const MiscPage: React.FC<MiscPageInterface> = ({ settings, editSetting, setPage 
                     </div>
                     <SettingsSlider
                         min={1}
-                        max={20}
+                        max={50}
                         step={1}
                         ariaLabel="Alternate volume increment"
                         value={alternateVolumeIncrement}
