@@ -102,6 +102,7 @@ const MenuPage: React.FC<MenuPageInterface> = ({ settings, editSetting, setPage 
                 <Button onClick={() => setPage("scroll")} sx={{ color: "white" }}>Scroll Settings</Button>
                 <Button onClick={() => setPage("hotkeys")} sx={{ color: "white" }}>Hotkey Settings</Button>
                 <Button onClick={() => setPage("overlay")} sx={{ color: "white" }}>Overlay Settings</Button>
+                <Button onClick={() => setPage("domains")} sx={{ color: "white" }}>Domain Settings</Button>
                 <Button onClick={() => setPage("misc")} sx={{ color: "white" }}>Misc Settings</Button>
             </ButtonGroup>
 

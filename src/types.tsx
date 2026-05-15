@@ -94,7 +94,7 @@ export const defaultSettings: Settings = {
     doDebugLog: false
 };
 
-export type Pages = "menu" | "scroll" | "hotkeys" | "overlay" | "misc";
+export type Pages = "menu" | "scroll" | "hotkeys" | "overlay" | "misc" | "domains";
 export type OverlayType = "volume" | "mute" | "unmute" | "pause" | "play";
 
 export interface videoElements {
