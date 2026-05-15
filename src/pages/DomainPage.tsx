@@ -4,7 +4,7 @@ import BackButton from '../components/BackButton';
 import Tooltip from '@mui/material/Tooltip/Tooltip';
 import FormControlLabel from '@mui/material/FormControlLabel/FormControlLabel';
 import Switch from '@mui/material/Switch/Switch';
-import { TextField, IconButton } from '@mui/material';
+import { TextField, IconButton, Typography } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SettingsSwitch from '../components/SettingsSwitch';
 import "../style/domainPage.css"
@@ -93,6 +93,46 @@ const DomainPage: React.FC<DomainPageInterface> = ({ settings, editSetting, setP
                             </IconButton>
                         </Tooltip>
                     </div>
+                </div>
+
+                <Tooltip title="Click a domain to change state. Trashcan deletes it entirely" placement="top" disableInteractive>
+                    <Typography variant="body1" id="savedDomainsTitle">
+                        Saved domains
+                    </Typography>
+                </Tooltip>
+                <div id="domainListVisualContainer">
+                    {Object.keys(settings.domainList).filter(d => d.trim() !== '').length === 0 ? (
+                        <Typography className="emptyDomainList">No stored domains</Typography>
+                    ) : (
+                        Object.keys(settings.domainList).filter(d => d.trim() !== '').map((domain) => (
+                            <div
+                                key={domain}
+                                className="domainListItem"
+                                onClick={() => setdomainListInput(domain)}
+                            >
+                                <div className="domainItemText">
+                                    <Typography variant="body2" className="domainName">
+                                        {domain}
+                                    </Typography>
+                                    <Typography variant="caption" className="domainState" style={{ color: settings.domainList[domain] ? '#4caf50' : '#f44336' }}>
+                                        {settings.domainList[domain] ? 'Enabled' : 'Disabled'}
+                                    </Typography>
+                                </div>
+                                <IconButton
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        const updatedDomainList = { ...settings.domainList };
+                                        delete updatedDomainList[domain];
+                                        editSetting("domainList", updatedDomainList);
+                                    }}
+                                    size="small"
+                                    sx={{ color: "white", flexShrink: 0 }}
+                                >
+                                    <DeleteIcon fontSize="small" />
+                                </IconButton>
+                            </div>
+                        ))
+                    )}
                 </div>
             </div>
         </div>
