@@ -14,7 +14,6 @@ export class DefaultHandler {
     protected watchdogs = new WeakSet<HTMLVideoElement>();
     protected isSettingInternally = false;
 
-
     // Web Audio API
     protected audioCtx: AudioContext | null = null;
     protected gainNodes = new WeakMap<HTMLVideoElement, GainNode>();
@@ -29,7 +28,6 @@ export class DefaultHandler {
 
     protected scrollAccumulator: number = 0;
     protected lastScrollTime: number = 0;
-
 
     public updateSettings(newSettings: Settings): void {
         this.settings = newSettings;
@@ -163,7 +161,6 @@ export class DefaultHandler {
 
     private updateOverlay(e: MouseEvent, display: HTMLElement, type: OverlayType, volume: number,
         body: HTMLElement, video: HTMLVideoElement): void {
-
 
         if (!this.settings.useOverlay) return;
 
@@ -499,20 +496,17 @@ export class DefaultHandler {
 
         let effectiveVolume = this.setVolume(newVolume, videoGroup.video);
 
-
         // Defensive check: if setVolume returns undefined/NaN (e.g. build issue), fallback to newVolume
         if (effectiveVolume === undefined || isNaN(effectiveVolume)) {
             effectiveVolume = newVolume;
         }
 
         this.updateOverlay(e, videoGroup.display, type, effectiveVolume, body, videoGroup.video);
-
     }
 
     public scroll(e: WheelEvent, body: HTMLElement): boolean {
         // Get video
         const videoGroup: videoElements | null = this.getVideo(e.clientX, e.clientY);
-
 
         if (videoGroup === null) {
             debug("Video group was null, returning");
