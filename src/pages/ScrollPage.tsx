@@ -43,10 +43,6 @@ const ScrollPage: React.FC<ScrollPageInterface> = ({ settings, editSetting, setP
         editSetting("customPreciseScrollThreshold", value);
     }
 
-    const handleEnableToggle = (value: boolean) => {
-        editSetting("enableDefault", value);
-    }
-
     const handleFullscreenOnlyToggle = (value: boolean) => {
         editSetting("fullscreenOnly", value);
     }
@@ -127,14 +123,6 @@ const ScrollPage: React.FC<ScrollPageInterface> = ({ settings, editSetting, setP
                         tooltip="Set the threshold for precise scroll"
                     />
                 </div>
-                <div id="blacklistContainer">
-                    <SettingsSwitch
-                        label={settings.enableDefault ? "Enabled by default" : "Disabled by default"}
-                        checked={settings.enableDefault}
-                        onChange={handleEnableToggle}
-                        tooltip={settings.enableDefault ? "VolumeScroll will be enabled by default for every page" : "VolumeScroll will be disabled by default for every page"}
-                    />
-                </div>
                 <div id="fullscreenOnlyContainer">
                     <SettingsSwitch
                         label="Fullscreen only"
@@ -145,6 +133,7 @@ const ScrollPage: React.FC<ScrollPageInterface> = ({ settings, editSetting, setP
                     />
                 </div>
             </div>
+
         </div>
     );
 }

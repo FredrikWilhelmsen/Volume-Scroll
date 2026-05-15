@@ -1,0 +1,37 @@
+.domainListActions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#domainListInputContainer {
+    display: flex;
+    flex-direction: column;
+    margin-top: 8px;
+    gap: 8px;
+}
+
+.manualDomainInput input {
+    color: white;
+}
+
+.manualDomainInput label {
+    color: gray;
+}
+
+.manualDomainInput .MuiOutlinedInput-root fieldset {
+    border-color: rgba(25, 118, 210, 0.5);
+}
+
+.manualDomainInput .MuiOutlinedInput-root:hover fieldset {
+    border-color: #1976d2;
+}
+
+.manualDomainInput .MuiOutlinedInput-root.Mui-focused fieldset {
+    border-color: #1976d2;
+}
+
+.manualDomainInput .MuiInputLabel-root.Mui-focused,
+.manualDomainInput .MuiInputLabel-root.MuiInputLabel-shrink {
+    color: #1976d2;
+}

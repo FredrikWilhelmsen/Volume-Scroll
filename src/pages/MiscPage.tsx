@@ -2,12 +2,7 @@ import React, { useState } from 'react';
 import { Settings, Pages } from '../types';
 import BackButton from '../components/BackButton';
 import Typography from '@mui/material/Typography/Typography';
-import Tooltip from '@mui/material/Tooltip/Tooltip';
-import FormControlLabel from '@mui/material/FormControlLabel/FormControlLabel';
-import Switch from '@mui/material/Switch/Switch';
 import "../style/miscPage.css"
-import { TextField, IconButton } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
 import Paper from '@mui/material/Paper';
 import { TwitterPicker } from "@hello-pangea/color-picker";
 import SettingsSlider from '../components/SettingsSlider';
@@ -27,7 +22,6 @@ const MiscPage: React.FC<MiscPageInterface> = ({ settings, editSetting, setPage 
     const [defaultVolume, setDefaultVolume] = useState(settings.defaultVolume);
     const [volumeBoostAmount, setVolumeBoostAmount] = useState(settings.volumeBoostAmount);
     const [alternateVolumeIncrement, setAlternateVolumeIncrement] = useState(settings.alternateVolumeIncrement);
-    const [domainListInput, setdomainListInput] = useState("");
     const [isBoostColorPickerVisible, setIsBoostColorPickerVisible] = useState(false);
 
     const colors: string[] = [
@@ -89,25 +83,6 @@ const MiscPage: React.FC<MiscPageInterface> = ({ settings, editSetting, setPage 
         editSetting("alternateVolumeIncrementHotkey", value);
     }
 
-    const handleDomainListChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setdomainListInput(e.target.value);
-    }
-
-    const handleDomainListToggle = (_e: Event | React.SyntheticEvent, value: any) => {
-        if (!domainListInput) return;
-
-        const updatedDomainList = { ...settings.domainList };
-        updatedDomainList[domainListInput.toLowerCase()] = value;
-        editSetting("domainList", updatedDomainList);
-    }
-
-    const handleDomainListDelete = () => {
-        if (!domainListInput) return;
-
-        const updatedDomainList = { ...settings.domainList };
-        delete updatedDomainList[domainListInput.toLowerCase()];
-        editSetting("domainList", updatedDomainList);
-    }
 
     return (
         <div>
@@ -227,45 +202,6 @@ const MiscPage: React.FC<MiscPageInterface> = ({ settings, editSetting, setPage 
                         allowedKeys={["Shift", "Alt", "Control"]}
                         allowMouse45={true}
                     />
-                </div>
-                <div id="domainListInputContainer">
-                    <Tooltip title="Input a domain to toggle if it should be enabled or disabled" placement="top" disableInteractive>
-                        <TextField
-                            className="manualDomainInput"
-                            label="Site override"
-                            placeholder="e.g. www.youtube.com"
-                            variant="outlined"
-                            size="small"
-                            autoComplete="off"
-                            value={domainListInput}
-                            onChange={handleDomainListChange}
-                        />
-                    </Tooltip>
-                    <div className="domainListActions">
-                        <Tooltip title="Disable or enable volume scroll for this site" placement="top" disableInteractive>
-                            <FormControlLabel
-                                onChange={handleDomainListToggle}
-                                control={
-                                    <Switch
-                                        checked={settings.domainList?.[domainListInput.toLowerCase()] ?? settings.enableDefault}
-                                        disabled={!domainListInput}
-                                    />}
-                                label={settings.domainList?.[domainListInput.toLowerCase()] === undefined ? "Default" : (settings.domainList[domainListInput.toLowerCase()] ? "Enabled" : "Disabled")}
-                            />
-                        </Tooltip>
-                        <Tooltip title="Delete override" placement="top" disableInteractive>
-                            <IconButton
-                                onClick={(!domainListInput || settings.domainList?.[domainListInput.toLowerCase()] === undefined) ? undefined : handleDomainListDelete}
-                                size="small"
-                                sx={{
-                                    color: (!domainListInput || settings.domainList?.[domainListInput.toLowerCase()] === undefined) ? "gray" : "white",
-                                    cursor: (!domainListInput || settings.domainList?.[domainListInput.toLowerCase()] === undefined) ? "default" : "pointer"
-                                }}
-                            >
-                                <DeleteIcon fontSize="small" />
-                            </IconButton>
-                        </Tooltip>
-                    </div>
                 </div>
             </div>
         </div>

@@ -8,6 +8,7 @@ import ScrollPage from "./pages/ScrollPage";
 import HotkeyPage from "./pages/HotkeyPage";
 import OverlayPage from "./pages/OverlayPage";
 import MiscPage from "./pages/MiscPage";
+import DomainPage from "./pages/DomainPage";
 import "./style/globalStyle.css";
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
@@ -52,6 +53,7 @@ const SettingsPopup = () => {
                 {page === "hotkeys" && <HotkeyPage settings={settings} editSetting={handleSettingChange} setPage={setPage} />}
                 {page === "overlay" && <OverlayPage settings={settings} editSetting={handleSettingChange} setPage={setPage} />}
                 {page === "misc" && <MiscPage settings={settings} editSetting={handleSettingChange} setPage={setPage} />}
+                {page === "domains" && <DomainPage settings={settings} editSetting={handleSettingChange} setPage={setPage} />}
             </div>
         </div>
     )
