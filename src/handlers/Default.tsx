@@ -19,6 +19,8 @@ export class DefaultHandler {
     protected gainNodes = new WeakMap<HTMLVideoElement, GainNode>();
     protected sourceNodes = new WeakMap<HTMLVideoElement, MediaElementAudioSourceNode>();
 
+
+    protected videoIdCounter: number = 0;
     protected reactRoot: Root | null = null;
     protected overlayContainer: HTMLElement | null = null;
     protected animationKey: number = 0;
@@ -151,6 +153,20 @@ export class DefaultHandler {
         return this.getVideoFromElements(elements);
     }
 
+    protected getVideoState(video: HTMLVideoElement): VideoState {
+        let state = this.volumeTargets.get(video);
+        if (!state) {
+            state = {
+                targetVolume: video.volume,
+                isMuted: video.muted,
+                isPaused: video.paused,
+                videoId: `video-${this.videoIdCounter++}`
+            };
+            this.volumeTargets.set(video, state);
+        }
+        return state;
+    }
+
     protected getAllVideos(): HTMLCollectionOf<Element> | HTMLVideoElement[] {
         return document.getElementsByTagName("VIDEO");
     }
@@ -224,8 +240,11 @@ export class DefaultHandler {
 
         this.animationKey++;
 
+        const state = this.getVideoState(video);
+
         this.reactRoot.render(
             <VolumeOverlay
+                key={state.videoId}
                 volume={volume}
                 x={x}
                 y={y}
@@ -276,7 +295,7 @@ export class DefaultHandler {
         const enforceVolume = () => {
             const state: VideoState | undefined = this.volumeTargets.get(video);
 
-            if (state === undefined) return;
+            if (state === undefined || this.isSettingInternally) return;
 
             // Only enforce if the corresponding feature is enabled
             const enforceVolume = this.settings.useMouseWheelVolume;
@@ -285,7 +304,7 @@ export class DefaultHandler {
             if (!enforceVolume && !enforceMute) return;
 
             const needsRevert = (enforceVolume && this.shouldRevertVolume(video, video.volume, state.targetVolume)) ||
-                (enforceMute && ((state.isMuted && !video.muted) || (state.targetVolume > 1 && video.muted)));
+                (enforceMute && (state.isMuted !== video.muted));
 
             if (needsRevert) {
                 debug(`Site tried to change volume/mute to ${video.volume} (muted: ${video.muted}), forcing back to internal state: ${state.targetVolume} (muted: ${state.isMuted || state.targetVolume <= 0})`, video);
@@ -337,18 +356,13 @@ export class DefaultHandler {
         debug(`New volume set to: ${volume}`)
 
         // Set volume initially
-        let state = this.volumeTargets.get(video);
-        if (!state) {
-            state = {
-                targetVolume: volume / 100,
-                isMuted: isMuted !== undefined ? isMuted : (volume <= 0),
-                isPaused: video.paused
-            };
-            this.volumeTargets.set(video, state);
-        } else {
-            state.targetVolume = volume / 100;
-            state.isMuted = isMuted !== undefined ? isMuted : (volume <= 0);
-        }
+        let state = this.getVideoState(video);
+        state.targetVolume = volume / 100;
+        state.isMuted = isMuted !== undefined ? isMuted : (volume <= 0);
+
+        // Update locked attributes for page-level interceptor BEFORE setting volume/mute
+        // This ensures the interceptor allows our changes.
+        this.updateLockedAttributes(video);
 
         let effectiveVolume = volume;
 
@@ -364,7 +378,7 @@ export class DefaultHandler {
                 this.isSettingInternally = false;
 
                 // 100 = 1x gain. 500 = 5x gain.
-                const gainValue = volume / 100;
+                const gainValue = state.isMuted ? 0 : (volume / 100);
 
                 // Use setValueAtTime for immediate and precise application
                 if (this.audioCtx) {
@@ -397,11 +411,12 @@ export class DefaultHandler {
             // Reset gain if it exists
             const gainNode = this.gainNodes.get(video);
             if (gainNode) {
+                const gainValue = state.isMuted ? 0 : 1;
                 if (this.audioCtx) {
                     gainNode.gain.cancelScheduledValues(this.audioCtx.currentTime);
-                    gainNode.gain.setValueAtTime(1, this.audioCtx.currentTime);
+                    gainNode.gain.setValueAtTime(gainValue, this.audioCtx.currentTime);
                 } else {
-                    gainNode.gain.value = 1;
+                    gainNode.gain.value = gainValue;
                 }
             }
         }
@@ -409,9 +424,6 @@ export class DefaultHandler {
         if (!this.watchdogs.has(video)) {
             this.attachVolumeWatchdog(video);
         }
-
-        // Update locked attributes for page-level interceptor
-        this.updateLockedAttributes(video);
 
         // Alert site of change
         this.isSettingInternally = true;
@@ -423,7 +435,6 @@ export class DefaultHandler {
 
     private updateVolume(e: WheelEvent, videoGroup: videoElements, direction: number,
         body: HTMLElement): void {
-
 
         // Retrieve stored previous volume
         const state: VideoState | undefined = this.volumeTargets.get(videoGroup.video);
@@ -628,16 +639,7 @@ export class DefaultHandler {
 
         const video = videoGroup.video;
         debug(`Found video: ${video}`);
-        let state = this.volumeTargets.get(video)
-
-        if (!state) {
-            state = {
-                targetVolume: video.volume,
-                isMuted: video.muted,
-                isPaused: video.paused
-            };
-            this.volumeTargets.set(video, state);
-        }
+        let state = this.getVideoState(video);
         debug(`Video state: ${state}`);
 
         if (video.muted || state.isMuted) {
@@ -666,16 +668,7 @@ export class DefaultHandler {
 
         const video = videoGroup.video;
         debug(`Found video: ${video}`);
-        let state = this.volumeTargets.get(video)
-
-        if (!state) {
-            state = {
-                targetVolume: video.volume,
-                isMuted: video.muted,
-                isPaused: video.paused
-            };
-            this.volumeTargets.set(video, state);
-        }
+        let state = this.getVideoState(video);
         debug(`Video state: ${state}`);
 
         if (video.paused) {
@@ -693,4 +686,4 @@ export class DefaultHandler {
 
         return true;
     }
-}
+}

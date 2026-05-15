@@ -111,4 +111,5 @@ export interface VideoState {
     targetVolume: number; // Ratio 0-1 (or > 1 for boost)
     isMuted: boolean; // Tracking if we have forced mute
     isPaused: boolean; // Tracking if we have forced pause
+    videoId: string; // Unique ID for this video instance
 }

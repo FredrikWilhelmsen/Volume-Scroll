@@ -8,80 +8,6 @@ export class RedditHandler extends DefaultHandler {
         "www.reddit.com"
     ];
 
-    private lastUserSetVolume: number | null = null;
-
-    protected setVolume(volume: number, video: HTMLVideoElement, isMuted?: boolean): number {
-        let effectiveVolume = super.setVolume(volume, video, isMuted);
-
-        // Defensive check
-        if (effectiveVolume === undefined || isNaN(effectiveVolume)) {
-            effectiveVolume = volume;
-        }
-
-        this.lastUserSetVolume = effectiveVolume / 100;
-        debug("Last user set volume: " + effectiveVolume);
-        return effectiveVolume;
-    }
-
-    // Override the watchdog logic
-    protected shouldRevertVolume(video: HTMLVideoElement, currentVolume: number, targetVolume: number): boolean {
-        // CHECK: Is the 'wrong' volume actually what the user just set on a neighbouring video?
-        if (this.lastUserSetVolume !== null) {
-
-            // Case 1: Master is boosted (> 1). Sync sets video to 1.0.
-            if (this.lastUserSetVolume > 1) {
-                // If the current volume is at 100% (1.0), it matches the "video element" part of the boost.
-                // We accept this as a sync.
-                if (Math.abs(currentVolume - 1) <= 0.001) {
-                    // Update internal target to match the boosted volume
-                    let state = this.volumeTargets.get(video);
-                    if (state) {
-                        state.targetVolume = this.lastUserSetVolume;
-                        state.isMuted = false;
-                    }
-
-                    // Apply the boost to this video too
-                    // We need to use getGainNode. Since we are in an override, we have access to it.
-                    const gainNode = this.getGainNode(video);
-                    if (gainNode) {
-                        gainNode.gain.value = this.lastUserSetVolume;
-                    }
-
-                    return false;
-                }
-            }
-            // Case 2: Standard sync (0.0 - 1.0)
-            else {
-                const syncDiff = Math.abs(currentVolume - this.lastUserSetVolume);
-
-                // If the site changed this video to match the last one we scrolled...
-                if (syncDiff <= 0.001) {
-                    // ... then accept the sync Update our internal target to match.
-                    let state = this.volumeTargets.get(video);
-                    if (state) {
-                        state.targetVolume = this.lastUserSetVolume;
-                        if (this.lastUserSetVolume > 0) {
-                            state.isMuted = false;
-                        } else {
-                            state.isMuted = true;
-                        }
-                    }
-
-                    // Reset gain for this video if it exists (since we are not boosted)
-                    const gainNode = this.gainNodes.get(video);
-                    if (gainNode) {
-                        gainNode.gain.value = 1;
-                    }
-
-                    return false;
-                }
-            }
-        }
-
-        // Default logic from parent (checks against targetVolume)
-        return super.shouldRevertVolume(video, currentVolume, targetVolume);
-    }
-
     protected startVideoObserver(body: HTMLElement) {
 
         if (this.observer) return;
@@ -164,7 +90,11 @@ export class RedditHandler extends DefaultHandler {
     }
 
     protected getVideo(mouseX: number, mouseY: number): videoElements | null {
+        // First try standard video detection
+        const standardVideo = super.getVideo(mouseX, mouseY);
+        if (standardVideo) return standardVideo;
 
+        // Then check for Reddit-specific shadow DOM players
         const elements = document.elementsFromPoint(mouseX, mouseY);
 
         for (const element of elements) {
