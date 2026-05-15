@@ -1,6 +1,6 @@
 import browser from "webextension-polyfill";
 import React, { useState, useEffect } from "react";
-import * as ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 import { Settings, defaultSettings, Pages } from "./types";
 import LoadingPage from "./pages/LoadingPage";
 import MenuPage from "./pages/MenuPage";
@@ -57,4 +57,6 @@ const SettingsPopup = () => {
     )
 }
 
-ReactDOM.render(<SettingsPopup />, document.getElementById("root"));
+const container = document.getElementById("root");
+const root = createRoot(container!);
+root.render(<SettingsPopup />);
