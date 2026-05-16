@@ -115,6 +115,7 @@ export const init = () => {
                         const syntheticEvent = {
                             clientX: x,
                             clientY: y,
+                            button: event.data.button,
                             buttons: event.data.buttons,
                             ctrlKey: event.data.ctrlKey,
                             shiftKey: event.data.shiftKey,
@@ -133,6 +134,7 @@ export const init = () => {
                         const syntheticEvent = {
                             clientX: x,
                             clientY: y,
+                            button: event.data.button,
                             buttons: event.data.buttons,
                             ctrlKey: event.data.ctrlKey,
                             shiftKey: event.data.shiftKey,
@@ -144,6 +146,22 @@ export const init = () => {
                         } as any as MouseEvent;
 
                         handled = handler.togglePause(syntheticEvent, body);
+                    }
+
+                    if (handled) {
+                        lastActionTime = Date.now();
+                        const button = event.data.button !== undefined ? event.data.button : (event.data.buttons & 2 ? 2 : (event.data.buttons & 4 ? 1 : (event.data.buttons & 1 ? 0 : -1)));
+                        if (button !== -1) {
+                            const mouseKey = getMouseKey(button);
+                            if (mouseKey === "Right Mouse") preventContextMenu = true;
+                            else if (mouseKey === "Middle Mouse") preventMiddleClick = true;
+                            else if (mouseKey === "Mouse 1") preventLeftClick = true;
+                        } else if (event.data.type === "VOLUME_SCROLL_RELAY") {
+                            // For scroll, we might only have buttons bitmask
+                            if (event.data.buttons & 2) preventContextMenu = true;
+                            if (event.data.buttons & 4) preventMiddleClick = true;
+                            if (event.data.buttons & 1) preventLeftClick = true;
+                        }
                     }
 
                     if (!handled && !isTop) {
@@ -445,12 +463,21 @@ export function onMouseDown(e: MouseEvent): void {
                     messageId: Math.random().toString(36).slice(2, 11),
                     clientX: e.clientX,
                     clientY: e.clientY,
+                    button: e.button,
                     buttons: e.buttons,
                     ctrlKey: e.ctrlKey,
                     shiftKey: e.shiftKey,
                     altKey: e.altKey,
                     metaKey: e.metaKey
                 }, "*");
+
+                if (getMouseKey(e.button) === "Right Mouse") {
+                    preventContextMenu = true;
+                } else if (getMouseKey(e.button) === "Middle Mouse") {
+                    preventMiddleClick = true;
+                } else if (getMouseKey(e.button) === "Mouse 1") {
+                    preventLeftClick = true;
+                }
                 return;
             }
         }
@@ -497,12 +524,21 @@ export function onMouseDown(e: MouseEvent): void {
                     messageId: Math.random().toString(36).slice(2, 11),
                     clientX: e.clientX,
                     clientY: e.clientY,
+                    button: e.button,
                     buttons: e.buttons,
                     ctrlKey: e.ctrlKey,
                     shiftKey: e.shiftKey,
                     altKey: e.altKey,
                     metaKey: e.metaKey
                 }, "*");
+
+                if (getMouseKey(e.button) === "Right Mouse") {
+                    preventContextMenu = true;
+                } else if (getMouseKey(e.button) === "Middle Mouse") {
+                    preventMiddleClick = true;
+                } else if (getMouseKey(e.button) === "Mouse 1") {
+                    preventLeftClick = true;
+                }
                 return;
             }
         }
@@ -539,6 +575,10 @@ export function onMouseUp(e: MouseEvent): void {
         debug("Mouseup blocked due to volume action");
         e.preventDefault();
         e.stopPropagation();
+    } else if (preventContextMenu && getMouseKey(e.button) === "Right Mouse") {
+        debug("Mouseup blocked due to volume action");
+        e.preventDefault();
+        e.stopPropagation();
     }
 }
 
@@ -572,6 +612,7 @@ export function onContextMenu(e: MouseEvent): void {
         debug("Context menu blocked due to volume scroll/mute action");
         e.preventDefault();
         e.stopPropagation();
+        e.stopImmediatePropagation();
 
         // Reset flag immediately after blocking
         preventContextMenu = false;
