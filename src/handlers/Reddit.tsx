@@ -8,42 +8,51 @@ export class RedditHandler extends DefaultHandler {
         "www.reddit.com"
     ];
 
-    protected startVideoObserver(body: HTMLElement) {
+    private processPlayer(player: HTMLElement) {
+        if (!player.shadowRoot) {
+            // If shadow root is not yet available, wait a bit and try again.
+            // This can happen with web components if they haven't hydrated yet.
+            setTimeout(() => this.processPlayer(player), 100);
+            return;
+        }
 
+        const video = player.shadowRoot.querySelector("video") as HTMLVideoElement;
+        if (video) {
+            if (this.volumeTargets.has(video)) {
+                debug("Already tracking this video, skipping default volume reset", video);
+            } else {
+                debug("Found video immediately in shadow root: ", video);
+                this.applyDefaultVolume(video);
+            }
+            return;
+        }
+
+        // If not found, the Shadow DOM is likely still hydrating. 
+        // Observe the SHADOW ROOT specifically for the video tag to appear.
+        debug("Player found but video not ready. Observing Shadow DOM...", player);
+
+        const shadowObserver = new MutationObserver((shadowMutations, obs) => {
+            const lateVideo = player.shadowRoot?.querySelector("video") as HTMLVideoElement;
+            if (lateVideo) {
+                if (this.volumeTargets.has(lateVideo)) {
+                    debug("Already tracking this late video, skipping", lateVideo);
+                } else {
+                    debug("Found video in shadow root", lateVideo);
+                    this.applyDefaultVolume(lateVideo);
+                }
+
+                // Once found, we don't need to watch this specific shadow root anymore
+                obs.disconnect();
+            }
+        });
+
+        shadowObserver.observe(player.shadowRoot, { childList: true, subtree: true });
+    }
+
+    protected startVideoObserver(body: HTMLElement) {
         if (this.observer) return;
 
-        debug("Starting MutationObserver");
-
-        // Helper to handle the logic of "Video might exist now, or in 100ms"
-        const processPlayer = (player: HTMLElement) => {
-            if (!player.shadowRoot) return;
-
-            const video = player.shadowRoot.querySelector("video");
-            if (video) {
-                debug("Found video immediately in shadow root: ", video);
-                debug("Setting default volume: " + this.settings.defaultVolume);
-                this.setVolume(this.settings.defaultVolume, video as HTMLVideoElement);
-                return;
-            }
-
-            // If not found, the Shadow DOM is likely still hydrating. 
-            // Observe the SHADOW ROOT specifically for the video tag to appear.
-            debug("Player found but video not ready. Observing Shadow DOM...", player);
-
-            const shadowObserver = new MutationObserver((shadowMutations, obs) => {
-                const lateVideo = player.shadowRoot?.querySelector("video");
-                if (lateVideo) {
-                    debug("Found video in shadow root", lateVideo);
-                    debug("Setting default volume: " + this.settings.defaultVolume);
-                    this.setVolume(this.settings.defaultVolume, lateVideo as HTMLVideoElement);
-
-                    // Once found, we don't need to watch this specific shadow root anymore
-                    obs.disconnect();
-                }
-            });
-
-            shadowObserver.observe(player.shadowRoot, { childList: true, subtree: true });
-        };
+        debug("Starting Reddit MutationObserver");
 
         this.observer = new MutationObserver((mutations) => {
             for (const mutation of mutations) {
@@ -53,13 +62,13 @@ export class RedditHandler extends DefaultHandler {
 
                         // Check if the added node itself is a player
                         if (tagName === "shreddit-player") {
-                            processPlayer(node);
+                            this.processPlayer(node);
                         }
                         // Check if the added node contains players
                         else {
                             const nestedPlayers = node.querySelectorAll("shreddit-player");
                             nestedPlayers.forEach((player) => {
-                                processPlayer(player as HTMLElement);
+                                this.processPlayer(player as HTMLElement);
                             });
                         }
                     }
@@ -68,6 +77,16 @@ export class RedditHandler extends DefaultHandler {
         });
 
         this.observer.observe(body, { childList: true, subtree: true });
+    }
+
+    public setDefaultVolume(body: HTMLElement) {
+        // Handle existing Reddit players first
+        const players = document.querySelectorAll("shreddit-player");
+        debug(`Found ${players.length} existing Reddit players on page load`);
+        players.forEach(player => this.processPlayer(player as HTMLElement));
+
+        // Let the base class handle any standard videos and start the body observer
+        super.setDefaultVolume(body);
     }
 
     protected getAllVideos(): HTMLVideoElement[] {

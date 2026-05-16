@@ -613,7 +613,7 @@ export class DefaultHandler {
         this.observer.observe(body, { childList: true, subtree: true });
     }
 
-    private applyDefaultVolume(video: HTMLVideoElement) {
+    protected applyDefaultVolume(video: HTMLVideoElement) {
         debug("New video found: ", video);
         debug("Default volume set to: ", this.settings.defaultVolume);
         this.setVolume(this.settings.defaultVolume, video, this.settings.startMuted);
@@ -625,6 +625,10 @@ export class DefaultHandler {
 
         for (let tag of videoCollection) {
             let video: HTMLVideoElement = tag as HTMLVideoElement;
+            if (this.volumeTargets.has(video)) {
+                debug("Already tracking this video, skipping default volume reset", video);
+                continue;
+            }
             this.applyDefaultVolume(video);
         }
 
