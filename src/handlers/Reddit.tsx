@@ -29,15 +29,15 @@ export class RedditHandler extends DefaultHandler {
 
         // If not found, the Shadow DOM is likely still hydrating. 
         // Observe the SHADOW ROOT specifically for the video tag to appear.
-        debug("Reddit player found but video not ready. Observing Shadow DOM...", player);
+        debug("Player found but video not ready. Observing Shadow DOM...", player);
 
         const shadowObserver = new MutationObserver((shadowMutations, obs) => {
             const lateVideo = player.shadowRoot?.querySelector("video") as HTMLVideoElement;
             if (lateVideo) {
                 if (this.volumeTargets.has(lateVideo)) {
-                    debug("Already tracking this late Reddit video, skipping", lateVideo);
+                    debug("Already tracking this late video, skipping", lateVideo);
                 } else {
-                    debug("Found video in Reddit shadow root", lateVideo);
+                    debug("Found video in shadow root", lateVideo);
                     this.applyDefaultVolume(lateVideo);
                 }
 
