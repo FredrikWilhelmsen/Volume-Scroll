@@ -37,7 +37,9 @@ let mouseX: number = 0;
 let mouseY: number = 0;
 let preventContextMenu: boolean = false;
 let preventMiddleClick: boolean = false;
+let preventLeftClick: boolean = false;
 let isInitialized: boolean = false;
+let lastActionTime: number = 0;
 const processedMessageIds = new Set<string>();
 
 export const init = () => {
@@ -390,12 +392,32 @@ export function onMouseDown(e: MouseEvent): void {
         return;
     }
 
+    if (Date.now() - lastActionTime < 50) {
+        if (getMouseKey(e.button) === "Mouse 1" && preventLeftClick) {
+            e.preventDefault();
+            e.stopPropagation();
+        } else if (getMouseKey(e.button) === "Middle Mouse" && preventMiddleClick) {
+            e.preventDefault();
+            e.stopPropagation();
+        } else if (getMouseKey(e.button) === "Right Mouse" && preventContextMenu) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        return;
+    }
+
     debug("Mouse down!");
 
-    // Reset context menu prevention on new click.
+    // Reset flags on new click.
     if (getMouseKey(e.button) === "Right Mouse") {
         preventContextMenu = false;
+    } else if (getMouseKey(e.button) === "Middle Mouse") {
+        preventMiddleClick = false;
+    } else if (getMouseKey(e.button) === "Mouse 1") {
+        preventLeftClick = false;
     }
+
+    let handled = false;
 
     if (settings.toggleMuteKey === getMouseKey(e.button) && settings.useToggleMuteKey) {
 
@@ -434,14 +456,22 @@ export function onMouseDown(e: MouseEvent): void {
 
         debug("Toggle mute key pressed");
 
-        if (getMouseKey(e.button) === "Right Mouse") {
-            preventContextMenu = result;
-        } else if (getMouseKey(e.button) === "Middle Mouse") {
-            preventMiddleClick = result;
+        if (result) {
+            handled = true;
+            e.stopPropagation();
+            lastActionTime = Date.now();
+            
+            if (getMouseKey(e.button) === "Right Mouse") {
+                preventContextMenu = true;
+            } else if (getMouseKey(e.button) === "Middle Mouse") {
+                preventMiddleClick = true;
+            } else if (getMouseKey(e.button) === "Mouse 1") {
+                preventLeftClick = true;
+            }
         }
     }
 
-    if (settings.togglePauseKey === getMouseKey(e.button) && settings.useTogglePauseKey) {
+    if (!handled && settings.togglePauseKey === getMouseKey(e.button) && settings.useTogglePauseKey) {
 
         if (window.self !== window.top) {
             const elementsAtPoint = document.elementsFromPoint(e.clientX, e.clientY);
@@ -478,10 +508,18 @@ export function onMouseDown(e: MouseEvent): void {
 
         debug("Toggle pause key pressed");
 
-        if (getMouseKey(e.button) === "Right Mouse") {
-            preventContextMenu = result;
-        } else if (getMouseKey(e.button) === "Middle Mouse") {
-            preventMiddleClick = result;
+        if (result) {
+            handled = true;
+            e.stopPropagation();
+            lastActionTime = Date.now();
+            
+            if (getMouseKey(e.button) === "Right Mouse") {
+                preventContextMenu = true;
+            } else if (getMouseKey(e.button) === "Middle Mouse") {
+                preventMiddleClick = true;
+            } else if (getMouseKey(e.button) === "Mouse 1") {
+                preventLeftClick = true;
+            }
         }
     }
 }
@@ -490,9 +528,25 @@ export function onMouseUp(e: MouseEvent): void {
     debug("Mouse up!");
 
     if (preventMiddleClick && getMouseKey(e.button) === "Middle Mouse") {
-        debug("Mouseup blocked due to volume mute action");
+        debug("Mouseup blocked due to volume action");
         e.preventDefault();
         e.stopPropagation();
+    } else if (preventLeftClick && getMouseKey(e.button) === "Mouse 1") {
+        debug("Mouseup blocked due to volume action");
+        e.preventDefault();
+        e.stopPropagation();
+    }
+}
+
+export function onClick(e: MouseEvent): void {
+    if (preventLeftClick && getMouseKey(e.button) === "Mouse 1") {
+        debug("Click blocked due to volume action");
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Reset flag immediately after blocking
+        preventLeftClick = false;
+        return;
     }
 }
 
