@@ -19,7 +19,6 @@ export class DefaultHandler {
     protected gainNodes = new WeakMap<HTMLVideoElement, GainNode>();
     protected sourceNodes = new WeakMap<HTMLVideoElement, MediaElementAudioSourceNode>();
 
-
     protected videoIdCounter: number = 0;
     protected reactRoot: Root | null = null;
     protected overlayContainer: HTMLElement | null = null;
@@ -686,4 +685,4 @@ export class DefaultHandler {
 
         return true;
     }
-}
+}
