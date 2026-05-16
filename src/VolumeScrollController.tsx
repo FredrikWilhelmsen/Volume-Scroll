@@ -417,6 +417,10 @@ export function onMouseDown(e: MouseEvent): void {
         preventLeftClick = false;
     }
 
+    if (isDisabledOnSite() || (settings.fullscreenOnly && !isFullscreen())) {
+        return;
+    }
+
     let handled = false;
 
     if (settings.toggleMuteKey === getMouseKey(e.button) && settings.useToggleMuteKey) {
@@ -460,7 +464,7 @@ export function onMouseDown(e: MouseEvent): void {
             handled = true;
             e.stopPropagation();
             lastActionTime = Date.now();
-            
+
             if (getMouseKey(e.button) === "Right Mouse") {
                 preventContextMenu = true;
             } else if (getMouseKey(e.button) === "Middle Mouse") {
@@ -512,7 +516,7 @@ export function onMouseDown(e: MouseEvent): void {
             handled = true;
             e.stopPropagation();
             lastActionTime = Date.now();
-            
+
             if (getMouseKey(e.button) === "Right Mouse") {
                 preventContextMenu = true;
             } else if (getMouseKey(e.button) === "Middle Mouse") {
