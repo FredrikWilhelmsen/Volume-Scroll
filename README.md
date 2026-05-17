@@ -1,5 +1,5 @@
 [link-chrome]: https://chromewebstore.google.com/detail/volume-scroll/gkmagiadkkhdilnaicdnngcjhmhaeaoh "Version published on Chrome Web Store"
-[link-edge]: https://addons.mozilla.org/en-US/firefox/addon/volume-scroll "Version published on Mozilla Add-ons"
+[link-edge]: https://microsoftedge.microsoft.com/addons/detail/volume-scroll/mjmfahcdmfdlnhbmahfkelaeecdnopgn "Version published on Mozilla Add-ons"
 [link-firefox]: https://microsoftedge.microsoft.com/addons/detail/volume-scroll/mjmfahcdmfdlnhbmahfkelaeecdnopgn "Version published on Edge Add-ons"
 [link-releases]: https://github.com/FredrikWilhelmsen/Volume-Scroll/releases/latest "Latest release"
 
