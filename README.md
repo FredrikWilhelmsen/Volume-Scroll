@@ -35,20 +35,36 @@ A highly customizable browser extension for changing video volume by scrolling.
 
 ---
 
-### The project was built using
-*   **Operating System:** Windows 11.
-*   **Node.js Version:** v21.2.0
-*   **Yarn Version:** v4.4.0
+## Build Instructions
 
-### Installation
-To install the necessary dependencies, navigate to the root directory and run:
+### Prerequisites
+* **Node.js:** `v21.2.0` or higher
+* **Yarn:** `v4.4.0` or higher
 
-- yarn install
+### Getting Started
+First, install the project dependencies:
+```bash
+yarn install
+```
 
-### Build Script
-To build the extension, run:
+### Building the extension
+To build both versions of the extension, run:
+```bash
+yarn build
+```
 
-- yarn build
+Alternatively, you can target specific browsers:
+* **Firefox:** `yarn build:firefox`
+* **Chromium:** `yarn build:chrome`
+
+### Development
+If you are actively developing and want the build to update automatically on save:
+* **Firefox:** `yarn dev`
+* **Chromium:** `yarn dev:chrome`
+
+---
 
 ### Output
-The final extension files will be generated in the `dist-firefox/` and `dist-chrome/` folders.
+The bundled files will be generated in:
+* `dist-firefox/`
+* `dist-chrome/`
