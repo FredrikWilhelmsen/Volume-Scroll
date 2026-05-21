@@ -1,7 +1,6 @@
 # JetBrains IDEs
 .idea
 .yarn
-.editorconfig
 .gitattributes
 .pnp.cjs
 .pnp.loader.mjs
@@ -18,3 +17,4 @@ dist-firefox/*
 dist-chrome/*
 .parcel-cache/*
 src/manifest.json
+.vscode/*
