@@ -17,4 +17,3 @@ dist-firefox/*
 dist-chrome/*
 .parcel-cache/*
 src/manifest.json
-.vscode/*
