@@ -63,8 +63,8 @@ const MenuPage: React.FC<MenuPageInterface> = ({
     }, [settings.doDebugLog, editSetting]);
 
     const domainSetting = settings.domainList?.[hostname.toLowerCase()];
-    const hasOverride = domainSetting !== undefined;
-    const isEnabled = hasOverride ? domainSetting : settings.enableDefault;
+    const hasOverride = domainSetting?.enabled !== undefined;
+    const isEnabled = domainSetting?.enabled ?? settings.enableDefault;
 
     const labelText = hasOverride
         ? isEnabled
@@ -75,9 +75,11 @@ const MenuPage: React.FC<MenuPageInterface> = ({
           : "Disabled by default";
 
     const handleEnableToggle = (value: boolean) => {
+        const lowerHost = hostname.toLowerCase();
+        const existing = settings.domainList[lowerHost] || {};
         editSetting("domainList", {
             ...settings.domainList,
-            [hostname.toLowerCase()]: value,
+            [lowerHost]: { ...existing, enabled: value },
         });
     };
 

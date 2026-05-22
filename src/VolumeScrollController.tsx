@@ -75,6 +75,7 @@ export const init = () => {
     browser.storage.sync.get("settings")
         .then((result) => {
             settings = result.settings ? { ...defaultSettings, ...result.settings } : defaultSettings;
+            settings.startMuted = isStartMutedOnSite();
             const { domainList, ...settingsToLog } = settings;
             setUtilSettings(settings);
             debug("Settings loaded: ", settingsToLog);
@@ -263,6 +264,7 @@ browser.storage.onChanged.addListener((changes, areaName) => {
     if (!changes.settings) return;
 
     settings = changes.settings.newValue as Settings;
+    settings.startMuted = isStartMutedOnSite();
     setUtilSettings(settings);
     handler.updateSettings(settings);
     const { domainList, ...settingsToLog } = settings;
@@ -299,20 +301,20 @@ const isDisabledOnSite = function (): boolean {
     }
     // Returns default value if domain is not in the map, otherwise returns the domain-specific value
     // If in an iframe, we also want to respect the parent domain's setting if the iframe domain is not explicitly set
-    let enabled = settings.domainList?.[window.location.hostname.toLowerCase()];
+    let enabled = settings.domainList?.[window.location.hostname.toLowerCase()]?.enabled;
 
     if (enabled === undefined && window.self !== window.top) {
         try {
             // Try to get the top frame's hostname
             if (window.top?.location.hostname) {
-                enabled = settings.domainList?.[window.top.location.hostname.toLowerCase()];
+                enabled = settings.domainList?.[window.top.location.hostname.toLowerCase()]?.enabled;
             }
         } catch (e) {
             // Cross-origin access denied. Fallback to referrer.
             if (document.referrer) {
                 try {
                     const referrerHostname = new URL(document.referrer).hostname;
-                    enabled = settings.domainList?.[referrerHostname.toLowerCase()];
+                    enabled = settings.domainList?.[referrerHostname.toLowerCase()]?.enabled;
                 } catch (refErr) {
                     // Invalid referrer URL, ignore
                 }
@@ -322,6 +324,29 @@ const isDisabledOnSite = function (): boolean {
 
     // Inverted to return whether Volume Scroll is disabled, not enabled
     return !(enabled ?? settings.enableDefault);
+}
+
+const isStartMutedOnSite = function (): boolean {
+    let muted = settings.domainList?.[window.location.hostname.toLowerCase()]?.muted;
+
+    if (muted === undefined && window.self !== window.top) {
+        try {
+            if (window.top?.location.hostname) {
+                muted = settings.domainList?.[window.top.location.hostname.toLowerCase()]?.muted;
+            }
+        } catch (e) {
+            if (document.referrer) {
+                try {
+                    const referrerHostname = new URL(document.referrer).hostname;
+                    muted = settings.domainList?.[referrerHostname.toLowerCase()]?.muted;
+                } catch (refErr) {
+                    // Invalid referrer URL, ignore
+                }
+            }
+        }
+    }
+
+    return muted ?? settings.startMuted;
 }
 
 export function broadcastStatusToIframes(): void {
