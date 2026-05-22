@@ -42,6 +42,31 @@ let isInitialized: boolean = false;
 let lastActionTime: number = 0;
 const processedMessageIds = new Set<string>();
 
+let parentDisabledState: boolean = false;
+let parentHasVideoState: boolean = false;
+
+const isInteractiveElement = (el: HTMLElement | null): boolean => {
+    while (el) {
+        const tagName = el.tagName;
+        if (tagName === "A" || tagName === "BUTTON" || tagName === "INPUT" || tagName === "TEXTAREA" || tagName === "SELECT") {
+            return true;
+        }
+        const role = el.getAttribute("role");
+        if (role === "button" || role === "link" || role === "checkbox" || role === "radio") {
+            return true;
+        }
+        try {
+            if (window.getComputedStyle(el).cursor === "pointer") {
+                return true;
+            }
+        } catch (e) {
+            // Ignore potential security/style access issues
+        }
+        el = el.parentElement;
+    }
+    return false;
+};
+
 export const init = () => {
     if (isInitialized) return;
     isInitialized = true;
@@ -55,6 +80,21 @@ export const init = () => {
 
             window.addEventListener("message", (event) => {
                 if (!event.data) return;
+
+                if (event.data.type === "VOLUME_SCROLL_IFRAME_PING" && event.source) {
+                    (event.source as Window).postMessage({
+                        type: "VOLUME_SCROLL_IFRAME_PONG",
+                        parentDisabled: isDisabledOnSite(),
+                        parentHasVideo: document.getElementsByTagName("video").length > 0
+                    }, "*");
+                    return;
+                }
+
+                if (event.data.type === "VOLUME_SCROLL_IFRAME_PONG" || event.data.type === "VOLUME_SCROLL_PARENT_STATUS") {
+                    parentDisabledState = event.data.parentDisabled;
+                    parentHasVideoState = event.data.parentHasVideo;
+                    return;
+                }
 
                 const isRelayMessage = event.data.type === "VOLUME_SCROLL_RELAY" || event.data.type === "VOLUME_MUTE_RELAY" || event.data.type === "VOLUME_PAUSE_RELAY";
 
@@ -195,6 +235,20 @@ export const init = () => {
             } else {
                 window.addEventListener("load", onPageLoad);
             }
+
+            if (window.self !== window.top) {
+                window.parent.postMessage({ type: "VOLUME_SCROLL_IFRAME_PING" }, "*");
+            } else {
+                broadcastStatusToIframes();
+
+                const videoObserver = new MutationObserver(() => {
+                    broadcastStatusToIframes();
+                });
+                videoObserver.observe(document.body || document.documentElement, {
+                    childList: true,
+                    subtree: true
+                });
+            }
         });
 };
 
@@ -207,6 +261,9 @@ browser.storage.onChanged.addListener((changes, areaName) => {
     handler.updateSettings(settings);
     const { domainList, ...settingsToLog } = settings;
     debug("Settings reapplied: ", settingsToLog);
+    if (window.self === window.top) {
+        broadcastStatusToIframes();
+    }
 });
 
 browser.runtime.onMessage.addListener((message: any) => {
@@ -231,6 +288,9 @@ const isFullscreen = function (): boolean {
 }
 
 const isDisabledOnSite = function (): boolean {
+    if (window.self !== window.top && parentDisabledState) {
+        return true;
+    }
     // Returns default value if domain is not in the map, otherwise returns the domain-specific value
     // If in an iframe, we also want to respect the parent domain's setting if the iframe domain is not explicitly set
     let enabled = settings.domainList?.[window.location.hostname.toLowerCase()];
@@ -256,6 +316,23 @@ const isDisabledOnSite = function (): boolean {
 
     // Inverted to return whether Volume Scroll is disabled, not enabled
     return !(enabled ?? settings.enableDefault);
+}
+
+export function broadcastStatusToIframes(): void {
+    const iframes = document.getElementsByTagName("iframe");
+    const hasVideo = document.getElementsByTagName("video").length > 0;
+    const disabled = isDisabledOnSite();
+    for (let i = 0; i < iframes.length; i++) {
+        try {
+            iframes[i].contentWindow?.postMessage({
+                type: "VOLUME_SCROLL_PARENT_STATUS",
+                parentDisabled: disabled,
+                parentHasVideo: hasVideo
+            }, "*");
+        } catch (e) {
+            // Ignore cross-origin errors
+        }
+    }
 }
 
 const doVolumeScroll = function (e: WheelEvent): boolean {
@@ -307,10 +384,17 @@ export function onScroll(e: WheelEvent): void {
 
         // If no video here, assume we are an overlay and shout to the parent
         if (!localVideo) {
+            if (parentDisabledState || !parentHasVideoState) {
+                return;
+            }
+
             if (doVolumeScroll(e)) {
                 debug("In iframe without video, posting message to parent");
-                e.preventDefault();
-                e.stopPropagation();
+                const scrollableParent = findScrollableParent(e.target as HTMLElement);
+                if (!scrollableParent) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
 
                 // "*" allows communication even if the iframe is cross-origin
                 window.parent.postMessage({
@@ -454,6 +538,10 @@ export function onMouseDown(e: MouseEvent): void {
 
             const localVideo = document.getElementsByTagName("video")[0];
             if (!localVideo) {
+                if (parentDisabledState || !parentHasVideoState || isInteractiveElement(e.target as HTMLElement | null)) {
+                    return;
+                }
+
                 debug("In iframe, relaying Mute Toggle to parent");
                 e.preventDefault();
                 e.stopPropagation();
@@ -515,6 +603,10 @@ export function onMouseDown(e: MouseEvent): void {
 
             const localVideo = document.getElementsByTagName("video")[0];
             if (!localVideo) {
+                if (parentDisabledState || !parentHasVideoState || isInteractiveElement(e.target as HTMLElement | null)) {
+                    return;
+                }
+
                 debug("In iframe, relaying Pause Toggle to parent");
                 e.preventDefault();
                 e.stopPropagation();
