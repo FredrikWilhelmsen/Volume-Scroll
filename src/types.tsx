@@ -40,7 +40,7 @@ export interface Settings {
     overlayYPos: number,
     overlayDuration: number,
 
-    domainList: Record<string, boolean>,
+    domainList: Record<string, DomainSettings>,
     enableDefault: boolean,
 
     doDebugLog: boolean
@@ -96,6 +96,11 @@ export const defaultSettings: Settings = {
 
 export type Pages = "menu" | "scroll" | "hotkeys" | "overlay" | "misc" | "domains";
 export type OverlayType = "volume" | "mute" | "unmute" | "pause" | "play";
+
+export interface DomainSettings {
+    enabled?: boolean;
+    muted?: boolean;
+}
 
 export interface videoElements {
     display: HTMLBaseElement;
