@@ -107,6 +107,15 @@ const DomainPage: React.FC<DomainPageInterface> = ({
         (d) => d.trim() !== "",
     );
 
+    const lowerInput = domainListInput.toLowerCase();
+    const isScrollResetDisabled =
+        !domainListInput ||
+        settings.domainList?.[lowerInput]?.enabled === undefined;
+    const isMuteResetDisabled =
+        !domainListInput ||
+        settings.domainList?.[lowerInput]?.muted === undefined ||
+        !settings.useDefaultVolume;
+
     return (
         <div>
             <BackButton setPage={setPage} title={"Domain Settings"} />
@@ -195,29 +204,20 @@ const DomainPage: React.FC<DomainPageInterface> = ({
                                         }
                                         size="small"
                                         sx={{
-                                            color:
-                                                !domainListInput ||
-                                                settings.domainList?.[
-                                                    domainListInput.toLowerCase()
-                                                ]?.enabled === undefined
-                                                    ? "gray"
-                                                    : "white",
-                                            cursor:
-                                                !domainListInput ||
-                                                settings.domainList?.[
-                                                    domainListInput.toLowerCase()
-                                                ]?.enabled === undefined
-                                                    ? "default"
-                                                    : "pointer",
+                                            cursor: isScrollResetDisabled
+                                                ? "default"
+                                                : "pointer",
                                         }}
-                                        disabled={
-                                            !domainListInput ||
-                                            settings.domainList?.[
-                                                domainListInput.toLowerCase()
-                                            ]?.enabled === undefined
-                                        }
+                                        disabled={isScrollResetDisabled}
                                     >
-                                        <DeleteIcon fontSize="small" />
+                                        <DeleteIcon
+                                            fontSize="small"
+                                            htmlColor={
+                                                isScrollResetDisabled
+                                                    ? "gray"
+                                                    : "white"
+                                            }
+                                        />
                                     </IconButton>
                                 </span>
                             </Tooltip>
@@ -274,32 +274,20 @@ const DomainPage: React.FC<DomainPageInterface> = ({
                                         }
                                         size="small"
                                         sx={{
-                                            color:
-                                                !domainListInput ||
-                                                settings.domainList?.[
-                                                    domainListInput.toLowerCase()
-                                                ]?.muted === undefined ||
-                                                !settings.useDefaultVolume
-                                                    ? "gray"
-                                                    : "white",
-                                            cursor:
-                                                !domainListInput ||
-                                                settings.domainList?.[
-                                                    domainListInput.toLowerCase()
-                                                ]?.muted === undefined ||
-                                                !settings.useDefaultVolume
-                                                    ? "default"
-                                                    : "pointer",
+                                            cursor: isMuteResetDisabled
+                                                ? "default"
+                                                : "pointer",
                                         }}
-                                        disabled={
-                                            !domainListInput ||
-                                            settings.domainList?.[
-                                                domainListInput.toLowerCase()
-                                            ]?.muted === undefined ||
-                                            !settings.useDefaultVolume
-                                        }
+                                        disabled={isMuteResetDisabled}
                                     >
-                                        <DeleteIcon fontSize="small" />
+                                        <DeleteIcon
+                                            fontSize="small"
+                                            htmlColor={
+                                                isMuteResetDisabled
+                                                    ? "gray"
+                                                    : "white"
+                                            }
+                                        />
                                     </IconButton>
                                 </span>
                             </Tooltip>
