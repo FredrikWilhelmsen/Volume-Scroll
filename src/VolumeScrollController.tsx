@@ -1,5 +1,5 @@
 import browser from "webextension-polyfill";
-import { isHotkeyPressed, getMouseKey, debug, setUtilSettings, getLogList, addLog, findScrollableParent } from "./utils";
+import { isHotkeyPressed, getMouseKey, debug, setUtilSettings, getLogList, addLog, findScrollableParent, setManualMouse4Pressed, setManualMouse5Pressed } from "./utils";
 
 import { Settings, defaultSettings } from "./types";
 
@@ -38,6 +38,8 @@ let mouseY: number = 0;
 let preventContextMenu: boolean = false;
 let preventMiddleClick: boolean = false;
 let preventLeftClick: boolean = false;
+let preventMouse4Click: boolean = false;
+let preventMouse5Click: boolean = false;
 let isInitialized: boolean = false;
 let lastActionTime: number = 0;
 const processedMessageIds = new Set<string>();
@@ -195,12 +197,16 @@ export const init = () => {
                             const mouseKey = getMouseKey(button);
                             if (mouseKey === "Right Mouse") preventContextMenu = true;
                             else if (mouseKey === "Middle Mouse") preventMiddleClick = true;
-                            else if (mouseKey === "Mouse 1") preventLeftClick = true;
+                            else if (mouseKey === "Left Mouse") preventLeftClick = true;
+                            else if (mouseKey === "Mouse 4") preventMouse4Click = true;
+                            else if (mouseKey === "Mouse 5") preventMouse5Click = true;
                         } else if (event.data.type === "VOLUME_SCROLL_RELAY") {
                             // For scroll, we might only have buttons bitmask
                             if (event.data.buttons & 2) preventContextMenu = true;
                             if (event.data.buttons & 4) preventMiddleClick = true;
                             if (event.data.buttons & 1) preventLeftClick = true;
+                            if (event.data.buttons & 8) preventMouse4Click = true;
+                            if (event.data.buttons & 16) preventMouse5Click = true;
                         }
                     }
 
@@ -368,6 +374,15 @@ export function onScroll(e: WheelEvent): void {
     if (settings.useModifierKey && settings.modifierKey === "Right Mouse" && isModifierKeyPressed) {
         preventContextMenu = true;
     }
+    if (settings.useModifierKey && settings.modifierKey === "Left Mouse" && isModifierKeyPressed) {
+        preventLeftClick = true;
+    }
+    if (settings.useModifierKey && settings.modifierKey === "Mouse 4" && isModifierKeyPressed) {
+        preventMouse4Click = true;
+    }
+    if (settings.useModifierKey && settings.modifierKey === "Mouse 5" && isModifierKeyPressed) {
+        preventMouse5Click = true;
+    }
 
     // If we are inside an iframe
     if (window.self !== window.top) {
@@ -475,6 +490,15 @@ export function onScroll(e: WheelEvent): void {
     if (settings.useAlternateVolumeIncrement && settings.alternateVolumeIncrementHotkey === "Right Mouse" && isAltVolumeKeyPressed) {
         preventContextMenu = true;
     }
+    if (settings.useAlternateVolumeIncrement && settings.alternateVolumeIncrementHotkey === "Left Mouse" && isAltVolumeKeyPressed) {
+        preventLeftClick = true;
+    }
+    if (settings.useAlternateVolumeIncrement && settings.alternateVolumeIncrementHotkey === "Mouse 4" && isAltVolumeKeyPressed) {
+        preventMouse4Click = true;
+    }
+    if (settings.useAlternateVolumeIncrement && settings.alternateVolumeIncrementHotkey === "Mouse 5" && isAltVolumeKeyPressed) {
+        preventMouse5Click = true;
+    }
 
     // Check if we utilized the Middle Mouse button for this scroll
     if (settings.useModifierKey && settings.modifierKey === "Middle Mouse" && isModifierKeyPressed) {
@@ -495,7 +519,7 @@ export function onMouseDown(e: MouseEvent): void {
     }
 
     if (Date.now() - lastActionTime < 50) {
-        if (getMouseKey(e.button) === "Mouse 1" && preventLeftClick) {
+        if (getMouseKey(e.button) === "Left Mouse" && preventLeftClick) {
             e.preventDefault();
             e.stopPropagation();
         } else if (getMouseKey(e.button) === "Middle Mouse" && preventMiddleClick) {
@@ -504,23 +528,52 @@ export function onMouseDown(e: MouseEvent): void {
         } else if (getMouseKey(e.button) === "Right Mouse" && preventContextMenu) {
             e.preventDefault();
             e.stopPropagation();
+        } else if (getMouseKey(e.button) === "Mouse 4" && preventMouse4Click) {
+            e.preventDefault();
+            e.stopPropagation();
+        } else if (getMouseKey(e.button) === "Mouse 5" && preventMouse5Click) {
+            e.preventDefault();
+            e.stopPropagation();
         }
         return;
     }
 
     debug("Mouse down!");
 
+    const currentMouseKey = getMouseKey(e.button);
+    if (currentMouseKey === "Mouse 4") setManualMouse4Pressed(true);
+    if (currentMouseKey === "Mouse 5") setManualMouse5Pressed(true);
+
     // Reset flags on new click.
     if (getMouseKey(e.button) === "Right Mouse") {
         preventContextMenu = false;
     } else if (getMouseKey(e.button) === "Middle Mouse") {
         preventMiddleClick = false;
-    } else if (getMouseKey(e.button) === "Mouse 1") {
+    } else if (getMouseKey(e.button) === "Left Mouse") {
         preventLeftClick = false;
+    } else if (getMouseKey(e.button) === "Mouse 4") {
+        preventMouse4Click = false;
+    } else if (getMouseKey(e.button) === "Mouse 5") {
+        preventMouse5Click = false;
     }
 
     if (isDisabledOnSite() || (settings.fullscreenOnly && !isFullscreen())) {
         return;
+    }
+
+    if (currentMouseKey === "Mouse 4" || currentMouseKey === "Mouse 5") {
+        const isModifier = settings.useModifierKey && settings.modifierKey === currentMouseKey;
+        const isAlt = settings.useAlternateVolumeIncrement && settings.alternateVolumeIncrementHotkey === currentMouseKey;
+        const isMute = settings.useToggleMuteKey && settings.toggleMuteKey === currentMouseKey;
+        const isPause = settings.useTogglePauseKey && settings.togglePauseKey === currentMouseKey;
+
+        // Unconditionally block mousedown for these to prevent browser navigation gestures starting
+        // and set the flag to block mouseup so the gesture doesn't complete.
+        if (isModifier || isAlt || isMute || isPause) {
+            e.preventDefault();
+            if (currentMouseKey === "Mouse 4") preventMouse4Click = true;
+            if (currentMouseKey === "Mouse 5") preventMouse5Click = true;
+        }
     }
 
     let handled = false;
@@ -563,8 +616,12 @@ export function onMouseDown(e: MouseEvent): void {
                     preventContextMenu = true;
                 } else if (getMouseKey(e.button) === "Middle Mouse") {
                     preventMiddleClick = true;
-                } else if (getMouseKey(e.button) === "Mouse 1") {
+                } else if (getMouseKey(e.button) === "Left Mouse") {
                     preventLeftClick = true;
+                } else if (getMouseKey(e.button) === "Mouse 4") {
+                    preventMouse4Click = true;
+                } else if (getMouseKey(e.button) === "Mouse 5") {
+                    preventMouse5Click = true;
                 }
                 return;
             }
@@ -584,8 +641,12 @@ export function onMouseDown(e: MouseEvent): void {
                 preventContextMenu = true;
             } else if (getMouseKey(e.button) === "Middle Mouse") {
                 preventMiddleClick = true;
-            } else if (getMouseKey(e.button) === "Mouse 1") {
+            } else if (getMouseKey(e.button) === "Left Mouse") {
                 preventLeftClick = true;
+            } else if (getMouseKey(e.button) === "Mouse 4") {
+                preventMouse4Click = true;
+            } else if (getMouseKey(e.button) === "Mouse 5") {
+                preventMouse5Click = true;
             }
         }
     }
@@ -628,8 +689,12 @@ export function onMouseDown(e: MouseEvent): void {
                     preventContextMenu = true;
                 } else if (getMouseKey(e.button) === "Middle Mouse") {
                     preventMiddleClick = true;
-                } else if (getMouseKey(e.button) === "Mouse 1") {
+                } else if (getMouseKey(e.button) === "Left Mouse") {
                     preventLeftClick = true;
+                } else if (getMouseKey(e.button) === "Mouse 4") {
+                    preventMouse4Click = true;
+                } else if (getMouseKey(e.button) === "Mouse 5") {
+                    preventMouse5Click = true;
                 }
                 return;
             }
@@ -649,8 +714,12 @@ export function onMouseDown(e: MouseEvent): void {
                 preventContextMenu = true;
             } else if (getMouseKey(e.button) === "Middle Mouse") {
                 preventMiddleClick = true;
-            } else if (getMouseKey(e.button) === "Mouse 1") {
+            } else if (getMouseKey(e.button) === "Left Mouse") {
                 preventLeftClick = true;
+            } else if (getMouseKey(e.button) === "Mouse 4") {
+                preventMouse4Click = true;
+            } else if (getMouseKey(e.button) === "Mouse 5") {
+                preventMouse5Click = true;
             }
         }
     }
@@ -659,11 +728,15 @@ export function onMouseDown(e: MouseEvent): void {
 export function onMouseUp(e: MouseEvent): void {
     debug("Mouse up!");
 
+    const currentMouseKey = getMouseKey(e.button);
+    if (currentMouseKey === "Mouse 4") setManualMouse4Pressed(false);
+    if (currentMouseKey === "Mouse 5") setManualMouse5Pressed(false);
+
     if (preventMiddleClick && getMouseKey(e.button) === "Middle Mouse") {
         debug("Mouseup blocked due to volume action");
         e.preventDefault();
         e.stopPropagation();
-    } else if (preventLeftClick && getMouseKey(e.button) === "Mouse 1") {
+    } else if (preventLeftClick && getMouseKey(e.button) === "Left Mouse") {
         debug("Mouseup blocked due to volume action");
         e.preventDefault();
         e.stopPropagation();
@@ -671,11 +744,19 @@ export function onMouseUp(e: MouseEvent): void {
         debug("Mouseup blocked due to volume action");
         e.preventDefault();
         e.stopPropagation();
+    } else if (preventMouse4Click && getMouseKey(e.button) === "Mouse 4") {
+        debug("Mouseup blocked due to volume action");
+        e.preventDefault();
+        e.stopPropagation();
+    } else if (preventMouse5Click && getMouseKey(e.button) === "Mouse 5") {
+        debug("Mouseup blocked due to volume action");
+        e.preventDefault();
+        e.stopPropagation();
     }
 }
 
 export function onClick(e: MouseEvent): void {
-    if (preventLeftClick && getMouseKey(e.button) === "Mouse 1") {
+    if (preventLeftClick && getMouseKey(e.button) === "Left Mouse") {
         debug("Click blocked due to volume action");
         e.preventDefault();
         e.stopPropagation();
@@ -713,7 +794,7 @@ export function onContextMenu(e: MouseEvent): void {
 }
 
 export function onAuxClick(e: MouseEvent): void {
-    // If the flag was set during Mute actions, block the auxclick (middle click)
+    // If the flag was set during Mute actions, block the auxclick (middle click, mouse 4, mouse 5)
     if (preventMiddleClick && getMouseKey(e.button) === "Middle Mouse") {
         debug("Auxclick blocked due to volume mute action");
         e.preventDefault();
@@ -721,6 +802,22 @@ export function onAuxClick(e: MouseEvent): void {
 
         // Reset flag immediately after blocking
         preventMiddleClick = false;
+        return;
+    }
+    if (preventMouse4Click && getMouseKey(e.button) === "Mouse 4") {
+        debug("Auxclick blocked due to volume mute action");
+        e.preventDefault();
+        e.stopPropagation();
+
+        preventMouse4Click = false;
+        return;
+    }
+    if (preventMouse5Click && getMouseKey(e.button) === "Mouse 5") {
+        debug("Auxclick blocked due to volume mute action");
+        e.preventDefault();
+        e.stopPropagation();
+
+        preventMouse5Click = false;
         return;
     }
 }

@@ -105,15 +105,17 @@ const HotkeyButton: React.FC<HotkeyButtonProps> = ({
 
     return (
         <Tooltip title={tooltip} placement="top" disableInteractive>
-            <Button
-                onClick={handleClick}
-                className="button"
-                variant="outlined"
-                sx={{ color: "white" }}
-                disabled={disabled}
-            >
-                {isSetting ? "-----" : (value === " " ? "Space" : value)}
-            </Button>
+            <span>
+                <Button
+                    onClick={handleClick}
+                    className="button"
+                    variant="outlined"
+                    sx={{ color: "white" }}
+                    disabled={disabled}
+                >
+                    {isSetting ? "-----" : (value === " " ? "Space" : value)}
+                </Button>
+            </span>
         </Tooltip>
     );
 };
