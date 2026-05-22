@@ -44,16 +44,18 @@ const SettingsSlider: React.FC<SettingsSliderProps> = ({
     return (
         <div onWheel={handleWheel}>
             <Tooltip title={tooltip} disableInteractive>
-                <Slider
-                    min={min}
-                    max={max}
-                    step={step}
-                    aria-label={ariaLabel}
-                    value={value}
-                    valueLabelDisplay="off"
-                    disabled={disabled}
-                    onChange={(_, val) => onChange(val as number)}
-                />
+                <span>
+                    <Slider
+                        min={min}
+                        max={max}
+                        step={step}
+                        aria-label={ariaLabel}
+                        value={value}
+                        valueLabelDisplay="off"
+                        disabled={disabled}
+                        onChange={(_, val) => onChange(val as number)}
+                    />
+                </span>
             </Tooltip>
         </div>
     );

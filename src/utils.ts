@@ -3,6 +3,12 @@ import { Settings, defaultSettings, logElement } from "./types";
 let utilSettings: Settings = defaultSettings;
 let logList: logElement[] = [];
 
+export let manualMouse4Pressed = false;
+export let manualMouse5Pressed = false;
+
+export const setManualMouse4Pressed = (val: boolean) => manualMouse4Pressed = val;
+export const setManualMouse5Pressed = (val: boolean) => manualMouse5Pressed = val;
+
 // Updates the settings used by the utility functions (e.g. for debug logging)
 export const setUtilSettings = (settings: Settings) => {
     utilSettings = settings;
@@ -81,8 +87,8 @@ export const isHotkeyPressed = (e: MouseEvent | WheelEvent, hotkey: string): boo
         case "Left Mouse": return (e.buttons & 1) !== 0;
         case "Right Mouse": return (e.buttons & 2) !== 0;
         case "Middle Mouse": return (e.buttons & 4) !== 0;
-        case "Mouse 4": return (e.buttons & 8) !== 0;
-        case "Mouse 5": return (e.buttons & 16) !== 0;
+        case "Mouse 4": return manualMouse4Pressed || (e.buttons & 8) !== 0;
+        case "Mouse 5": return manualMouse5Pressed || (e.buttons & 16) !== 0;
         case "Shift": return e.shiftKey;
         case "Alt": return e.altKey;
         case "Control": return e.ctrlKey;

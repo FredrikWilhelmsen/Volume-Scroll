@@ -1,5 +1,5 @@
 import browser from "webextension-polyfill";
-import { isHotkeyPressed, getMouseKey, debug, setUtilSettings, getLogList, addLog, findScrollableParent } from "./utils";
+import { isHotkeyPressed, getMouseKey, debug, setUtilSettings, getLogList, addLog, findScrollableParent, setManualMouse4Pressed, setManualMouse5Pressed } from "./utils";
 
 import { Settings, defaultSettings } from "./types";
 
@@ -38,9 +38,36 @@ let mouseY: number = 0;
 let preventContextMenu: boolean = false;
 let preventMiddleClick: boolean = false;
 let preventLeftClick: boolean = false;
+let preventMouse4Click: boolean = false;
+let preventMouse5Click: boolean = false;
 let isInitialized: boolean = false;
 let lastActionTime: number = 0;
 const processedMessageIds = new Set<string>();
+
+let parentDisabledState: boolean = false;
+let parentHasVideoState: boolean = false;
+
+const isInteractiveElement = (el: HTMLElement | null): boolean => {
+    while (el) {
+        const tagName = el.tagName;
+        if (tagName === "A" || tagName === "BUTTON" || tagName === "INPUT" || tagName === "TEXTAREA" || tagName === "SELECT") {
+            return true;
+        }
+        const role = el.getAttribute("role");
+        if (role === "button" || role === "link" || role === "checkbox" || role === "radio") {
+            return true;
+        }
+        try {
+            if (window.getComputedStyle(el).cursor === "pointer") {
+                return true;
+            }
+        } catch (e) {
+            // Ignore potential security/style access issues
+        }
+        el = el.parentElement;
+    }
+    return false;
+};
 
 export const init = () => {
     if (isInitialized) return;
@@ -55,6 +82,21 @@ export const init = () => {
 
             window.addEventListener("message", (event) => {
                 if (!event.data) return;
+
+                if (event.data.type === "VOLUME_SCROLL_IFRAME_PING" && event.source) {
+                    (event.source as Window).postMessage({
+                        type: "VOLUME_SCROLL_IFRAME_PONG",
+                        parentDisabled: isDisabledOnSite(),
+                        parentHasVideo: document.getElementsByTagName("video").length > 0
+                    }, "*");
+                    return;
+                }
+
+                if (event.data.type === "VOLUME_SCROLL_IFRAME_PONG" || event.data.type === "VOLUME_SCROLL_PARENT_STATUS") {
+                    parentDisabledState = event.data.parentDisabled;
+                    parentHasVideoState = event.data.parentHasVideo;
+                    return;
+                }
 
                 const isRelayMessage = event.data.type === "VOLUME_SCROLL_RELAY" || event.data.type === "VOLUME_MUTE_RELAY" || event.data.type === "VOLUME_PAUSE_RELAY";
 
@@ -155,12 +197,16 @@ export const init = () => {
                             const mouseKey = getMouseKey(button);
                             if (mouseKey === "Right Mouse") preventContextMenu = true;
                             else if (mouseKey === "Middle Mouse") preventMiddleClick = true;
-                            else if (mouseKey === "Mouse 1") preventLeftClick = true;
+                            else if (mouseKey === "Left Mouse") preventLeftClick = true;
+                            else if (mouseKey === "Mouse 4") preventMouse4Click = true;
+                            else if (mouseKey === "Mouse 5") preventMouse5Click = true;
                         } else if (event.data.type === "VOLUME_SCROLL_RELAY") {
                             // For scroll, we might only have buttons bitmask
                             if (event.data.buttons & 2) preventContextMenu = true;
                             if (event.data.buttons & 4) preventMiddleClick = true;
                             if (event.data.buttons & 1) preventLeftClick = true;
+                            if (event.data.buttons & 8) preventMouse4Click = true;
+                            if (event.data.buttons & 16) preventMouse5Click = true;
                         }
                     }
 
@@ -195,6 +241,20 @@ export const init = () => {
             } else {
                 window.addEventListener("load", onPageLoad);
             }
+
+            if (window.self !== window.top) {
+                window.parent.postMessage({ type: "VOLUME_SCROLL_IFRAME_PING" }, "*");
+            } else {
+                broadcastStatusToIframes();
+
+                const videoObserver = new MutationObserver(() => {
+                    broadcastStatusToIframes();
+                });
+                videoObserver.observe(document.body || document.documentElement, {
+                    childList: true,
+                    subtree: true
+                });
+            }
         });
 };
 
@@ -207,6 +267,9 @@ browser.storage.onChanged.addListener((changes, areaName) => {
     handler.updateSettings(settings);
     const { domainList, ...settingsToLog } = settings;
     debug("Settings reapplied: ", settingsToLog);
+    if (window.self === window.top) {
+        broadcastStatusToIframes();
+    }
 });
 
 browser.runtime.onMessage.addListener((message: any) => {
@@ -231,6 +294,9 @@ const isFullscreen = function (): boolean {
 }
 
 const isDisabledOnSite = function (): boolean {
+    if (window.self !== window.top && parentDisabledState) {
+        return true;
+    }
     // Returns default value if domain is not in the map, otherwise returns the domain-specific value
     // If in an iframe, we also want to respect the parent domain's setting if the iframe domain is not explicitly set
     let enabled = settings.domainList?.[window.location.hostname.toLowerCase()];
@@ -256,6 +322,23 @@ const isDisabledOnSite = function (): boolean {
 
     // Inverted to return whether Volume Scroll is disabled, not enabled
     return !(enabled ?? settings.enableDefault);
+}
+
+export function broadcastStatusToIframes(): void {
+    const iframes = document.getElementsByTagName("iframe");
+    const hasVideo = document.getElementsByTagName("video").length > 0;
+    const disabled = isDisabledOnSite();
+    for (let i = 0; i < iframes.length; i++) {
+        try {
+            iframes[i].contentWindow?.postMessage({
+                type: "VOLUME_SCROLL_PARENT_STATUS",
+                parentDisabled: disabled,
+                parentHasVideo: hasVideo
+            }, "*");
+        } catch (e) {
+            // Ignore cross-origin errors
+        }
+    }
 }
 
 const doVolumeScroll = function (e: WheelEvent): boolean {
@@ -291,6 +374,15 @@ export function onScroll(e: WheelEvent): void {
     if (settings.useModifierKey && settings.modifierKey === "Right Mouse" && isModifierKeyPressed) {
         preventContextMenu = true;
     }
+    if (settings.useModifierKey && settings.modifierKey === "Left Mouse" && isModifierKeyPressed) {
+        preventLeftClick = true;
+    }
+    if (settings.useModifierKey && settings.modifierKey === "Mouse 4" && isModifierKeyPressed) {
+        preventMouse4Click = true;
+    }
+    if (settings.useModifierKey && settings.modifierKey === "Mouse 5" && isModifierKeyPressed) {
+        preventMouse5Click = true;
+    }
 
     // If we are inside an iframe
     if (window.self !== window.top) {
@@ -307,10 +399,17 @@ export function onScroll(e: WheelEvent): void {
 
         // If no video here, assume we are an overlay and shout to the parent
         if (!localVideo) {
+            if (parentDisabledState || !parentHasVideoState) {
+                return;
+            }
+
             if (doVolumeScroll(e)) {
                 debug("In iframe without video, posting message to parent");
-                e.preventDefault();
-                e.stopPropagation();
+                const scrollableParent = findScrollableParent(e.target as HTMLElement);
+                if (!scrollableParent) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
 
                 // "*" allows communication even if the iframe is cross-origin
                 window.parent.postMessage({
@@ -391,6 +490,15 @@ export function onScroll(e: WheelEvent): void {
     if (settings.useAlternateVolumeIncrement && settings.alternateVolumeIncrementHotkey === "Right Mouse" && isAltVolumeKeyPressed) {
         preventContextMenu = true;
     }
+    if (settings.useAlternateVolumeIncrement && settings.alternateVolumeIncrementHotkey === "Left Mouse" && isAltVolumeKeyPressed) {
+        preventLeftClick = true;
+    }
+    if (settings.useAlternateVolumeIncrement && settings.alternateVolumeIncrementHotkey === "Mouse 4" && isAltVolumeKeyPressed) {
+        preventMouse4Click = true;
+    }
+    if (settings.useAlternateVolumeIncrement && settings.alternateVolumeIncrementHotkey === "Mouse 5" && isAltVolumeKeyPressed) {
+        preventMouse5Click = true;
+    }
 
     // Check if we utilized the Middle Mouse button for this scroll
     if (settings.useModifierKey && settings.modifierKey === "Middle Mouse" && isModifierKeyPressed) {
@@ -411,7 +519,7 @@ export function onMouseDown(e: MouseEvent): void {
     }
 
     if (Date.now() - lastActionTime < 50) {
-        if (getMouseKey(e.button) === "Mouse 1" && preventLeftClick) {
+        if (getMouseKey(e.button) === "Left Mouse" && preventLeftClick) {
             e.preventDefault();
             e.stopPropagation();
         } else if (getMouseKey(e.button) === "Middle Mouse" && preventMiddleClick) {
@@ -420,23 +528,52 @@ export function onMouseDown(e: MouseEvent): void {
         } else if (getMouseKey(e.button) === "Right Mouse" && preventContextMenu) {
             e.preventDefault();
             e.stopPropagation();
+        } else if (getMouseKey(e.button) === "Mouse 4" && preventMouse4Click) {
+            e.preventDefault();
+            e.stopPropagation();
+        } else if (getMouseKey(e.button) === "Mouse 5" && preventMouse5Click) {
+            e.preventDefault();
+            e.stopPropagation();
         }
         return;
     }
 
     debug("Mouse down!");
 
+    const currentMouseKey = getMouseKey(e.button);
+    if (currentMouseKey === "Mouse 4") setManualMouse4Pressed(true);
+    if (currentMouseKey === "Mouse 5") setManualMouse5Pressed(true);
+
     // Reset flags on new click.
     if (getMouseKey(e.button) === "Right Mouse") {
         preventContextMenu = false;
     } else if (getMouseKey(e.button) === "Middle Mouse") {
         preventMiddleClick = false;
-    } else if (getMouseKey(e.button) === "Mouse 1") {
+    } else if (getMouseKey(e.button) === "Left Mouse") {
         preventLeftClick = false;
+    } else if (getMouseKey(e.button) === "Mouse 4") {
+        preventMouse4Click = false;
+    } else if (getMouseKey(e.button) === "Mouse 5") {
+        preventMouse5Click = false;
     }
 
     if (isDisabledOnSite() || (settings.fullscreenOnly && !isFullscreen())) {
         return;
+    }
+
+    if (currentMouseKey === "Mouse 4" || currentMouseKey === "Mouse 5") {
+        const isModifier = settings.useModifierKey && settings.modifierKey === currentMouseKey;
+        const isAlt = settings.useAlternateVolumeIncrement && settings.alternateVolumeIncrementHotkey === currentMouseKey;
+        const isMute = settings.useToggleMuteKey && settings.toggleMuteKey === currentMouseKey;
+        const isPause = settings.useTogglePauseKey && settings.togglePauseKey === currentMouseKey;
+
+        // Unconditionally block mousedown for these to prevent browser navigation gestures starting
+        // and set the flag to block mouseup so the gesture doesn't complete.
+        if (isModifier || isAlt || isMute || isPause) {
+            e.preventDefault();
+            if (currentMouseKey === "Mouse 4") preventMouse4Click = true;
+            if (currentMouseKey === "Mouse 5") preventMouse5Click = true;
+        }
     }
 
     let handled = false;
@@ -454,6 +591,10 @@ export function onMouseDown(e: MouseEvent): void {
 
             const localVideo = document.getElementsByTagName("video")[0];
             if (!localVideo) {
+                if (parentDisabledState || !parentHasVideoState || isInteractiveElement(e.target as HTMLElement | null)) {
+                    return;
+                }
+
                 debug("In iframe, relaying Mute Toggle to parent");
                 e.preventDefault();
                 e.stopPropagation();
@@ -475,8 +616,12 @@ export function onMouseDown(e: MouseEvent): void {
                     preventContextMenu = true;
                 } else if (getMouseKey(e.button) === "Middle Mouse") {
                     preventMiddleClick = true;
-                } else if (getMouseKey(e.button) === "Mouse 1") {
+                } else if (getMouseKey(e.button) === "Left Mouse") {
                     preventLeftClick = true;
+                } else if (getMouseKey(e.button) === "Mouse 4") {
+                    preventMouse4Click = true;
+                } else if (getMouseKey(e.button) === "Mouse 5") {
+                    preventMouse5Click = true;
                 }
                 return;
             }
@@ -496,8 +641,12 @@ export function onMouseDown(e: MouseEvent): void {
                 preventContextMenu = true;
             } else if (getMouseKey(e.button) === "Middle Mouse") {
                 preventMiddleClick = true;
-            } else if (getMouseKey(e.button) === "Mouse 1") {
+            } else if (getMouseKey(e.button) === "Left Mouse") {
                 preventLeftClick = true;
+            } else if (getMouseKey(e.button) === "Mouse 4") {
+                preventMouse4Click = true;
+            } else if (getMouseKey(e.button) === "Mouse 5") {
+                preventMouse5Click = true;
             }
         }
     }
@@ -515,6 +664,10 @@ export function onMouseDown(e: MouseEvent): void {
 
             const localVideo = document.getElementsByTagName("video")[0];
             if (!localVideo) {
+                if (parentDisabledState || !parentHasVideoState || isInteractiveElement(e.target as HTMLElement | null)) {
+                    return;
+                }
+
                 debug("In iframe, relaying Pause Toggle to parent");
                 e.preventDefault();
                 e.stopPropagation();
@@ -536,8 +689,12 @@ export function onMouseDown(e: MouseEvent): void {
                     preventContextMenu = true;
                 } else if (getMouseKey(e.button) === "Middle Mouse") {
                     preventMiddleClick = true;
-                } else if (getMouseKey(e.button) === "Mouse 1") {
+                } else if (getMouseKey(e.button) === "Left Mouse") {
                     preventLeftClick = true;
+                } else if (getMouseKey(e.button) === "Mouse 4") {
+                    preventMouse4Click = true;
+                } else if (getMouseKey(e.button) === "Mouse 5") {
+                    preventMouse5Click = true;
                 }
                 return;
             }
@@ -557,8 +714,12 @@ export function onMouseDown(e: MouseEvent): void {
                 preventContextMenu = true;
             } else if (getMouseKey(e.button) === "Middle Mouse") {
                 preventMiddleClick = true;
-            } else if (getMouseKey(e.button) === "Mouse 1") {
+            } else if (getMouseKey(e.button) === "Left Mouse") {
                 preventLeftClick = true;
+            } else if (getMouseKey(e.button) === "Mouse 4") {
+                preventMouse4Click = true;
+            } else if (getMouseKey(e.button) === "Mouse 5") {
+                preventMouse5Click = true;
             }
         }
     }
@@ -567,11 +728,15 @@ export function onMouseDown(e: MouseEvent): void {
 export function onMouseUp(e: MouseEvent): void {
     debug("Mouse up!");
 
+    const currentMouseKey = getMouseKey(e.button);
+    if (currentMouseKey === "Mouse 4") setManualMouse4Pressed(false);
+    if (currentMouseKey === "Mouse 5") setManualMouse5Pressed(false);
+
     if (preventMiddleClick && getMouseKey(e.button) === "Middle Mouse") {
         debug("Mouseup blocked due to volume action");
         e.preventDefault();
         e.stopPropagation();
-    } else if (preventLeftClick && getMouseKey(e.button) === "Mouse 1") {
+    } else if (preventLeftClick && getMouseKey(e.button) === "Left Mouse") {
         debug("Mouseup blocked due to volume action");
         e.preventDefault();
         e.stopPropagation();
@@ -579,11 +744,19 @@ export function onMouseUp(e: MouseEvent): void {
         debug("Mouseup blocked due to volume action");
         e.preventDefault();
         e.stopPropagation();
+    } else if (preventMouse4Click && getMouseKey(e.button) === "Mouse 4") {
+        debug("Mouseup blocked due to volume action");
+        e.preventDefault();
+        e.stopPropagation();
+    } else if (preventMouse5Click && getMouseKey(e.button) === "Mouse 5") {
+        debug("Mouseup blocked due to volume action");
+        e.preventDefault();
+        e.stopPropagation();
     }
 }
 
 export function onClick(e: MouseEvent): void {
-    if (preventLeftClick && getMouseKey(e.button) === "Mouse 1") {
+    if (preventLeftClick && getMouseKey(e.button) === "Left Mouse") {
         debug("Click blocked due to volume action");
         e.preventDefault();
         e.stopPropagation();
@@ -621,7 +794,7 @@ export function onContextMenu(e: MouseEvent): void {
 }
 
 export function onAuxClick(e: MouseEvent): void {
-    // If the flag was set during Mute actions, block the auxclick (middle click)
+    // If the flag was set during Mute actions, block the auxclick (middle click, mouse 4, mouse 5)
     if (preventMiddleClick && getMouseKey(e.button) === "Middle Mouse") {
         debug("Auxclick blocked due to volume mute action");
         e.preventDefault();
@@ -629,6 +802,22 @@ export function onAuxClick(e: MouseEvent): void {
 
         // Reset flag immediately after blocking
         preventMiddleClick = false;
+        return;
+    }
+    if (preventMouse4Click && getMouseKey(e.button) === "Mouse 4") {
+        debug("Auxclick blocked due to volume mute action");
+        e.preventDefault();
+        e.stopPropagation();
+
+        preventMouse4Click = false;
+        return;
+    }
+    if (preventMouse5Click && getMouseKey(e.button) === "Mouse 5") {
+        debug("Auxclick blocked due to volume mute action");
+        e.preventDefault();
+        e.stopPropagation();
+
+        preventMouse5Click = false;
         return;
     }
 }

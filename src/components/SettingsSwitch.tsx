@@ -22,11 +22,13 @@ const SettingsSwitch: React.FC<SettingsSwitchProps> = ({
 }) => {
     return (
         <Tooltip title={tooltip} placement={placement} disableInteractive>
-            <FormControlLabel
-                onChange={(_, value) => onChange(value)}
-                control={<Switch checked={checked} disabled={disabled} />}
-                label={label}
-            />
+            <span>
+                <FormControlLabel
+                    onChange={(_, value) => onChange(value)}
+                    control={<Switch checked={checked} disabled={disabled} />}
+                    label={label}
+                />
+            </span>
         </Tooltip>
     );
 };

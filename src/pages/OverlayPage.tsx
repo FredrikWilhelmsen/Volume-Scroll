@@ -216,17 +216,19 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({ settings, editSetting, se
                 </div>
                 <div id="overlayPositionDropdownContainer">
                     <Tooltip title="Set overlay position">
-                        <select id="overlayPositionSelector"
-                            onChange={handlePositionChange}
-                            defaultValue={settings.overlayPosition}
-                            disabled={!settings.useMouseWheelVolume}>
-                            <option value="mouse">Relative to Mouse</option>
-                            <option value="tl">Top Left</option>
-                            <option value="tr">Top Right</option>
-                            <option value="bl">Bottom Left</option>
-                            <option value="br">Bottom Right</option>
-                            <option value="custom">Custom</option>
-                        </select>
+                        <span>
+                            <select id="overlayPositionSelector"
+                                onChange={handlePositionChange}
+                                defaultValue={settings.overlayPosition}
+                                disabled={!settings.useMouseWheelVolume}>
+                                <option value="mouse">Relative to Mouse</option>
+                                <option value="tl">Top Left</option>
+                                <option value="tr">Top Right</option>
+                                <option value="bl">Bottom Left</option>
+                                <option value="br">Bottom Right</option>
+                                <option value="custom">Custom</option>
+                            </select>
+                        </span>
                     </Tooltip>
                 </div>
                 <div id="overlayXContainer">
