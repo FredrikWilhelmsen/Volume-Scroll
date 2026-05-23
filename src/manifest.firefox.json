@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Volume Scroll",
-    "version": "3.4.0",
+    "version": "3.5.0",
     "description": "Scrollable volume for any video on the internet",
     "homepage_url": "https://github.com/FredrikWilhelmsen/Volume-Scroll/",
     "browser_specific_settings": {
@@ -10,10 +10,7 @@
             "strict_min_version": "109.0"
         }
     },
-    "permissions": [
-        "storage",
-        "activeTab"
-    ],
+    "permissions": ["storage", "activeTab"],
     "icons": {
         "128": "images/128.png"
     },
@@ -23,32 +20,22 @@
         "default_popup": "popup.html"
     },
     "background": {
-        "scripts": [
-            "volumeScrollBackground.tsx"
-        ],
+        "scripts": ["volumeScrollBackground.tsx"],
         "service_worker": "volumeScrollBackground.tsx",
         "type": "module"
     },
     "content_scripts": [
         {
-            "matches": [
-                "<all_urls>"
-            ],
+            "matches": ["<all_urls>"],
             "all_frames": true,
             "run_at": "document_start",
-            "js": [
-                "volumeScroll.tsx"
-            ]
+            "js": ["volumeScroll.tsx"]
         },
         {
-            "matches": [
-                "<all_urls>"
-            ],
+            "matches": ["<all_urls>"],
             "all_frames": true,
             "run_at": "document_start",
-            "js": [
-                "interceptor.ts"
-            ],
+            "js": ["interceptor.ts"],
             "world": "MAIN"
         }
     ]
