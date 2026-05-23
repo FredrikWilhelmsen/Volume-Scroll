@@ -1,50 +1,51 @@
 export interface Settings {
-    useDefaultVolume: boolean,
-    defaultVolume: number,
-    startMuted: boolean,
+    useDefaultVolume: boolean;
+    defaultVolume: number;
+    startMuted: boolean;
 
-    useMouseWheelVolume: boolean,
-    volumeIncrement: number,
-    useRoundToNearestIncrement: boolean,
-    useAlternateVolumeIncrement: boolean,
-    alternateVolumeIncrement: number,
-    alternateVolumeIncrementHotkey: string,
+    useMouseWheelVolume: boolean;
+    volumeIncrement: number;
+    useRoundToNearestIncrement: boolean;
+    useAlternateVolumeIncrement: boolean;
+    alternateVolumeIncrement: number;
+    alternateVolumeIncrementHotkey: string;
 
-    usePreciseScroll: boolean,
-    useCustomPreciseScrollThreshold: boolean,
-    customPreciseScrollThreshold: number,
+    usePreciseScroll: boolean;
+    useCustomPreciseScrollThreshold: boolean;
+    customPreciseScrollThreshold: number;
 
-    doBoostVolume: boolean,
-    volumeBoostAmount: number,
-    boostedColor: string,
+    doBoostVolume: boolean;
+    volumeBoostAmount: number;
+    boostedColor: string;
 
-    modifierKey: string,
-    useModifierKey: boolean,
-    invertModifierKey: boolean,
+    modifierKey: string;
+    useModifierKey: boolean;
+    invertModifierKey: boolean;
 
-    toggleMuteKey: string,
-    useToggleMuteKey: boolean,
+    toggleMuteKey: string;
+    useToggleMuteKey: boolean;
 
-    togglePauseKey: string,
-    useTogglePauseKey: boolean,
+    togglePauseKey: string;
+    useTogglePauseKey: boolean;
 
-    fullscreenOnly: boolean,
+    fullscreenOnly: boolean;
 
-    overlayColor: string,
-    fontSize: number,
-    useOverlay: boolean,
-    useOverlayBackground: boolean,
-    overlayBackgroundOpacity: number,
-    overlayPosition: string,
-    overlayXPos: number,
-    overlayYPos: number,
-    overlayDuration: number,
+    overlayColor: string;
+    fontSize: number;
+    useOverlay: boolean;
+    useOverlayBackground: boolean;
+    overlayBackgroundOpacity: number;
+    overlayPosition: string;
+    overlayXPos: number;
+    overlayYPos: number;
+    overlayDuration: number;
 
-    domainList: Record<string, DomainSettings>,
-    enableDefault: boolean,
+    domainList: Record<string, DomainSettings>;
+    enableDefault: boolean;
 
-    doDebugLog: boolean
-};
+    doDebugLog: boolean;
+    lastVersionRead: string;
+}
 
 export const defaultSettings: Settings = {
     useDefaultVolume: false,
@@ -91,10 +92,18 @@ export const defaultSettings: Settings = {
     domainList: {},
     enableDefault: true,
 
-    doDebugLog: false
+    doDebugLog: false,
+    lastVersionRead: "",
 };
 
-export type Pages = "menu" | "scroll" | "hotkeys" | "overlay" | "misc" | "domains";
+export type Pages =
+    | "menu"
+    | "scroll"
+    | "hotkeys"
+    | "overlay"
+    | "misc"
+    | "domains"
+    | "updatePage";
 export type OverlayType = "volume" | "mute" | "unmute" | "pause" | "play";
 
 export interface DomainSettings {
