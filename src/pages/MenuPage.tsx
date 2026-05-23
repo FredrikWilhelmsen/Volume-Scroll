@@ -199,8 +199,23 @@ const MenuPage: React.FC<MenuPageInterface> = ({
                 disableInteractive
             >
                 <div
-                    onClick={() => setPage("updatePage")}
-                    style={{ cursor: "pointer" }}
+                    onClick={() => {
+                        editSetting(
+                            "lastVersionRead",
+                            browser.runtime.getManifest().version,
+                        );
+                        setPage("updatePage");
+                    }}
+                    style={{
+                        cursor: "pointer",
+                        position: "absolute",
+                        bottom: 0,
+                        left: 0,
+                        margin: "10px",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                    }}
                 >
                     <Typography
                         id="versionNumber"

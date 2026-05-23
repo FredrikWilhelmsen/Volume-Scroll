@@ -38,11 +38,32 @@ footer a {
 }
 
 #versionNumber {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    margin: 10px;
     font-size: 11px;
     color: gray;
     pointer-events: auto;
+}
+
+#changelogIcon {
+    width: 6px;
+    height: 6px;
+    background-color: #3b82f6;
+    border-radius: 50%;
+    box-shadow: 0 0 4px rgba(59, 130, 246, 0.8);
+    animation: pulseDot 2s infinite ease-in-out;
+}
+
+@keyframes pulseDot {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.6;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 1;
+        box-shadow: 0 0 6px rgba(59, 130, 246, 1);
+    }
+    100% {
+        transform: scale(0.8);
+        opacity: 0.6;
+    }
 }
