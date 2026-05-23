@@ -7,7 +7,13 @@ import ButtonGroup from "@mui/material/ButtonGroup/ButtonGroup";
 import Button from "@mui/material/Button/Button";
 import Tooltip from "@mui/material/Tooltip/Tooltip";
 import SettingsSwitch from "../components/SettingsSwitch";
-
+import MouseIcon from "@mui/icons-material/Mouse";
+import KeyboardIcon from "@mui/icons-material/Keyboard";
+import LayersIcon from "@mui/icons-material/Layers";
+import PublicIcon from "@mui/icons-material/Public";
+import TuneIcon from "@mui/icons-material/Tune";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import Box from "@mui/material/Box/Box";
 interface MenuPageInterface {
     settings: Settings;
     editSetting: (key: keyof Settings, value: any) => void;
@@ -129,30 +135,163 @@ const MenuPage: React.FC<MenuPageInterface> = ({
             >
                 <Button
                     onClick={() => setPage("scroll")}
-                    sx={{ color: "white" }}
+                    sx={{
+                        color: "white",
+                        px: 2,
+                        justifyContent: "space-between",
+                    }}
+                    endIcon={<ChevronRightIcon sx={{ color: "gray" }} />}
                 >
-                    Scroll Settings
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                        <MouseIcon />
+                        <Box
+                            sx={{
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "flex-start",
+                            }}
+                        >
+                            <Typography
+                                sx={{ textTransform: "none", lineHeight: 1.2 }}
+                            >
+                                Scroll
+                            </Typography>
+                            <Typography
+                                variant="caption"
+                                sx={{ color: "gray", textTransform: "none" }}
+                            >
+                                Step size & behavior
+                            </Typography>
+                        </Box>
+                    </Box>
                 </Button>
                 <Button
                     onClick={() => setPage("hotkeys")}
-                    sx={{ color: "white" }}
+                    sx={{
+                        color: "white",
+                        px: 2,
+                        justifyContent: "space-between",
+                    }}
+                    endIcon={<ChevronRightIcon sx={{ color: "gray" }} />}
                 >
-                    Hotkey Settings
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                        <KeyboardIcon />
+                        <Box
+                            sx={{
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "flex-start",
+                            }}
+                        >
+                            <Typography
+                                sx={{ textTransform: "none", lineHeight: 1.2 }}
+                            >
+                                Hotkey
+                            </Typography>
+                            <Typography
+                                variant="caption"
+                                sx={{ color: "gray", textTransform: "none" }}
+                            >
+                                Modifier & toggles
+                            </Typography>
+                        </Box>
+                    </Box>
                 </Button>
                 <Button
                     onClick={() => setPage("overlay")}
-                    sx={{ color: "white" }}
+                    sx={{
+                        color: "white",
+                        px: 2,
+                        justifyContent: "space-between",
+                    }}
+                    endIcon={<ChevronRightIcon sx={{ color: "gray" }} />}
                 >
-                    Overlay Settings
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                        <LayersIcon />
+                        <Box
+                            sx={{
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "flex-start",
+                            }}
+                        >
+                            <Typography
+                                sx={{ textTransform: "none", lineHeight: 1.2 }}
+                            >
+                                Overlay
+                            </Typography>
+                            <Typography
+                                variant="caption"
+                                sx={{ color: "gray", textTransform: "none" }}
+                            >
+                                Position & styling
+                            </Typography>
+                        </Box>
+                    </Box>
                 </Button>
                 <Button
                     onClick={() => setPage("domains")}
-                    sx={{ color: "white" }}
+                    sx={{
+                        color: "white",
+                        px: 2,
+                        justifyContent: "space-between",
+                    }}
+                    endIcon={<ChevronRightIcon sx={{ color: "gray" }} />}
                 >
-                    Domain Settings
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                        <PublicIcon />
+                        <Box
+                            sx={{
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "flex-start",
+                            }}
+                        >
+                            <Typography
+                                sx={{ textTransform: "none", lineHeight: 1.2 }}
+                            >
+                                Domain
+                            </Typography>
+                            <Typography
+                                variant="caption"
+                                sx={{ color: "gray", textTransform: "none" }}
+                            >
+                                Site-specific rules
+                            </Typography>
+                        </Box>
+                    </Box>
                 </Button>
-                <Button onClick={() => setPage("misc")} sx={{ color: "white" }}>
-                    Misc Settings
+                <Button
+                    onClick={() => setPage("misc")}
+                    sx={{
+                        color: "white",
+                        px: 2,
+                        justifyContent: "space-between",
+                    }}
+                    endIcon={<ChevronRightIcon sx={{ color: "gray" }} />}
+                >
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                        <TuneIcon />
+                        <Box
+                            sx={{
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "flex-start",
+                            }}
+                        >
+                            <Typography
+                                sx={{ textTransform: "none", lineHeight: 1.2 }}
+                            >
+                                Misc
+                            </Typography>
+                            <Typography
+                                variant="caption"
+                                sx={{ color: "gray", textTransform: "none" }}
+                            >
+                                Advanced
+                            </Typography>
+                        </Box>
+                    </Box>
                 </Button>
             </ButtonGroup>
 
