@@ -4,16 +4,15 @@ import { Settings, Pages } from "../types";
 import "../style/menuPage.css";
 import Typography from "@mui/material/Typography/Typography";
 import ButtonGroup from "@mui/material/ButtonGroup/ButtonGroup";
-import Button from "@mui/material/Button/Button";
 import Tooltip from "@mui/material/Tooltip/Tooltip";
 import SettingsSwitch from "../components/SettingsSwitch";
+import MenuButton from "../components/MenuButton";
 import MouseIcon from "@mui/icons-material/Mouse";
 import KeyboardIcon from "@mui/icons-material/Keyboard";
 import LayersIcon from "@mui/icons-material/Layers";
 import PublicIcon from "@mui/icons-material/Public";
 import TuneIcon from "@mui/icons-material/Tune";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import Box from "@mui/material/Box/Box";
+
 interface MenuPageInterface {
     settings: Settings;
     editSetting: (key: keyof Settings, value: any) => void;
@@ -133,166 +132,36 @@ const MenuPage: React.FC<MenuPageInterface> = ({
                 aria-label="Vertical button group"
                 variant="text"
             >
-                <Button
+                <MenuButton
+                    title="Scroll"
+                    subtitle="Step size & behavior"
+                    icon={<MouseIcon />}
                     onClick={() => setPage("scroll")}
-                    sx={{
-                        color: "white",
-                        px: 2,
-                        justifyContent: "space-between",
-                    }}
-                    endIcon={<ChevronRightIcon sx={{ color: "gray" }} />}
-                >
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                        <MouseIcon />
-                        <Box
-                            sx={{
-                                display: "flex",
-                                flexDirection: "column",
-                                alignItems: "flex-start",
-                            }}
-                        >
-                            <Typography
-                                sx={{ textTransform: "none", lineHeight: 1.2 }}
-                            >
-                                Scroll
-                            </Typography>
-                            <Typography
-                                variant="caption"
-                                sx={{ color: "gray", textTransform: "none" }}
-                            >
-                                Step size & behavior
-                            </Typography>
-                        </Box>
-                    </Box>
-                </Button>
-                <Button
+                />
+                <MenuButton
+                    title="Hotkey"
+                    subtitle="Modifier & toggles"
+                    icon={<KeyboardIcon />}
                     onClick={() => setPage("hotkeys")}
-                    sx={{
-                        color: "white",
-                        px: 2,
-                        justifyContent: "space-between",
-                    }}
-                    endIcon={<ChevronRightIcon sx={{ color: "gray" }} />}
-                >
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                        <KeyboardIcon />
-                        <Box
-                            sx={{
-                                display: "flex",
-                                flexDirection: "column",
-                                alignItems: "flex-start",
-                            }}
-                        >
-                            <Typography
-                                sx={{ textTransform: "none", lineHeight: 1.2 }}
-                            >
-                                Hotkey
-                            </Typography>
-                            <Typography
-                                variant="caption"
-                                sx={{ color: "gray", textTransform: "none" }}
-                            >
-                                Modifier & toggles
-                            </Typography>
-                        </Box>
-                    </Box>
-                </Button>
-                <Button
+                />
+                <MenuButton
+                    title="Overlay"
+                    subtitle="Position & styling"
+                    icon={<LayersIcon />}
                     onClick={() => setPage("overlay")}
-                    sx={{
-                        color: "white",
-                        px: 2,
-                        justifyContent: "space-between",
-                    }}
-                    endIcon={<ChevronRightIcon sx={{ color: "gray" }} />}
-                >
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                        <LayersIcon />
-                        <Box
-                            sx={{
-                                display: "flex",
-                                flexDirection: "column",
-                                alignItems: "flex-start",
-                            }}
-                        >
-                            <Typography
-                                sx={{ textTransform: "none", lineHeight: 1.2 }}
-                            >
-                                Overlay
-                            </Typography>
-                            <Typography
-                                variant="caption"
-                                sx={{ color: "gray", textTransform: "none" }}
-                            >
-                                Position & styling
-                            </Typography>
-                        </Box>
-                    </Box>
-                </Button>
-                <Button
+                />
+                <MenuButton
+                    title="Domain"
+                    subtitle="Site-specific rules"
+                    icon={<PublicIcon />}
                     onClick={() => setPage("domains")}
-                    sx={{
-                        color: "white",
-                        px: 2,
-                        justifyContent: "space-between",
-                    }}
-                    endIcon={<ChevronRightIcon sx={{ color: "gray" }} />}
-                >
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                        <PublicIcon />
-                        <Box
-                            sx={{
-                                display: "flex",
-                                flexDirection: "column",
-                                alignItems: "flex-start",
-                            }}
-                        >
-                            <Typography
-                                sx={{ textTransform: "none", lineHeight: 1.2 }}
-                            >
-                                Domain
-                            </Typography>
-                            <Typography
-                                variant="caption"
-                                sx={{ color: "gray", textTransform: "none" }}
-                            >
-                                Site-specific rules
-                            </Typography>
-                        </Box>
-                    </Box>
-                </Button>
-                <Button
+                />
+                <MenuButton
+                    title="Misc"
+                    subtitle="Advanced"
+                    icon={<TuneIcon />}
                     onClick={() => setPage("misc")}
-                    sx={{
-                        color: "white",
-                        px: 2,
-                        justifyContent: "space-between",
-                    }}
-                    endIcon={<ChevronRightIcon sx={{ color: "gray" }} />}
-                >
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                        <TuneIcon />
-                        <Box
-                            sx={{
-                                display: "flex",
-                                flexDirection: "column",
-                                alignItems: "flex-start",
-                            }}
-                        >
-                            <Typography
-                                sx={{ textTransform: "none", lineHeight: 1.2 }}
-                            >
-                                Misc
-                            </Typography>
-                            <Typography
-                                variant="caption"
-                                sx={{ color: "gray", textTransform: "none" }}
-                            >
-                                Advanced
-                            </Typography>
-                        </Box>
-                    </Box>
-                </Button>
+                />
             </ButtonGroup>
 
             <footer>
@@ -325,14 +194,38 @@ const MenuPage: React.FC<MenuPageInterface> = ({
                 </div>
             </Tooltip>
             <Tooltip
-                title={`Volume Scroll version ${browser.runtime.getManifest().version}`}
+                title={`Volume Scroll version ${browser.runtime.getManifest().version}${settings.lastVersionRead !== browser.runtime.getManifest().version ? " - Click to read update notes!" : ""}`}
                 placement="top-start"
                 disableInteractive
             >
-                <Typography
-                    id="versionNumber"
-                    variant="body2"
-                >{`v${browser.runtime.getManifest().version}`}</Typography>
+                <div
+                    onClick={() => {
+                        editSetting(
+                            "lastVersionRead",
+                            browser.runtime.getManifest().version,
+                        );
+                        setPage("updatePage");
+                    }}
+                    style={{
+                        cursor: "pointer",
+                        position: "absolute",
+                        bottom: 0,
+                        left: 0,
+                        margin: "10px",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                    }}
+                >
+                    <Typography
+                        id="versionNumber"
+                        variant="body2"
+                    >{`v${browser.runtime.getManifest().version}`}</Typography>
+                    {settings.lastVersionRead !==
+                    browser.runtime.getManifest().version ? (
+                        <div id="changelogIcon"></div>
+                    ) : null}
+                </div>
             </Tooltip>
         </div>
     );

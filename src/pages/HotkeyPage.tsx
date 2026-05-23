@@ -1,49 +1,52 @@
-import React from 'react';
-import { Settings, Pages } from '../types';
-import BackButton from '../components/BackButton';
+import React from "react";
+import { Settings, Pages } from "../types";
+import BackButton from "../components/BackButton";
 import "../style/hotkeyPage.css";
-import SettingsSwitch from '../components/SettingsSwitch';
-import HotkeyButton from '../components/HotkeyButton';
+import SettingsSwitch from "../components/SettingsSwitch";
+import HotkeyButton from "../components/HotkeyButton";
 
 interface HotkeyPageInterface {
-    settings: Settings,
-    editSetting: (key: keyof Settings, value: any) => void,
-    setPage: React.Dispatch<React.SetStateAction<Pages>>
+    settings: Settings;
+    editSetting: (key: keyof Settings, value: any) => void;
+    setPage: React.Dispatch<React.SetStateAction<Pages>>;
 }
 
-const HotkeyPage: React.FC<HotkeyPageInterface> = ({ settings, editSetting, setPage }) => {
-
+const HotkeyPage: React.FC<HotkeyPageInterface> = ({
+    settings,
+    editSetting,
+    setPage,
+}) => {
     const handleModifierKeyToggle = (value: boolean) => {
         editSetting("useModifierKey", value);
-    }
+    };
 
     const handleModifierKeySet = (value: string) => {
         editSetting("modifierKey", value);
-    }
+    };
 
     const handleInvertModifierKeyToggle = (value: boolean) => {
         editSetting("invertModifierKey", value);
-    }
+    };
 
     const handleMuteKeyToggle = (value: boolean) => {
         editSetting("useToggleMuteKey", value);
-    }
+    };
 
     const handleMuteKeySet = (value: string) => {
         editSetting("toggleMuteKey", value);
-    }
+    };
 
     const handlePauseKeyToggle = (value: boolean) => {
         editSetting("useTogglePauseKey", value);
-    }
+    };
 
     const handlePauseKeySet = (value: string) => {
         editSetting("togglePauseKey", value);
-    }
+    };
 
     return (
         <div>
-            <BackButton setPage={setPage} title={"Hotkey Settings"} />
+            <BackButton setPage={setPage} title={"Hotkey"} />
 
             <hr></hr>
 
@@ -59,7 +62,10 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({ settings, editSetting, setP
                     <HotkeyButton
                         value={settings.modifierKey}
                         onSet={handleModifierKeySet}
-                        disabled={!settings.useMouseWheelVolume || !settings.useModifierKey}
+                        disabled={
+                            !settings.useMouseWheelVolume ||
+                            !settings.useModifierKey
+                        }
                         tooltip="Click to change modifier hotkey. Limited to mouse buttons and modifier keys (Alt, Ctrl, Shift)."
                         allowedKeys={["Shift", "Alt", "Control"]}
                         allowMouse45={true}
@@ -70,7 +76,10 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({ settings, editSetting, setP
                         label="Inverted"
                         checked={settings.invertModifierKey}
                         onChange={handleInvertModifierKeyToggle}
-                        disabled={!settings.useMouseWheelVolume || !settings.useModifierKey}
+                        disabled={
+                            !settings.useMouseWheelVolume ||
+                            !settings.useModifierKey
+                        }
                         tooltip="If enabled, holding the modifier key will stop Volume Scroll from working"
                     />
                 </div>
@@ -85,7 +94,10 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({ settings, editSetting, setP
                     <HotkeyButton
                         value={settings.toggleMuteKey}
                         onSet={handleMuteKeySet}
-                        disabled={!settings.useMouseWheelVolume || !settings.useToggleMuteKey}
+                        disabled={
+                            !settings.useMouseWheelVolume ||
+                            !settings.useToggleMuteKey
+                        }
                         tooltip="Click to change mute hotkey. Limited to mouse buttons (excluding Mouse 4 & 5)."
                         allowedKeys={[]}
                         allowMouse45={false}
@@ -102,7 +114,10 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({ settings, editSetting, setP
                     <HotkeyButton
                         value={settings.togglePauseKey}
                         onSet={handlePauseKeySet}
-                        disabled={!settings.useMouseWheelVolume || !settings.useTogglePauseKey}
+                        disabled={
+                            !settings.useMouseWheelVolume ||
+                            !settings.useTogglePauseKey
+                        }
                         tooltip="Click to change pause hotkey. Limited to mouse buttons (excluding Mouse 4 & 5)."
                         allowedKeys={[]}
                         allowMouse45={false}
@@ -111,6 +126,6 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({ settings, editSetting, setP
             </div>
         </div>
     );
-}
+};
 
 export default HotkeyPage;

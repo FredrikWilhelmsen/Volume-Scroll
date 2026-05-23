@@ -9,11 +9,12 @@ import HotkeyPage from "./pages/HotkeyPage";
 import OverlayPage from "./pages/OverlayPage";
 import MiscPage from "./pages/MiscPage";
 import DomainPage from "./pages/DomainPage";
+import UpdatePage from "./pages/UpdatePage";
 import "./style/globalStyle.css";
-import '@fontsource/roboto/300.css';
-import '@fontsource/roboto/400.css';
-import '@fontsource/roboto/500.css';
-import '@fontsource/roboto/700.css';
+import "@fontsource/roboto/300.css";
+import "@fontsource/roboto/400.css";
+import "@fontsource/roboto/500.css";
+import "@fontsource/roboto/700.css";
 
 const SettingsPopup = () => {
     const [settings, setSettings] = useState<Settings | null>(null);
@@ -21,20 +22,22 @@ const SettingsPopup = () => {
 
     useEffect(() => {
         //Load saved settings when the component mounts
-        browser.storage.sync.get({ settings: defaultSettings }).then((result) => {
-            const savedSettings = result.settings as Settings;
-            setSettings({ ...defaultSettings, ...savedSettings });
-        });
+        browser.storage.sync
+            .get({ settings: defaultSettings })
+            .then((result) => {
+                const savedSettings = result.settings as Settings;
+                setSettings({ ...defaultSettings, ...savedSettings });
+            });
     }, []);
 
     //Handler for updating settings
     const handleSettingChange = (key: keyof Settings, value: any) => {
-        setSettings(prevSettings => {
+        setSettings((prevSettings) => {
             if (prevSettings === null) return prevSettings;
 
             const updatedSettings = {
                 ...prevSettings,
-                [key]: value
+                [key]: value,
             };
 
             browser.storage.sync.set({ settings: updatedSettings });
@@ -48,16 +51,55 @@ const SettingsPopup = () => {
     return (
         <div className="centerWrapper">
             <div className="container">
-                {page === "menu" && <MenuPage settings={settings} editSetting={handleSettingChange} setPage={setPage} />}
-                {page === "scroll" && <ScrollPage settings={settings} editSetting={handleSettingChange} setPage={setPage} />}
-                {page === "hotkeys" && <HotkeyPage settings={settings} editSetting={handleSettingChange} setPage={setPage} />}
-                {page === "overlay" && <OverlayPage settings={settings} editSetting={handleSettingChange} setPage={setPage} />}
-                {page === "misc" && <MiscPage settings={settings} editSetting={handleSettingChange} setPage={setPage} />}
-                {page === "domains" && <DomainPage settings={settings} editSetting={handleSettingChange} setPage={setPage} />}
+                {page === "menu" && (
+                    <MenuPage
+                        settings={settings}
+                        editSetting={handleSettingChange}
+                        setPage={setPage}
+                    />
+                )}
+                {page === "scroll" && (
+                    <ScrollPage
+                        settings={settings}
+                        editSetting={handleSettingChange}
+                        setPage={setPage}
+                    />
+                )}
+                {page === "hotkeys" && (
+                    <HotkeyPage
+                        settings={settings}
+                        editSetting={handleSettingChange}
+                        setPage={setPage}
+                    />
+                )}
+                {page === "overlay" && (
+                    <OverlayPage
+                        settings={settings}
+                        editSetting={handleSettingChange}
+                        setPage={setPage}
+                    />
+                )}
+                {page === "misc" && (
+                    <MiscPage
+                        settings={settings}
+                        editSetting={handleSettingChange}
+                        setPage={setPage}
+                    />
+                )}
+                {page === "domains" && (
+                    <DomainPage
+                        settings={settings}
+                        editSetting={handleSettingChange}
+                        setPage={setPage}
+                    />
+                )}
+                {page === "updatePage" && (
+                    <UpdatePage settings={settings} setPage={setPage} />
+                )}
             </div>
         </div>
-    )
-}
+    );
+};
 
 const container = document.getElementById("root");
 const root = createRoot(container!);

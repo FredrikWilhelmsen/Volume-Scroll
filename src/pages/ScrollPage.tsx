@@ -1,55 +1,59 @@
-import React, { useState } from 'react';
-import BackButton from '../components/BackButton';
+import React, { useState } from "react";
+import BackButton from "../components/BackButton";
 import { Settings, Pages } from "../types";
-import "../style/scrollPage.css"
-import SettingsSlider from '../components/SettingsSlider';
-import SettingsSwitch from '../components/SettingsSwitch';
-import SettingsValueDisplay from '../components/SettingsValueDisplay';
+import "../style/scrollPage.css";
+import SettingsSlider from "../components/SettingsSlider";
+import SettingsSwitch from "../components/SettingsSwitch";
+import SettingsValueDisplay from "../components/SettingsValueDisplay";
 
 interface ScrollPageInterface {
-    settings: Settings,
-    editSetting: (key: keyof Settings, value: any) => void,
-    setPage: React.Dispatch<React.SetStateAction<Pages>>
+    settings: Settings;
+    editSetting: (key: keyof Settings, value: any) => void;
+    setPage: React.Dispatch<React.SetStateAction<Pages>>;
 }
 
-const ScrollPage: React.FC<ScrollPageInterface> = ({ settings, editSetting, setPage }) => {
-
+const ScrollPage: React.FC<ScrollPageInterface> = ({
+    settings,
+    editSetting,
+    setPage,
+}) => {
     const [increment, setincrement] = useState(settings.volumeIncrement);
-    const [customPreciseScrollThreshold, setCustomPreciseScrollThreshold] = useState(settings.customPreciseScrollThreshold);
+    const [customPreciseScrollThreshold, setCustomPreciseScrollThreshold] =
+        useState(settings.customPreciseScrollThreshold);
 
     const handleIncrementToggle = (value: boolean) => {
         editSetting("useMouseWheelVolume", value);
-    }
+    };
 
     const handleIncrementChange = (value: number) => {
         editSetting("volumeIncrement", value);
         setincrement(value);
-    }
+    };
 
     const handleRoundToNearestIncrementToggle = (value: boolean) => {
         editSetting("useRoundToNearestIncrement", value);
-    }
+    };
 
     const handlePreciseScrollToggle = (value: boolean) => {
         editSetting("usePreciseScroll", value);
-    }
+    };
 
     const handleCustomPreciseScrollThresholdToggle = (value: boolean) => {
         editSetting("useCustomPreciseScrollThreshold", value);
-    }
+    };
 
     const handleCustomPreciseScrollThresholdChange = (value: number) => {
         setCustomPreciseScrollThreshold(value);
         editSetting("customPreciseScrollThreshold", value);
-    }
+    };
 
     const handleFullscreenOnlyToggle = (value: boolean) => {
         editSetting("fullscreenOnly", value);
-    }
+    };
 
     return (
         <div>
-            <BackButton setPage={setPage} title={"Scroll Settings"} />
+            <BackButton setPage={setPage} title={"Scroll"} />
 
             <hr></hr>
 
@@ -118,7 +122,11 @@ const ScrollPage: React.FC<ScrollPageInterface> = ({ settings, editSetting, setP
                         step={1}
                         ariaLabel="Custom precise scroll threshold"
                         value={customPreciseScrollThreshold}
-                        disabled={!settings.useMouseWheelVolume || !settings.usePreciseScroll || !settings.useCustomPreciseScrollThreshold}
+                        disabled={
+                            !settings.useMouseWheelVolume ||
+                            !settings.usePreciseScroll ||
+                            !settings.useCustomPreciseScrollThreshold
+                        }
                         onChange={handleCustomPreciseScrollThresholdChange}
                         tooltip="Set the threshold for precise scroll"
                     />
@@ -133,9 +141,8 @@ const ScrollPage: React.FC<ScrollPageInterface> = ({ settings, editSetting, setP
                     />
                 </div>
             </div>
-
         </div>
     );
-}
+};
 
 export default ScrollPage;

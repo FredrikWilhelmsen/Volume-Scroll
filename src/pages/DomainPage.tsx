@@ -118,7 +118,7 @@ const DomainPage: React.FC<DomainPageInterface> = ({
 
     return (
         <div>
-            <BackButton setPage={setPage} title={"Domain Settings"} />
+            <BackButton setPage={setPage} title={"Domain"} />
 
             <hr></hr>
 

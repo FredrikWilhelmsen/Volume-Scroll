@@ -1,28 +1,35 @@
-import React, { useState } from 'react';
-import { Settings, Pages } from '../types';
-import BackButton from '../components/BackButton';
-import Typography from '@mui/material/Typography/Typography';
-import "../style/miscPage.css"
-import Paper from '@mui/material/Paper';
+import React, { useState } from "react";
+import { Settings, Pages } from "../types";
+import BackButton from "../components/BackButton";
+import Typography from "@mui/material/Typography/Typography";
+import "../style/miscPage.css";
+import Paper from "@mui/material/Paper";
 import { TwitterPicker } from "@hello-pangea/color-picker";
-import SettingsSlider from '../components/SettingsSlider';
-import HotkeyButton from '../components/HotkeyButton';
-import SettingsSwitch from '../components/SettingsSwitch';
-import SettingsValueDisplay from '../components/SettingsValueDisplay';
-
+import SettingsSlider from "../components/SettingsSlider";
+import HotkeyButton from "../components/HotkeyButton";
+import SettingsSwitch from "../components/SettingsSwitch";
+import SettingsValueDisplay from "../components/SettingsValueDisplay";
 
 interface MiscPageInterface {
-    settings: Settings,
-    editSetting: (key: keyof Settings, value: any) => void,
-    setPage: React.Dispatch<React.SetStateAction<Pages>>
+    settings: Settings;
+    editSetting: (key: keyof Settings, value: any) => void;
+    setPage: React.Dispatch<React.SetStateAction<Pages>>;
 }
 
-const MiscPage: React.FC<MiscPageInterface> = ({ settings, editSetting, setPage }) => {
-
+const MiscPage: React.FC<MiscPageInterface> = ({
+    settings,
+    editSetting,
+    setPage,
+}) => {
     const [defaultVolume, setDefaultVolume] = useState(settings.defaultVolume);
-    const [volumeBoostAmount, setVolumeBoostAmount] = useState(settings.volumeBoostAmount);
-    const [alternateVolumeIncrement, setAlternateVolumeIncrement] = useState(settings.alternateVolumeIncrement);
-    const [isBoostColorPickerVisible, setIsBoostColorPickerVisible] = useState(false);
+    const [volumeBoostAmount, setVolumeBoostAmount] = useState(
+        settings.volumeBoostAmount,
+    );
+    const [alternateVolumeIncrement, setAlternateVolumeIncrement] = useState(
+        settings.alternateVolumeIncrement,
+    );
+    const [isBoostColorPickerVisible, setIsBoostColorPickerVisible] =
+        useState(false);
 
     const colors: string[] = [
         "#FF6900",
@@ -35,58 +42,57 @@ const MiscPage: React.FC<MiscPageInterface> = ({ settings, editSetting, setPage 
         "#EB144C",
         "#F78DA7",
         "#9900EF",
-        "#DABDAB"
+        "#DABDAB",
     ];
 
     const handleUseDefaultVolumeToggle = (value: boolean) => {
         editSetting("useDefaultVolume", value);
-    }
+    };
 
     const handleDefaultVolumeChange = (value: number) => {
         setDefaultVolume(value);
         editSetting("defaultVolume", value);
-    }
+    };
 
     const handleStartMutedToggle = (value: boolean) => {
         editSetting("startMuted", value);
-    }
+    };
 
     const handleBoostVolumeToggle = (value: boolean) => {
         editSetting("doBoostVolume", value);
-    }
+    };
 
     const handleBoostVolumeChange = (value: number) => {
         setVolumeBoostAmount(value);
         editSetting("volumeBoostAmount", value);
-    }
+    };
 
     const handleBoostColorChange = (color: any) => {
         if (!settings.useMouseWheelVolume || !settings.doBoostVolume) return;
         editSetting("boostedColor", color.hex);
-    }
+    };
 
     const handleBoostColorPickerClick = () => {
         if (!settings.useMouseWheelVolume || !settings.doBoostVolume) return;
         setIsBoostColorPickerVisible(!isBoostColorPickerVisible);
-    }
+    };
 
     const handleAlternateIncrementToggle = (value: boolean) => {
         editSetting("useAlternateVolumeIncrement", value);
-    }
+    };
 
     const handleAlternateIncrementChange = (value: number) => {
         editSetting("alternateVolumeIncrement", value);
         setAlternateVolumeIncrement(value);
-    }
+    };
 
     const handleAlternateIncrementHotkeySet = (value: string) => {
         editSetting("alternateVolumeIncrementHotkey", value);
-    }
-
+    };
 
     return (
         <div>
-            <BackButton setPage={setPage} title={"Misc Settings"} />
+            <BackButton setPage={setPage} title={"Misc"} />
 
             <hr></hr>
 
@@ -151,24 +157,46 @@ const MiscPage: React.FC<MiscPageInterface> = ({ settings, editSetting, setPage 
                     />
                 </div>
                 <div id="boostColorPickerContainer">
-                    <div id="colorDisplay" style={{ opacity: (!settings.useMouseWheelVolume || !settings.doBoostVolume) ? 0.5 : 1 }}>
-                        <Paper elevation={2} sx={
-                            {
+                    <div
+                        id="colorDisplay"
+                        style={{
+                            opacity:
+                                !settings.useMouseWheelVolume ||
+                                !settings.doBoostVolume
+                                    ? 0.5
+                                    : 1,
+                        }}
+                    >
+                        <Paper
+                            elevation={2}
+                            sx={{
                                 bgcolor: settings.boostedColor,
                                 width: 40,
                                 height: 20,
                                 mr: 1,
-                                cursor: (!settings.useMouseWheelVolume || !settings.doBoostVolume) ? 'default' : 'pointer'
-                            }
-                        }
+                                cursor:
+                                    !settings.useMouseWheelVolume ||
+                                    !settings.doBoostVolume
+                                        ? "default"
+                                        : "pointer",
+                            }}
                             onClick={handleBoostColorPickerClick}
                         />
-                        <Typography variant="body1">
-                            Boosted color
-                        </Typography>
+                        <Typography variant="body1">Boosted color</Typography>
                     </div>
 
-                    {isBoostColorPickerVisible && !(!settings.useMouseWheelVolume || !settings.doBoostVolume) && <TwitterPicker colors={colors} color={settings.boostedColor} onChange={handleBoostColorChange} width="220px" />}
+                    {isBoostColorPickerVisible &&
+                        !(
+                            !settings.useMouseWheelVolume ||
+                            !settings.doBoostVolume
+                        ) && (
+                            <TwitterPicker
+                                colors={colors}
+                                color={settings.boostedColor}
+                                onChange={handleBoostColorChange}
+                                width="220px"
+                            />
+                        )}
                 </div>
                 <div id="alternateIncrementContainer">
                     <div id="alternateIncrementToggleContainer">
@@ -197,7 +225,10 @@ const MiscPage: React.FC<MiscPageInterface> = ({ settings, editSetting, setPage 
                     <HotkeyButton
                         value={settings.alternateVolumeIncrementHotkey}
                         onSet={handleAlternateIncrementHotkeySet}
-                        disabled={!settings.useMouseWheelVolume || !settings.useAlternateVolumeIncrement}
+                        disabled={
+                            !settings.useMouseWheelVolume ||
+                            !settings.useAlternateVolumeIncrement
+                        }
                         tooltip="Click to change alternate step hotkey. Limited to mouse buttons and modifier keys (Alt, Ctrl, Shift)."
                         allowedKeys={["Shift", "Alt", "Control"]}
                         allowMouse45={true}
@@ -206,6 +237,6 @@ const MiscPage: React.FC<MiscPageInterface> = ({ settings, editSetting, setPage 
             </div>
         </div>
     );
-}
+};
 
 export default MiscPage;
