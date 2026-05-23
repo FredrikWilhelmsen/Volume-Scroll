@@ -1,46 +1,46 @@
 * {
-	margin: 0px;
-	user-select: none;
+    margin: 0px;
+    user-select: none;
 }
 
 html {
-	max-height: 600px;
-	min-height: 200px;
-	height: auto;
-	display: inline-block;
+    max-height: 600px;
+    min-height: 200px;
+    height: auto;
+    display: inline-block;
 }
 
 body {
-	width: 275px;
-	max-height: 600px;
-	min-height: 200px;
-	height: auto;
-	background-color: #282A35;
-	color: white;
-	display: inline-block;
+    width: 275px;
+    max-height: 600px;
+    min-height: 200px;
+    height: auto;
+    background-color: #131b28;
+    color: white;
+    display: inline-block;
 }
 
 #root {
-	width: 100%;
+    width: 100%;
 }
 
 .centerWrapper {
-	display: flex;
-	justify-content: center;
-	width: 100%;
+    display: flex;
+    justify-content: center;
+    width: 100%;
 }
 
 .container {
-	width: 80%;
-	padding-top: 16px;
-	padding-bottom: 16px;
+    width: 80%;
+    padding-top: 16px;
+    padding-bottom: 16px;
 }
 
 .Mui-disabled {
-	color: white !important;
+    color: white !important;
 }
 
 hr {
-	margin-top: 4px;
-	margin-bottom: 4px;
+    margin-top: 4px;
+    margin-bottom: 4px;
 }
