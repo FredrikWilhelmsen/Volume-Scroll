@@ -1,49 +1,76 @@
 import browser from "webextension-polyfill";
-import { defaultSettings, Settings, DomainSettings } from './types';
+import { defaultSettings, Settings, ExtensionData } from "./types";
 
 browser.runtime.onInstalled.addListener(async (details) => {
-    if (details.reason === "install") { // First time install
-        await browser.storage.sync.set({ settings: defaultSettings });
-    } else if (details.reason === "update") { // Extension updated
-        const syncData = await browser.storage.sync.get("settings");
-        const localData = await browser.storage.local.get("settings");
+    if (details.reason === "install") {
+        // First time install
+        const defaultData: ExtensionData = {
+            globalSettings: defaultSettings,
+            domainOverrides: {},
+            lastVersionRead: browser.runtime.getManifest().version,
+        };
+        await browser.storage.sync.set({ extensionData: defaultData });
+    } else if (details.reason === "update") {
+        // Extension updated
+        const syncData = await browser.storage.sync.get([
+            "settings",
+            "extensionData",
+        ]);
 
-        // Use sync settings if they exist, otherwise migrate from local
-        const oldSettings: any = syncData.settings || localData.settings || {};
+        // If we already have extensionData, we don't need to migrate old settings
+        if (syncData.extensionData) {
+            const currentData = syncData.extensionData as ExtensionData;
+            const newExtensionData: ExtensionData = {
+                globalSettings: {
+                    ...defaultSettings,
+                    ...currentData.globalSettings,
+                },
+                domainOverrides: currentData.domainOverrides || {},
+                lastVersionRead: browser.runtime.getManifest().version,
+            };
+            await browser.storage.sync.set({ extensionData: newExtensionData });
+            return;
+        }
+
+        // Migrate from old format
+        const oldSettings: any = syncData.settings || {};
+
+        const domainOverrides: Record<string, Partial<Settings>> = {};
 
         if (oldSettings.domainList) {
-            // Check if we need to migrate from Record<string, boolean> to Record<string, DomainSettings>
             const keys = Object.keys(oldSettings.domainList);
-            if (keys.length > 0 && typeof oldSettings.domainList[keys[0]] === "boolean") {
-                const newDomainList: Record<string, DomainSettings> = {};
-                for (const key of keys) {
-                    newDomainList[key] = {
-                        enabled: oldSettings.domainList[key],
-                        muted: oldSettings.startMutedDomainList?.[key]
-                    };
+            for (const key of keys) {
+                const override: Partial<Settings> = {};
+
+                // Handle the Record<string, DomainSettings> format
+                const domainSetting = oldSettings.domainList[key];
+                if (domainSetting.enabled !== undefined) {
+                    override.enableDefault = domainSetting.enabled;
                 }
-                oldSettings.domainList = newDomainList;
-            }
-            
-            // Also merge any leftover startMutedDomainList keys that weren't in domainList
-            if (oldSettings.startMutedDomainList) {
-                for (const key of Object.keys(oldSettings.startMutedDomainList)) {
-                    if (!oldSettings.domainList[key]) {
-                        oldSettings.domainList[key] = {
-                            muted: oldSettings.startMutedDomainList[key]
-                        };
-                    }
+                if (domainSetting.muted !== undefined) {
+                    override.startMuted = domainSetting.muted;
                 }
+
+                domainOverrides[key] = override;
             }
         }
-        
-        delete oldSettings.startMutedDomainList;
 
-        const newSettings: Settings = {
-            ...defaultSettings,      // Start with all new defaults
-            ...oldSettings,          // Overwrite with any existing user settings
+        // Clean up deprecated fields from the global settings object
+        delete oldSettings.domainList;
+        delete oldSettings.lastVersionRead; // Just in case it was in there
+
+        const newExtensionData: ExtensionData = {
+            globalSettings: {
+                ...defaultSettings,
+                ...oldSettings,
+            },
+            domainOverrides,
+            lastVersionRead: browser.runtime.getManifest().version,
         };
 
-        await browser.storage.sync.set({ settings: newSettings });
+        await browser.storage.sync.set({ extensionData: newExtensionData });
+
+        // Optionally clean up old storage keys to free space:
+        await browser.storage.sync.remove("settings");
     }
 });
