@@ -40,11 +40,9 @@ export interface Settings {
     overlayYPos: number;
     overlayDuration: number;
 
-    domainList: Record<string, DomainSettings>;
     enableDefault: boolean;
 
     doDebugLog: boolean;
-    lastVersionRead: string;
 }
 
 export const defaultSettings: Settings = {
@@ -89,12 +87,16 @@ export const defaultSettings: Settings = {
     overlayYPos: 5,
     overlayDuration: 2000,
 
-    domainList: {},
     enableDefault: true,
 
     doDebugLog: false,
-    lastVersionRead: "",
 };
+
+export interface ExtensionData {
+    globalSettings: Settings;
+    domainOverrides: Record<string, Partial<Settings>>;
+    lastVersionRead: string;
+}
 
 export type Pages =
     | "menu"
@@ -104,12 +106,8 @@ export type Pages =
     | "misc"
     | "domains"
     | "updatePage";
-export type OverlayType = "volume" | "mute" | "unmute" | "pause" | "play";
 
-export interface DomainSettings {
-    enabled?: boolean;
-    muted?: boolean;
-}
+export type OverlayType = "volume" | "mute" | "unmute" | "pause" | "play";
 
 export interface videoElements {
     display: HTMLBaseElement;
