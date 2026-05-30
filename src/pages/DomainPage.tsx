@@ -5,8 +5,6 @@ import BackButton from "../components/BackButton";
 import Tooltip from "@mui/material/Tooltip/Tooltip";
 import { TextField, IconButton, Typography, ButtonGroup } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-import VolumeOffIcon from "@mui/icons-material/VolumeOff";
-import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import SettingsSwitch from "../components/SettingsSwitch";
 import MenuButton from "../components/MenuButton";
 import MouseIcon from "@mui/icons-material/Mouse";
@@ -18,8 +16,14 @@ import "../style/domainPage.css";
 interface DomainPageInterface {
     settings: Settings;
     extensionData: ExtensionData;
-    setExtensionData: React.Dispatch<React.SetStateAction<ExtensionData | null>>;
-    editSetting: (key: keyof Settings, value: any, overrideDomain?: string) => void;
+    setExtensionData: React.Dispatch<
+        React.SetStateAction<ExtensionData | null>
+    >;
+    editSetting: (
+        key: keyof Settings,
+        value: any,
+        overrideDomain?: string,
+    ) => void;
     setPage: React.Dispatch<React.SetStateAction<Pages>>;
     setActiveDomain: React.Dispatch<React.SetStateAction<string | null>>;
     activeDomain?: string | null;
@@ -121,13 +125,17 @@ const DomainPage: React.FC<DomainPageInterface> = ({
                                 title="Hotkey"
                                 subtitle="Modifier & toggles"
                                 icon={<KeyboardIcon />}
-                                onClick={() => navigateToOverridePage("hotkeys")}
+                                onClick={() =>
+                                    navigateToOverridePage("hotkeys")
+                                }
                             />
                             <MenuButton
                                 title="Overlay"
                                 subtitle="Position & styling"
                                 icon={<LayersIcon />}
-                                onClick={() => navigateToOverridePage("overlay")}
+                                onClick={() =>
+                                    navigateToOverridePage("overlay")
+                                }
                             />
                             <MenuButton
                                 title="Misc"
@@ -157,10 +165,9 @@ const DomainPage: React.FC<DomainPageInterface> = ({
                         allDomains.map((domain) => {
                             const domainSetting =
                                 extensionData.domainOverrides?.[domain] || {};
-                            const isEnabled =
-                                domainSetting.enableDefault ?? settings.enableDefault;
-                            const isMuted =
-                                domainSetting.startMuted ?? settings.startMuted;
+
+                            const overrideCount =
+                                Object.keys(domainSetting).length;
 
                             return (
                                 <Tooltip
@@ -187,49 +194,36 @@ const DomainPage: React.FC<DomainPageInterface> = ({
                                                 variant="caption"
                                                 className="domainState"
                                                 style={{
-                                                    color:
-                                                        domainSetting.enableDefault ===
-                                                        undefined
-                                                            ? settings.enableDefault
-                                                                ? "#4caf50"
-                                                                : "#f44336"
-                                                            : domainSetting.enableDefault
-                                                              ? "#4caf50"
-                                                              : "#f44336",
+                                                    color: "rgba(255, 255, 255, 0.6)",
                                                     display: "flex",
                                                     alignItems: "center",
                                                     gap: "4px",
                                                 }}
                                             >
-                                                {domainSetting.enableDefault ===
-                                                undefined
-                                                    ? settings.enableDefault
-                                                        ? "Default (Enabled)"
-                                                        : "Default (Disabled)"
-                                                    : domainSetting.enableDefault
-                                                      ? "Enabled"
-                                                      : "Disabled"}
-                                                {isMuted ? (
-                                                    <VolumeOffIcon
-                                                        sx={{ fontSize: 16 }}
-                                                    />
-                                                ) : (
-                                                    <VolumeUpIcon
-                                                        sx={{ fontSize: 16 }}
-                                                    />
-                                                )}
+                                                {overrideCount === 1
+                                                    ? "1 override"
+                                                    : `${overrideCount} overrides`}
                                             </Typography>
                                         </div>
                                         <IconButton
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                const updatedData = { ...extensionData };
-                                                const updatedDomainList = { ...updatedData.domainOverrides };
-                                                delete updatedDomainList[domain];
-                                                updatedData.domainOverrides = updatedDomainList;
+                                                const updatedData = {
+                                                    ...extensionData,
+                                                };
+                                                const updatedDomainList = {
+                                                    ...updatedData.domainOverrides,
+                                                };
+                                                delete updatedDomainList[
+                                                    domain
+                                                ];
+                                                updatedData.domainOverrides =
+                                                    updatedDomainList;
 
                                                 setExtensionData(updatedData);
-                                                browser.storage.sync.set({ extensionData: updatedData });
+                                                browser.storage.sync.set({
+                                                    extensionData: updatedData,
+                                                });
                                             }}
                                             size="small"
                                             sx={{
