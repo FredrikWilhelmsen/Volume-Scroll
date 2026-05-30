@@ -16,85 +16,157 @@ import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 
+import { ExtensionData } from "./types";
+
 const SettingsPopup = () => {
-    const [settings, setSettings] = useState<Settings | null>(null);
+    const [extensionData, setExtensionData] = useState<ExtensionData | null>(null);
+    const [activeDomain, setActiveDomain] = useState<string | null>(null);
     const [page, setPage] = useState<Pages>("menu");
 
     useEffect(() => {
         //Load saved settings when the component mounts
         browser.storage.sync
-            .get({ settings: defaultSettings })
+            .get("extensionData")
             .then((result) => {
-                const savedSettings = result.settings as Settings;
-                setSettings({ ...defaultSettings, ...savedSettings });
+                const data: ExtensionData = (result.extensionData as ExtensionData) || { globalSettings: defaultSettings, domainOverrides: {}, lastVersionRead: "0.0.0" };
+                setExtensionData(data);
             });
     }, []);
 
+    useEffect(() => {
+        // Make the popup wider on override pages to accommodate undo buttons
+        if (activeDomain && page !== "domains") {
+            document.body.style.width = "315px";
+        } else {
+            document.body.style.width = "275px";
+        }
+    }, [activeDomain, page]);
+
     //Handler for updating settings
-    const handleSettingChange = (key: keyof Settings, value: any) => {
-        setSettings((prevSettings) => {
-            if (prevSettings === null) return prevSettings;
+    const handleSettingChange = (key: keyof Settings, value: any, overrideDomain?: string) => {
+        setExtensionData((prevData) => {
+            if (prevData === null) return prevData;
 
-            const updatedSettings = {
-                ...prevSettings,
-                [key]: value,
-            };
+            let updatedData = { ...prevData };
 
-            browser.storage.sync.set({ settings: updatedSettings });
+            if (overrideDomain) {
+                const existingOverrides = prevData.domainOverrides[overrideDomain] || {};
+                updatedData.domainOverrides = {
+                    ...prevData.domainOverrides,
+                    [overrideDomain]: {
+                        ...existingOverrides,
+                        [key]: value
+                    }
+                };
+            } else {
+                updatedData.globalSettings = {
+                    ...prevData.globalSettings,
+                    [key]: value
+                };
+            }
 
-            return updatedSettings;
+            browser.storage.sync.set({ extensionData: updatedData });
+
+            return updatedData;
         });
     };
 
-    if (settings === null) return <LoadingPage />;
+    const handleSettingReset = (key: keyof Settings, overrideDomain: string) => {
+        setExtensionData((prevData) => {
+            if (prevData === null) return prevData;
+
+            let updatedData = { ...prevData };
+            const existingOverrides = prevData.domainOverrides[overrideDomain] || {};
+            
+            const newOverrides = { ...existingOverrides };
+            delete newOverrides[key];
+
+            if (Object.keys(newOverrides).length === 0) {
+                const newDomainOverrides = { ...prevData.domainOverrides };
+                delete newDomainOverrides[overrideDomain];
+                updatedData.domainOverrides = newDomainOverrides;
+            } else {
+                updatedData.domainOverrides = {
+                    ...prevData.domainOverrides,
+                    [overrideDomain]: newOverrides
+                };
+            }
+
+            browser.storage.sync.set({ extensionData: updatedData });
+            return updatedData;
+        });
+    };
+
+    if (extensionData === null) return <LoadingPage />;
+
+    const currentGlobalSettings = extensionData.globalSettings;
+    const currentOverrideSettings = activeDomain ? extensionData.domainOverrides[activeDomain] : undefined;
 
     return (
         <div className="centerWrapper">
             <div className="container">
                 {page === "menu" && (
                     <MenuPage
-                        settings={settings}
+                        settings={currentGlobalSettings}
+                        extensionData={extensionData}
+                        setExtensionData={setExtensionData}
                         editSetting={handleSettingChange}
                         setPage={setPage}
                     />
                 )}
                 {page === "scroll" && (
                     <ScrollPage
-                        settings={settings}
+                        settings={currentGlobalSettings}
+                        overrideSettings={currentOverrideSettings}
+                        activeDomain={activeDomain || undefined}
                         editSetting={handleSettingChange}
+                        resetSetting={handleSettingReset}
                         setPage={setPage}
                     />
                 )}
                 {page === "hotkeys" && (
                     <HotkeyPage
-                        settings={settings}
+                        settings={currentGlobalSettings}
+                        overrideSettings={currentOverrideSettings}
+                        activeDomain={activeDomain || undefined}
                         editSetting={handleSettingChange}
+                        resetSetting={handleSettingReset}
                         setPage={setPage}
                     />
                 )}
                 {page === "overlay" && (
                     <OverlayPage
-                        settings={settings}
+                        settings={currentGlobalSettings}
+                        overrideSettings={currentOverrideSettings}
+                        activeDomain={activeDomain || undefined}
                         editSetting={handleSettingChange}
+                        resetSetting={handleSettingReset}
                         setPage={setPage}
                     />
                 )}
                 {page === "misc" && (
                     <MiscPage
-                        settings={settings}
+                        settings={currentGlobalSettings}
+                        overrideSettings={currentOverrideSettings}
+                        activeDomain={activeDomain || undefined}
                         editSetting={handleSettingChange}
+                        resetSetting={handleSettingReset}
                         setPage={setPage}
                     />
                 )}
                 {page === "domains" && (
                     <DomainPage
-                        settings={settings}
+                        settings={currentGlobalSettings}
+                        extensionData={extensionData}
+                        setExtensionData={setExtensionData}
                         editSetting={handleSettingChange}
                         setPage={setPage}
+                        setActiveDomain={setActiveDomain}
+                        activeDomain={activeDomain}
                     />
                 )}
                 {page === "updatePage" && (
-                    <UpdatePage settings={settings} setPage={setPage} />
+                    <UpdatePage settings={currentGlobalSettings} setPage={setPage} />
                 )}
             </div>
         </div>
