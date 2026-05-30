@@ -1,8 +1,6 @@
-import React from 'react';
-import Slider from '@mui/material/Slider/Slider';
-import Tooltip from '@mui/material/Tooltip/Tooltip';
-import RestartAltIcon from '@mui/icons-material/RestartAlt';
-import IconButton from '@mui/material/IconButton/IconButton';
+import React, { useRef, useEffect } from "react";
+import Slider from "@mui/material/Slider/Slider";
+import Tooltip from "@mui/material/Tooltip/Tooltip";
 
 interface SettingsSliderProps {
     min: number;
@@ -27,27 +25,45 @@ const SettingsSlider: React.FC<SettingsSliderProps> = ({
     tooltip,
     ariaLabel,
     onWheelStep,
-    isOverridden = false
+    isOverridden = false,
 }) => {
-    const handleWheel = (e: React.WheelEvent) => {
-        if (disabled) return;
-        e.preventDefault();
-        
-        const wheelStep = onWheelStep ?? step;
-        let newValue: number;
-        
-        if (e.deltaY < 0) {
-            newValue = Math.min(value + wheelStep, max);
-        } else {
-            newValue = Math.max(value - wheelStep, min);
-        }
-        
-        onChange(newValue);
-    };
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const container = containerRef.current;
+        if (!container) return;
+
+        const handleNativeWheel = (e: WheelEvent) => {
+            if (disabled) return;
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            const wheelStep = onWheelStep ?? step;
+            let newValue: number;
+
+            if (e.deltaY < 0) {
+                newValue = Math.min(value + wheelStep, max);
+            } else {
+                newValue = Math.max(value - wheelStep, min);
+            }
+
+            onChange(newValue);
+        };
+
+        container.addEventListener("wheel", handleNativeWheel, {
+            passive: false,
+        });
+
+        return () => {
+            container.removeEventListener("wheel", handleNativeWheel);
+        };
+    }, [disabled, value, min, max, step, onWheelStep, onChange]);
 
     return (
-        <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-            <div onWheel={handleWheel} style={{ flexGrow: 1 }}>
+        <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
+            {/* Bind the ref to the element wrapper */}
+            <div ref={containerRef} style={{ flexGrow: 1 }}>
                 <Tooltip title={tooltip} disableInteractive>
                     <span>
                         <Slider
@@ -62,8 +78,8 @@ const SettingsSlider: React.FC<SettingsSliderProps> = ({
                             color={isOverridden ? "warning" : "primary"}
                             sx={{
                                 ...(isOverridden && {
-                                    filter: 'drop-shadow(0 0 4px rgba(252, 185, 0, 0.5))',
-                                })
+                                    filter: "drop-shadow(0 0 4px rgba(252, 185, 0, 0.5))",
+                                }),
                             }}
                         />
                     </span>
