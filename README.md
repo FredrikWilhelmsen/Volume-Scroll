@@ -15,56 +15,67 @@
 
 A highly customizable browser extension for changing video volume by scrolling.
 
-* **Scroll to change the volume** of any video.
-    * Precise scroll feature for finer volume control at lower levels.
-    * Custom modifier key to toggle the extension on or off while held down.
-    * Optional rounding to the nearest increment.
-    * Display the current volume on screen.
-        * Can be displayed next to your mouse.
-        * Choose from four different pre-set positions, or create your own position.
-        * Customize the overlay's size, duration, color, and background opacity.
-* **Optional hotkey** for muting or unmuting a video.
-* **Optional hotkey** for pausing or playing a video.
-* **Optional hotkey** to swap the scroll step value.
-* **Optional fullscreen** only mode.
-* **Disable or enable** for specific websites.
-* **Set a default** volume level for a video, and optionally start them muted.
-* **Boost audio** up to 500%.
+- **Scroll to change the volume** of any video.
+    - Precise scroll feature for finer volume control at lower levels.
+    - Custom modifier key to toggle the extension on or off while held down.
+    - Optional rounding to the nearest increment.
+    - Display the current volume on screen.
+        - Can be displayed next to your mouse.
+        - Choose from four different pre-set positions, or create your own position.
+        - Customize the overlay's size, duration, color, and background opacity.
+- **Optional hotkey** for muting or unmuting a video.
+- **Optional hotkey** for pausing or playing a video.
+- **Optional hotkey** to swap the scroll step value.
+- **Optional fullscreen** only mode.
+- **Disable or enable** for specific websites.
+- **Set a default** volume level for a video, and optionally start them muted.
+- **Extremely customizable**, change every setting on a per site basis.
+- **Boost audio** up to 500%.
 
-*Take it to the next level, and scroll to change the settings in the extension!*
+_Take it to the next level, and scroll to change the settings in the extension!_
 
 ---
 
 ## Build Instructions
 
 ### Prerequisites
-* **Node.js:** `v21.2.0` or higher
-* **Yarn:** `v4.4.0` or higher
+
+- **Node.js:** `v21.2.0` or higher
+- **Yarn:** `v4.4.0` or higher
 
 ### Getting Started
+
 First, install the project dependencies:
+
 ```bash
 yarn install
 ```
 
 ### Building the extension
+
 To build both versions of the extension, run:
+
 ```bash
 yarn build
 ```
 
 Alternatively, you can target specific browsers:
-* **Firefox:** `yarn build:firefox`
-* **Chromium:** `yarn build:chrome`
+
+- **Firefox:** `yarn build:firefox`
+- **Chromium:** `yarn build:chrome`
 
 ### Development
+
 If you are actively developing and want the build to update automatically on save:
-* **Firefox:** `yarn dev`
-* **Chromium:** `yarn dev:chrome`
+
+- **Firefox:** `yarn dev`
+- **Chromium:** `yarn dev:chrome`
 
 ---
 
 ### Output
+
 The bundled files will be generated in:
-* `dist-firefox/`
-* `dist-chrome/`
+
+- `dist-firefox/`
+- `dist-chrome/`
