@@ -1,31 +1,48 @@
 import browser from "webextension-polyfill";
 import React, { useState, useEffect } from "react";
-import { Settings, Pages } from "../types";
+import { Settings, Pages, ExtensionData } from "../types";
 import BackButton from "../components/BackButton";
 import Tooltip from "@mui/material/Tooltip/Tooltip";
-import FormControlLabel from "@mui/material/FormControlLabel/FormControlLabel";
-import Switch from "@mui/material/Switch/Switch";
-import { TextField, IconButton, Typography } from "@mui/material";
+import { TextField, IconButton, Typography, ButtonGroup } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-import VolumeOffIcon from "@mui/icons-material/VolumeOff";
-import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import SettingsSwitch from "../components/SettingsSwitch";
+import MenuButton from "../components/MenuButton";
+import MouseIcon from "@mui/icons-material/Mouse";
+import KeyboardIcon from "@mui/icons-material/Keyboard";
+import LayersIcon from "@mui/icons-material/Layers";
+import TuneIcon from "@mui/icons-material/Tune";
 import "../style/domainPage.css";
 
 interface DomainPageInterface {
     settings: Settings;
-    editSetting: (key: keyof Settings, value: any) => void;
+    extensionData: ExtensionData;
+    setExtensionData: React.Dispatch<
+        React.SetStateAction<ExtensionData | null>
+    >;
+    editSetting: (
+        key: keyof Settings,
+        value: any,
+        overrideDomain?: string,
+    ) => void;
     setPage: React.Dispatch<React.SetStateAction<Pages>>;
+    setActiveDomain: React.Dispatch<React.SetStateAction<string | null>>;
+    activeDomain?: string | null;
 }
 
 const DomainPage: React.FC<DomainPageInterface> = ({
     settings,
+    extensionData,
+    setExtensionData,
     editSetting,
     setPage,
+    setActiveDomain,
+    activeDomain,
 }) => {
-    const [domainListInput, setdomainListInput] = useState("");
+    const [domainListInput, setdomainListInput] = useState(activeDomain || "");
 
     useEffect(() => {
+        if (activeDomain) return;
+
         const getActiveTabHostname = async () => {
             const tabs = await browser.tabs.query({
                 active: true,
@@ -39,7 +56,7 @@ const DomainPage: React.FC<DomainPageInterface> = ({
         };
 
         getActiveTabHostname();
-    }, []);
+    }, [activeDomain]);
 
     const handleEnableDefaultToggle = (value: boolean) => {
         editSetting("enableDefault", value);
@@ -49,76 +66,19 @@ const DomainPage: React.FC<DomainPageInterface> = ({
         setdomainListInput(e.target.value);
     };
 
-    const handleDomainListToggle = (
-        _e: Event | React.SyntheticEvent,
-        value: any,
-    ) => {
-        if (!domainListInput) return;
-
-        const updatedDomainList = { ...settings.domainList };
-        const lowerInput = domainListInput.toLowerCase();
-        updatedDomainList[lowerInput] = {
-            ...(updatedDomainList[lowerInput] || {}),
-            enabled: value,
-        };
-        editSetting("domainList", updatedDomainList);
-    };
-
-    const handleStartMutedDomainListToggle = (
-        _e: Event | React.SyntheticEvent,
-        value: any,
-    ) => {
-        if (!domainListInput) return;
-
-        const updatedDomainList = { ...settings.domainList };
-        const lowerInput = domainListInput.toLowerCase();
-        updatedDomainList[lowerInput] = {
-            ...(updatedDomainList[lowerInput] || {}),
-            muted: value,
-        };
-        editSetting("domainList", updatedDomainList);
-    };
-
-    const handleResetToggle = (key: "enabled" | "muted") => {
-        if (!domainListInput) return;
-
-        const updatedDomainList = { ...settings.domainList };
-        const lowerInput = domainListInput.toLowerCase();
-        const currentSetting = updatedDomainList[lowerInput];
-
-        if (!currentSetting) return;
-
-        const newSetting = { ...currentSetting };
-        delete newSetting[key];
-
-        if (
-            newSetting.enabled === undefined &&
-            newSetting.muted === undefined
-        ) {
-            delete updatedDomainList[lowerInput];
-        } else {
-            updatedDomainList[lowerInput] = newSetting;
-        }
-
-        editSetting("domainList", updatedDomainList);
-    };
-
-    const allDomains = Object.keys(settings.domainList || {}).filter(
+    const allDomains = Object.keys(extensionData.domainOverrides || {}).filter(
         (d) => d.trim() !== "",
     );
 
-    const lowerInput = domainListInput.toLowerCase();
-    const isScrollResetDisabled =
-        !domainListInput ||
-        settings.domainList?.[lowerInput]?.enabled === undefined;
-    const isMuteResetDisabled =
-        !domainListInput ||
-        settings.domainList?.[lowerInput]?.muted === undefined ||
-        !settings.useDefaultVolume;
+    const navigateToOverridePage = (targetPage: Pages) => {
+        if (!domainListInput) return;
+        setActiveDomain(domainListInput.toLowerCase());
+        setPage(targetPage);
+    };
 
     return (
         <div>
-            <BackButton setPage={setPage} title={"Domain"} />
+            <BackButton setPage={setPage} title={"Domain overrides"} />
 
             <hr></hr>
 
@@ -131,7 +91,7 @@ const DomainPage: React.FC<DomainPageInterface> = ({
                 />
                 <div id="domainListInputContainer">
                     <Tooltip
-                        title="Input a domain to toggle if it should be enabled or disabled"
+                        title="Input a domain to set specific volume scroll overrides"
                         placement="top"
                         disableInteractive
                     >
@@ -146,157 +106,49 @@ const DomainPage: React.FC<DomainPageInterface> = ({
                             onChange={handleDomainListChange}
                         />
                     </Tooltip>
-                    <div
-                        className="domainListActions"
-                        style={{
-                            flexDirection: "column",
-                            alignItems: "stretch",
-                            gap: "8px",
-                        }}
-                    >
-                        <div
-                            style={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                            }}
+
+                    {domainListInput && (
+                        <ButtonGroup
+                            id="buttons"
+                            orientation="vertical"
+                            aria-label="Vertical button group"
+                            variant="text"
+                            style={{ width: "100%", marginTop: "12px" }}
                         >
-                            <Tooltip
-                                title="Disable or enable volume scroll for this site"
-                                placement="top"
-                                disableInteractive
-                            >
-                                <FormControlLabel
-                                    onChange={handleDomainListToggle}
-                                    control={
-                                        <Switch
-                                            checked={
-                                                settings.domainList?.[
-                                                    domainListInput.toLowerCase()
-                                                ]?.enabled ??
-                                                settings.enableDefault
-                                            }
-                                            disabled={!domainListInput}
-                                        />
-                                    }
-                                    label={
-                                        settings.domainList?.[
-                                            domainListInput.toLowerCase()
-                                        ]?.enabled === undefined
-                                            ? "Scroll: Default"
-                                            : settings.domainList[
-                                                    domainListInput.toLowerCase()
-                                                ]?.enabled
-                                              ? "Scroll: Enabled"
-                                              : "Scroll: Disabled"
-                                    }
-                                />
-                            </Tooltip>
-                            <Tooltip
-                                title="Reset scroll override"
-                                placement="top"
-                                disableInteractive
-                            >
-                                <span style={{ display: "inline-flex" }}>
-                                    <IconButton
-                                        onClick={() =>
-                                            handleResetToggle("enabled")
-                                        }
-                                        size="small"
-                                        sx={{
-                                            cursor: isScrollResetDisabled
-                                                ? "default"
-                                                : "pointer",
-                                        }}
-                                        disabled={isScrollResetDisabled}
-                                    >
-                                        <DeleteIcon
-                                            fontSize="small"
-                                            htmlColor={
-                                                isScrollResetDisabled
-                                                    ? "gray"
-                                                    : "white"
-                                            }
-                                        />
-                                    </IconButton>
-                                </span>
-                            </Tooltip>
-                        </div>
-                        <div
-                            style={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                            }}
-                        >
-                            <Tooltip
-                                title="Mute by default for this site"
-                                placement="top"
-                                disableInteractive
-                            >
-                                <FormControlLabel
-                                    onChange={handleStartMutedDomainListToggle}
-                                    control={
-                                        <Switch
-                                            checked={
-                                                settings.domainList?.[
-                                                    domainListInput.toLowerCase()
-                                                ]?.muted ?? settings.startMuted
-                                            }
-                                            disabled={
-                                                !domainListInput ||
-                                                !settings.useDefaultVolume
-                                            }
-                                        />
-                                    }
-                                    label={
-                                        settings.domainList?.[
-                                            domainListInput.toLowerCase()
-                                        ]?.muted === undefined
-                                            ? "Mute: Default"
-                                            : settings.domainList[
-                                                    domainListInput.toLowerCase()
-                                                ]?.muted
-                                              ? "Mute: Enabled"
-                                              : "Mute: Disabled"
-                                    }
-                                />
-                            </Tooltip>
-                            <Tooltip
-                                title="Reset mute override"
-                                placement="top"
-                                disableInteractive
-                            >
-                                <span style={{ display: "inline-flex" }}>
-                                    <IconButton
-                                        onClick={() =>
-                                            handleResetToggle("muted")
-                                        }
-                                        size="small"
-                                        sx={{
-                                            cursor: isMuteResetDisabled
-                                                ? "default"
-                                                : "pointer",
-                                        }}
-                                        disabled={isMuteResetDisabled}
-                                    >
-                                        <DeleteIcon
-                                            fontSize="small"
-                                            htmlColor={
-                                                isMuteResetDisabled
-                                                    ? "gray"
-                                                    : "white"
-                                            }
-                                        />
-                                    </IconButton>
-                                </span>
-                            </Tooltip>
-                        </div>
-                    </div>
+                            <MenuButton
+                                title="Scroll"
+                                subtitle="Step size & behavior"
+                                icon={<MouseIcon />}
+                                onClick={() => navigateToOverridePage("scroll")}
+                            />
+                            <MenuButton
+                                title="Hotkey"
+                                subtitle="Modifier & toggles"
+                                icon={<KeyboardIcon />}
+                                onClick={() =>
+                                    navigateToOverridePage("hotkeys")
+                                }
+                            />
+                            <MenuButton
+                                title="Overlay"
+                                subtitle="Position & styling"
+                                icon={<LayersIcon />}
+                                onClick={() =>
+                                    navigateToOverridePage("overlay")
+                                }
+                            />
+                            <MenuButton
+                                title="Misc"
+                                subtitle="Advanced settings"
+                                icon={<TuneIcon />}
+                                onClick={() => navigateToOverridePage("misc")}
+                            />
+                        </ButtonGroup>
+                    )}
                 </div>
 
                 <Tooltip
-                    title="Click a domain to change state. Trashcan deletes it entirely"
+                    title="Click a domain to edit its overrides. Trashcan deletes it entirely"
                     placement="top"
                     disableInteractive
                 >
@@ -312,11 +164,10 @@ const DomainPage: React.FC<DomainPageInterface> = ({
                     ) : (
                         allDomains.map((domain) => {
                             const domainSetting =
-                                settings.domainList?.[domain] || {};
-                            const isEnabled =
-                                domainSetting.enabled ?? settings.enableDefault;
-                            const isMuted =
-                                domainSetting.muted ?? settings.startMuted;
+                                extensionData.domainOverrides?.[domain] || {};
+
+                            const overrideCount =
+                                Object.keys(domainSetting).length;
 
                             return (
                                 <Tooltip
@@ -343,52 +194,36 @@ const DomainPage: React.FC<DomainPageInterface> = ({
                                                 variant="caption"
                                                 className="domainState"
                                                 style={{
-                                                    color:
-                                                        domainSetting.enabled ===
-                                                        undefined
-                                                            ? settings.enableDefault
-                                                                ? "#4caf50"
-                                                                : "#f44336"
-                                                            : domainSetting.enabled
-                                                              ? "#4caf50"
-                                                              : "#f44336",
+                                                    color: "rgba(255, 255, 255, 0.6)",
                                                     display: "flex",
                                                     alignItems: "center",
                                                     gap: "4px",
                                                 }}
                                             >
-                                                {domainSetting.enabled ===
-                                                undefined
-                                                    ? settings.enableDefault
-                                                        ? "Default (Enabled)"
-                                                        : "Default (Disabled)"
-                                                    : domainSetting.enabled
-                                                      ? "Enabled"
-                                                      : "Disabled"}
-                                                {isMuted ? (
-                                                    <VolumeOffIcon
-                                                        sx={{ fontSize: 16 }}
-                                                    />
-                                                ) : (
-                                                    <VolumeUpIcon
-                                                        sx={{ fontSize: 16 }}
-                                                    />
-                                                )}
+                                                {overrideCount === 1
+                                                    ? "1 override"
+                                                    : `${overrideCount} overrides`}
                                             </Typography>
                                         </div>
                                         <IconButton
                                             onClick={(e) => {
                                                 e.stopPropagation();
+                                                const updatedData = {
+                                                    ...extensionData,
+                                                };
                                                 const updatedDomainList = {
-                                                    ...settings.domainList,
+                                                    ...updatedData.domainOverrides,
                                                 };
                                                 delete updatedDomainList[
                                                     domain
                                                 ];
-                                                editSetting(
-                                                    "domainList",
-                                                    updatedDomainList,
-                                                );
+                                                updatedData.domainOverrides =
+                                                    updatedDomainList;
+
+                                                setExtensionData(updatedData);
+                                                browser.storage.sync.set({
+                                                    extensionData: updatedData,
+                                                });
                                             }}
                                             size="small"
                                             sx={{

@@ -1,6 +1,6 @@
 import browser from "webextension-polyfill";
 import React, { useEffect, useState } from "react";
-import { Settings, Pages } from "../types";
+import { Settings, Pages, ExtensionData } from "../types";
 import "../style/menuPage.css";
 import Typography from "@mui/material/Typography/Typography";
 import ButtonGroup from "@mui/material/ButtonGroup/ButtonGroup";
@@ -15,6 +15,10 @@ import TuneIcon from "@mui/icons-material/Tune";
 
 interface MenuPageInterface {
     settings: Settings;
+    extensionData: ExtensionData;
+    setExtensionData: React.Dispatch<
+        React.SetStateAction<ExtensionData | null>
+    >;
     editSetting: (key: keyof Settings, value: any) => void;
     setPage: React.Dispatch<React.SetStateAction<Pages>>;
 }
@@ -31,6 +35,8 @@ const reviewLink = isFirefox
 
 const MenuPage: React.FC<MenuPageInterface> = ({
     settings,
+    extensionData,
+    setExtensionData,
     editSetting,
     setPage,
 }) => {
@@ -67,9 +73,10 @@ const MenuPage: React.FC<MenuPageInterface> = ({
         };
     }, [settings.doDebugLog, editSetting]);
 
-    const domainSetting = settings.domainList?.[hostname.toLowerCase()];
-    const hasOverride = domainSetting?.enabled !== undefined;
-    const isEnabled = domainSetting?.enabled ?? settings.enableDefault;
+    const domainSetting =
+        extensionData.domainOverrides?.[hostname.toLowerCase()];
+    const hasOverride = domainSetting !== undefined;
+    const isEnabled = domainSetting?.enableDefault ?? settings.enableDefault;
 
     const labelText = hasOverride
         ? isEnabled
@@ -81,10 +88,15 @@ const MenuPage: React.FC<MenuPageInterface> = ({
 
     const handleEnableToggle = (value: boolean) => {
         const lowerHost = hostname.toLowerCase();
-        const existing = settings.domainList[lowerHost] || {};
-        editSetting("domainList", {
-            ...settings.domainList,
-            [lowerHost]: { ...existing, enabled: value },
+        const existing = extensionData.domainOverrides[lowerHost] || {};
+
+        setExtensionData((prev) => {
+            if (!prev) return prev;
+            const newOverrides = { ...prev.domainOverrides };
+            newOverrides[lowerHost] = { ...existing, enableDefault: value };
+            const newData = { ...prev, domainOverrides: newOverrides };
+            browser.storage.sync.set({ extensionData: newData });
+            return newData;
         });
     };
 
@@ -194,16 +206,24 @@ const MenuPage: React.FC<MenuPageInterface> = ({
                 </div>
             </Tooltip>
             <Tooltip
-                title={`Volume Scroll version ${browser.runtime.getManifest().version}${settings.lastVersionRead !== browser.runtime.getManifest().version ? " - Click to read update notes!" : ""}`}
+                title={`Volume Scroll version ${browser.runtime.getManifest().version}${extensionData.lastVersionRead !== browser.runtime.getManifest().version ? " - Click to read update notes!" : ""}`}
                 placement="top-start"
                 disableInteractive
             >
                 <div
                     onClick={() => {
-                        editSetting(
-                            "lastVersionRead",
-                            browser.runtime.getManifest().version,
-                        );
+                        setExtensionData((prev) => {
+                            if (!prev) return prev;
+                            const newData = {
+                                ...prev,
+                                lastVersionRead:
+                                    browser.runtime.getManifest().version,
+                            };
+                            browser.storage.sync.set({
+                                extensionData: newData,
+                            });
+                            return newData;
+                        });
                         setPage("updatePage");
                     }}
                     style={{
@@ -221,7 +241,7 @@ const MenuPage: React.FC<MenuPageInterface> = ({
                         id="versionNumber"
                         variant="body2"
                     >{`v${browser.runtime.getManifest().version}`}</Typography>
-                    {settings.lastVersionRead !==
+                    {extensionData.lastVersionRead !==
                     browser.runtime.getManifest().version ? (
                         <div id="changelogIcon"></div>
                     ) : null}

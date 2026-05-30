@@ -1,6 +1,8 @@
 import React from 'react';
 import Slider from '@mui/material/Slider/Slider';
 import Tooltip from '@mui/material/Tooltip/Tooltip';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import IconButton from '@mui/material/IconButton/IconButton';
 
 interface SettingsSliderProps {
     min: number;
@@ -12,6 +14,7 @@ interface SettingsSliderProps {
     tooltip: string;
     ariaLabel?: string;
     onWheelStep?: number;
+    isOverridden?: boolean;
 }
 
 const SettingsSlider: React.FC<SettingsSliderProps> = ({
@@ -23,7 +26,8 @@ const SettingsSlider: React.FC<SettingsSliderProps> = ({
     onChange,
     tooltip,
     ariaLabel,
-    onWheelStep
+    onWheelStep,
+    isOverridden = false
 }) => {
     const handleWheel = (e: React.WheelEvent) => {
         if (disabled) return;
@@ -42,21 +46,29 @@ const SettingsSlider: React.FC<SettingsSliderProps> = ({
     };
 
     return (
-        <div onWheel={handleWheel}>
-            <Tooltip title={tooltip} disableInteractive>
-                <span>
-                    <Slider
-                        min={min}
-                        max={max}
-                        step={step}
-                        aria-label={ariaLabel}
-                        value={value}
-                        valueLabelDisplay="off"
-                        disabled={disabled}
-                        onChange={(_, val) => onChange(val as number)}
-                    />
-                </span>
-            </Tooltip>
+        <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+            <div onWheel={handleWheel} style={{ flexGrow: 1 }}>
+                <Tooltip title={tooltip} disableInteractive>
+                    <span>
+                        <Slider
+                            min={min}
+                            max={max}
+                            step={step}
+                            aria-label={ariaLabel}
+                            value={value}
+                            valueLabelDisplay="off"
+                            disabled={disabled}
+                            onChange={(_, val) => onChange(val as number)}
+                            color={isOverridden ? "warning" : "primary"}
+                            sx={{
+                                ...(isOverridden && {
+                                    filter: 'drop-shadow(0 0 4px rgba(252, 185, 0, 0.5))',
+                                })
+                            }}
+                        />
+                    </span>
+                </Tooltip>
+            </div>
         </div>
     );
 };

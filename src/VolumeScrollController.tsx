@@ -1,7 +1,7 @@
 import browser from "webextension-polyfill";
 import { isHotkeyPressed, getMouseKey, debug, setUtilSettings, getLogList, addLog, findScrollableParent, setManualMouse4Pressed, setManualMouse5Pressed } from "./utils";
 
-import { Settings, defaultSettings } from "./types";
+import { Settings, defaultSettings, ExtensionData } from "./types";
 
 import { DefaultHandler } from "./handlers/Default";
 import { YoutubeHandler } from "./handlers/Youtube";
@@ -69,16 +69,36 @@ const isInteractiveElement = (el: HTMLElement | null): boolean => {
     return false;
 };
 
+const getActiveHostname = (): string => {
+    if (window.self !== window.top) {
+        try {
+            if (window.top?.location.hostname) {
+                return window.top.location.hostname.toLowerCase();
+            }
+        } catch (e) {
+            if (document.referrer) {
+                try {
+                    return new URL(document.referrer).hostname.toLowerCase();
+                } catch (refErr) {
+                    // Invalid referrer URL
+                }
+            }
+        }
+    }
+    return window.location.hostname.toLowerCase();
+};
+
 export const init = () => {
     if (isInitialized) return;
     isInitialized = true;
-    browser.storage.sync.get("settings")
+    browser.storage.sync.get("extensionData")
         .then((result) => {
-            settings = result.settings ? { ...defaultSettings, ...result.settings } : defaultSettings;
-            settings.startMuted = isStartMutedOnSite();
-            const { domainList, ...settingsToLog } = settings;
+            const data: ExtensionData = (result.extensionData as ExtensionData) || { globalSettings: defaultSettings, domainOverrides: {}, lastVersionRead: "0.0.0" };
+            const overrides = data.domainOverrides[getActiveHostname()];
+            settings = { ...data.globalSettings, ...(overrides || {}) };
+            
             setUtilSettings(settings);
-            debug("Settings loaded: ", settingsToLog);
+            debug("Settings loaded: ", settings);
             handler.updateSettings(settings);
 
             window.addEventListener("message", (event) => {
@@ -261,14 +281,15 @@ export const init = () => {
 
 browser.storage.onChanged.addListener((changes, areaName) => {
     if (areaName !== "sync") return;
-    if (!changes.settings) return;
+    if (!changes.extensionData) return;
 
-    settings = changes.settings.newValue as Settings;
-    settings.startMuted = isStartMutedOnSite();
+    const data: ExtensionData = changes.extensionData.newValue as ExtensionData;
+    const overrides = data.domainOverrides[getActiveHostname()];
+    settings = { ...data.globalSettings, ...(overrides || {}) };
+    
     setUtilSettings(settings);
     handler.updateSettings(settings);
-    const { domainList, ...settingsToLog } = settings;
-    debug("Settings reapplied: ", settingsToLog);
+    debug("Settings reapplied: ", settings);
     if (window.self === window.top) {
         broadcastStatusToIframes();
     }
@@ -280,9 +301,8 @@ browser.runtime.onMessage.addListener((message: any) => {
         if (window.top !== window.self) return;
 
         debug("Received GET_DEBUG_LOGS message");
-        const { domainList, ...settingsToLog } = settings;
         const debugData = {
-            settings: settingsToLog,
+            settings: settings,
             logs: getLogList()
         };
 
@@ -299,54 +319,9 @@ const isDisabledOnSite = function (): boolean {
     if (window.self !== window.top && parentDisabledState) {
         return true;
     }
-    // Returns default value if domain is not in the map, otherwise returns the domain-specific value
-    // If in an iframe, we also want to respect the parent domain's setting if the iframe domain is not explicitly set
-    let enabled = settings.domainList?.[window.location.hostname.toLowerCase()]?.enabled;
-
-    if (enabled === undefined && window.self !== window.top) {
-        try {
-            // Try to get the top frame's hostname
-            if (window.top?.location.hostname) {
-                enabled = settings.domainList?.[window.top.location.hostname.toLowerCase()]?.enabled;
-            }
-        } catch (e) {
-            // Cross-origin access denied. Fallback to referrer.
-            if (document.referrer) {
-                try {
-                    const referrerHostname = new URL(document.referrer).hostname;
-                    enabled = settings.domainList?.[referrerHostname.toLowerCase()]?.enabled;
-                } catch (refErr) {
-                    // Invalid referrer URL, ignore
-                }
-            }
-        }
-    }
-
+    
     // Inverted to return whether Volume Scroll is disabled, not enabled
-    return !(enabled ?? settings.enableDefault);
-}
-
-const isStartMutedOnSite = function (): boolean {
-    let muted = settings.domainList?.[window.location.hostname.toLowerCase()]?.muted;
-
-    if (muted === undefined && window.self !== window.top) {
-        try {
-            if (window.top?.location.hostname) {
-                muted = settings.domainList?.[window.top.location.hostname.toLowerCase()]?.muted;
-            }
-        } catch (e) {
-            if (document.referrer) {
-                try {
-                    const referrerHostname = new URL(document.referrer).hostname;
-                    muted = settings.domainList?.[referrerHostname.toLowerCase()]?.muted;
-                } catch (refErr) {
-                    // Invalid referrer URL, ignore
-                }
-            }
-        }
-    }
-
-    return muted ?? settings.startMuted;
+    return !settings.enableDefault;
 }
 
 export function broadcastStatusToIframes(): void {

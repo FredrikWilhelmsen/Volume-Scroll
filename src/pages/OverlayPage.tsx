@@ -1,37 +1,68 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Settings, Pages } from "../types";
 import BackButton from "../components/BackButton";
 import Tooltip from "@mui/material/Tooltip/Tooltip";
 import Typography from "@mui/material/Typography/Typography";
+import IconButton from "@mui/material/IconButton/IconButton";
+import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import "../style/overlayPage.css";
 import Paper from "@mui/material/Paper";
 import { TwitterPicker } from "@hello-pangea/color-picker";
 import SettingsSlider from "../components/SettingsSlider";
 import SettingsSwitch from "../components/SettingsSwitch";
 import SettingsValueDisplay from "../components/SettingsValueDisplay";
+import ResetButton from "../components/ResetButton";
 
 interface OverlayPageInterface {
     settings: Settings;
-    editSetting: (key: keyof Settings, value: any) => void;
+    overrideSettings?: Partial<Settings>;
+    activeDomain?: string;
+    editSetting: (key: keyof Settings, value: any, domain?: string) => void;
+    resetSetting?: (key: keyof Settings, domain: string) => void;
     setPage: React.Dispatch<React.SetStateAction<Pages>>;
 }
 
 const OverlayPage: React.FC<OverlayPageInterface> = ({
     settings,
+    overrideSettings,
+    activeDomain,
     editSetting,
+    resetSetting,
     setPage,
 }) => {
-    const [xPos, setXPos] = useState(settings.overlayXPos);
-    const [yPos, setYPos] = useState(settings.overlayYPos);
-    const [fontSize, setFontSize] = useState(settings.fontSize);
+    const getValue = <K extends keyof Settings>(key: K): Settings[K] => {
+        return overrideSettings?.[key] ?? settings[key];
+    };
+
+    const isOverridden = (key: keyof Settings): boolean => {
+        return overrideSettings?.[key] !== undefined;
+    };
+
+    const handleReset = (key: keyof Settings) => {
+        if (resetSetting && activeDomain) {
+            resetSetting(key, activeDomain);
+        }
+    };
+
+    const [xPos, setXPos] = useState(getValue("overlayXPos"));
+    const [yPos, setYPos] = useState(getValue("overlayYPos"));
+    const [fontSize, setFontSize] = useState(getValue("fontSize"));
     const [overlayDuration, setOverlayDuration] = useState(
-        settings.overlayDuration,
+        getValue("overlayDuration"),
     );
     const [overlayBackgroundOpacity, setOverlayBackgroundOpacity] = useState(
-        settings.overlayBackgroundOpacity,
+        getValue("overlayBackgroundOpacity"),
     );
 
     const [isColorpickerVisible, setIsColorpickerVisible] = useState(false);
+
+    useEffect(() => {
+        setXPos(getValue("overlayXPos"));
+        setYPos(getValue("overlayYPos"));
+        setFontSize(getValue("fontSize"));
+        setOverlayDuration(getValue("overlayDuration"));
+        setOverlayBackgroundOpacity(getValue("overlayBackgroundOpacity"));
+    }, [settings, overrideSettings]);
 
     const colors: string[] = [
         "#FF6900",
@@ -48,47 +79,46 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
     ];
 
     const handleUseOverlayToggle = (value: boolean) => {
-        editSetting("useOverlay", value);
+        editSetting("useOverlay", value, activeDomain);
     };
 
     const handleOverlaySizeChange = (value: number) => {
-        editSetting("fontSize", value);
+        editSetting("fontSize", value, activeDomain);
         setFontSize(value);
     };
 
     const handleOverlayDurationChange = (value: number) => {
-        editSetting("overlayDuration", value);
+        editSetting("overlayDuration", value, activeDomain);
         setOverlayDuration(value);
     };
 
     const handleOverlayBackgroundToggle = (value: boolean) => {
-        editSetting("useOverlayBackground", value);
+        editSetting("useOverlayBackground", value, activeDomain);
     };
 
     const handleOverlayBackgroundOpacityChange = (value: number) => {
-        editSetting("overlayBackgroundOpacity", value);
+        editSetting("overlayBackgroundOpacity", value, activeDomain);
         setOverlayBackgroundOpacity(value);
     };
 
     const handleOverlayColorChange = (color: any) => {
-        if (!settings.useMouseWheelVolume || !settings.useOverlay) return;
-        editSetting("overlayColor", color.hex);
-        console.log(color.hex);
+        if (!getValue("useMouseWheelVolume") || !getValue("useOverlay")) return;
+        editSetting("overlayColor", color.hex, activeDomain);
     };
 
     const handleColorPickerClick = () => {
-        if (!settings.useMouseWheelVolume || !settings.useOverlay) return;
+        if (!getValue("useMouseWheelVolume") || !getValue("useOverlay")) return;
         setIsColorpickerVisible(!isColorpickerVisible);
     };
 
     const handlePositionChange = (e: any) => {
-        editSetting("overlayPosition", e.currentTarget.value);
+        editSetting("overlayPosition", e.currentTarget.value, activeDomain);
 
         const save = (x: number, y: number) => {
             setXPos(x);
-            editSetting("overlayXPos", x);
+            editSetting("overlayXPos", x, activeDomain);
             setYPos(y);
-            editSetting("overlayYPos", y);
+            editSetting("overlayYPos", y, activeDomain);
         };
 
         if (e.currentTarget.value === "tl") {
@@ -103,28 +133,66 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
     };
 
     const handleXChange = (value: number) => {
-        editSetting("overlayXPos", value);
+        editSetting("overlayXPos", value, activeDomain);
         setXPos(value);
     };
 
     const handleYChange = (value: number) => {
-        editSetting("overlayYPos", value);
+        editSetting("overlayYPos", value, activeDomain);
         setYPos(value);
     };
 
+    const useMouseWheelVolume = getValue("useMouseWheelVolume");
+    const useOverlay = getValue("useOverlay");
+    const overlayDurationValue = getValue("overlayDuration");
+    const useOverlayBackground = getValue("useOverlayBackground");
+    const overlayColor = getValue("overlayColor");
+    const overlayPosition = getValue("overlayPosition");
+
+    const hasCategoryOverride =
+        !!activeDomain &&
+        [
+            "useOverlay",
+            "fontSize",
+            "overlayDuration",
+            "useOverlayBackground",
+            "overlayBackgroundOpacity",
+            "overlayColor",
+            "overlayPosition",
+            "overlayXPos",
+            "overlayYPos",
+        ].some((key) => isOverridden(key as keyof Settings));
+
     return (
         <div>
-            <BackButton setPage={setPage} title={"Overlay"} />
+            <BackButton
+                setPage={setPage}
+                title={activeDomain ? "Overlay (Override)" : "Overlay"}
+                targetPage={activeDomain ? "domains" : "menu"}
+                isOverride={hasCategoryOverride}
+            />
 
             <hr></hr>
 
             <div className="settingsContainer">
-                <div id="useOverlayContainer">
+                <div
+                    id="useOverlayContainer"
+                    style={{ display: "flex", alignItems: "center" }}
+                >
                     <SettingsSwitch
                         label="Overlay"
-                        checked={settings.useOverlay}
+                        checked={useOverlay}
                         onChange={handleUseOverlayToggle}
                         tooltip="Enable or disable the overlay"
+                        isOverridden={isOverridden("useOverlay")}
+                    />
+                    <ResetButton
+                        isOverridden={isOverridden("useOverlay")}
+                        onReset={
+                            activeDomain
+                                ? () => handleReset("useOverlay")
+                                : undefined
+                        }
                     />
                 </div>
                 <div id="overlayFontSizeContainer">
@@ -133,26 +201,41 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                         className="sliderDisplayContainer"
                     >
                         <Typography variant="body1">Size</Typography>
-                        <SettingsValueDisplay
-                            id="fontSizeDisplay"
-                            className="sliderDisplay"
-                            value={settings.fontSize}
-                            tooltip="Current font size"
+                        <div
+                            style={{
+                                marginRight: activeDomain ? "42px" : "0px",
+                            }}
+                        >
+                            <SettingsValueDisplay
+                                id="fontSizeDisplay"
+                                className="sliderDisplay"
+                                value={fontSize}
+                                tooltip="Current font size"
+                                isOverridden={isOverridden("fontSize")}
+                            />
+                        </div>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                        <SettingsSlider
+                            min={10}
+                            max={90}
+                            step={5}
+                            ariaLabel="Overlay Size"
+                            value={fontSize}
+                            disabled={!useMouseWheelVolume || !useOverlay}
+                            onChange={handleOverlaySizeChange}
+                            tooltip="Set the text size of the overlay"
+                            isOverridden={isOverridden("fontSize")}
+                        />
+                        <ResetButton
+                            isOverridden={isOverridden("fontSize")}
+                            onReset={
+                                activeDomain
+                                    ? () => handleReset("fontSize")
+                                    : undefined
+                            }
                         />
                     </div>
-                    <SettingsSlider
-                        min={10}
-                        max={90}
-                        step={5}
-                        ariaLabel="Overlay Size"
-                        value={fontSize}
-                        disabled={
-                            !settings.useMouseWheelVolume ||
-                            !settings.useOverlay
-                        }
-                        onChange={handleOverlaySizeChange}
-                        tooltip="Set the text size of the overlay"
-                    />
                 </div>
                 <div id="overlayDurationContainer">
                     <div
@@ -160,116 +243,215 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                         className="sliderDisplayContainer"
                     >
                         <Typography variant="body1">Duration</Typography>
-                        <SettingsValueDisplay
-                            id="overlayDurationValueDisplay"
-                            className="sliderDisplay"
-                            value={
-                                settings.overlayDuration === 0
-                                    ? "∞"
-                                    : (settings.overlayDuration / 1000).toFixed(
-                                          1,
-                                      )
-                            }
-                            tooltip="Current duration in seconds"
-                            sx={
-                                settings.overlayDuration === 0
-                                    ? { fontSize: "1.3rem", lineHeight: 1 }
-                                    : {}
+                        <div
+                            style={{
+                                marginRight: activeDomain ? "42px" : "0px",
+                            }}
+                        >
+                            <SettingsValueDisplay
+                                id="overlayDurationValueDisplay"
+                                className="sliderDisplay"
+                                value={
+                                    overlayDurationValue === 0
+                                        ? "∞"
+                                        : (overlayDurationValue / 1000).toFixed(
+                                              1,
+                                          )
+                                }
+                                tooltip="Current duration in seconds"
+                                sx={
+                                    overlayDurationValue === 0
+                                        ? {
+                                              fontSize: "1.3rem",
+                                              lineHeight: 1,
+                                          }
+                                        : undefined
+                                }
+                                isOverridden={isOverridden("overlayDuration")}
+                            />
+                        </div>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                        <SettingsSlider
+                            min={0}
+                            max={10000}
+                            step={500}
+                            ariaLabel="Overlay Duration"
+                            value={overlayDuration}
+                            disabled={!useMouseWheelVolume || !useOverlay}
+                            onChange={handleOverlayDurationChange}
+                            tooltip="Set how long the overlay is visible in seconds. Set to 0 for infinite."
+                            isOverridden={isOverridden("overlayDuration")}
+                        />
+                        <ResetButton
+                            isOverridden={isOverridden("overlayDuration")}
+                            onReset={
+                                activeDomain
+                                    ? () => handleReset("overlayDuration")
+                                    : undefined
                             }
                         />
                     </div>
-                    <SettingsSlider
-                        min={0}
-                        max={10000}
-                        step={500}
-                        ariaLabel="Overlay Duration"
-                        value={overlayDuration}
-                        disabled={
-                            !settings.useMouseWheelVolume ||
-                            !settings.useOverlay
-                        }
-                        onChange={handleOverlayDurationChange}
-                        tooltip="Set how long the overlay is visible in seconds. Set to 0 for infinite."
-                    />
                 </div>
                 <div id="overlayBackgroundContainer">
-                    <div id="overlayBackgroundToggleContainer">
-                        <SettingsSwitch
-                            label="Background"
-                            checked={settings.useOverlayBackground}
-                            onChange={handleOverlayBackgroundToggle}
-                            tooltip="Enable or disable overlay background"
-                        />
-                        <SettingsValueDisplay
-                            id="overlayBackgroundDisplay"
-                            value={`${overlayBackgroundOpacity}%`}
-                            tooltip="Current background opacity"
+                    <div
+                        id="overlayBackgroundToggleContainer"
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                        }}
+                    >
+                        <div
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                flexGrow: 1,
+                                justifyContent: "space-between",
+                            }}
+                        >
+                            <SettingsSwitch
+                                label="Background"
+                                checked={useOverlayBackground}
+                                onChange={handleOverlayBackgroundToggle}
+                                tooltip="Enable or disable overlay background"
+                                isOverridden={isOverridden(
+                                    "useOverlayBackground",
+                                )}
+                            />
+                            <SettingsValueDisplay
+                                id="overlayBackgroundDisplay"
+                                value={`${overlayBackgroundOpacity}%`}
+                                tooltip="Current background opacity"
+                                isOverridden={isOverridden(
+                                    "overlayBackgroundOpacity",
+                                )}
+                            />
+                        </div>
+                        <ResetButton
+                            isOverridden={isOverridden("useOverlayBackground")}
+                            onReset={
+                                activeDomain
+                                    ? () => handleReset("useOverlayBackground")
+                                    : undefined
+                            }
                         />
                     </div>
-                    <SettingsSlider
-                        min={5}
-                        max={100}
-                        step={5}
-                        ariaLabel="Overlay Background Opacity"
-                        value={overlayBackgroundOpacity}
-                        disabled={
-                            !settings.useMouseWheelVolume ||
-                            !settings.useOverlay ||
-                            !settings.useOverlayBackground
-                        }
-                        onChange={handleOverlayBackgroundOpacityChange}
-                        tooltip="Set how transparent the overlay is"
-                    />
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                        <SettingsSlider
+                            min={5}
+                            max={100}
+                            step={5}
+                            ariaLabel="Overlay Background Opacity"
+                            value={overlayBackgroundOpacity}
+                            disabled={
+                                !useMouseWheelVolume ||
+                                !useOverlay ||
+                                !useOverlayBackground
+                            }
+                            onChange={handleOverlayBackgroundOpacityChange}
+                            tooltip="Set how transparent the overlay is"
+                            isOverridden={isOverridden(
+                                "overlayBackgroundOpacity",
+                            )}
+                        />
+                        <ResetButton
+                            isOverridden={isOverridden(
+                                "overlayBackgroundOpacity",
+                            )}
+                            onReset={
+                                activeDomain
+                                    ? () =>
+                                          handleReset(
+                                              "overlayBackgroundOpacity",
+                                          )
+                                    : undefined
+                            }
+                        />
+                    </div>
                 </div>
                 <div id="overlayColorPickerContainer">
                     <div
                         id="colorDisplay"
                         style={{
                             opacity:
-                                !settings.useMouseWheelVolume ||
-                                !settings.useOverlay
-                                    ? 0.5
-                                    : 1,
+                                !useMouseWheelVolume || !useOverlay ? 0.5 : 1,
+                            display: "flex",
+                            alignItems: "center",
                         }}
                     >
                         <Paper
                             elevation={2}
                             sx={{
-                                bgcolor: settings.overlayColor,
+                                bgcolor: overlayColor,
                                 width: 40,
                                 height: 20,
                                 mr: 1,
                                 cursor:
-                                    !settings.useMouseWheelVolume ||
-                                    !settings.useOverlay
+                                    !useMouseWheelVolume || !useOverlay
                                         ? "default"
                                         : "pointer",
+                                ...(isOverridden("overlayColor") && {
+                                    outline: "2px solid #FCB900",
+                                    outlineOffset: "2px",
+                                }),
                             }}
                             onClick={handleColorPickerClick}
                         />
-                        <Typography variant="body1">Color</Typography>
+                        <Typography
+                            variant="body1"
+                            sx={{
+                                flexGrow: 1,
+                                color: isOverridden("overlayColor")
+                                    ? "#FCB900"
+                                    : "inherit",
+                                textShadow: isOverridden("overlayColor")
+                                    ? "0 0 8px rgba(252, 185, 0, 0.4)"
+                                    : "none",
+                            }}
+                        >
+                            Color
+                        </Typography>
+                        <ResetButton
+                            isOverridden={isOverridden("overlayColor")}
+                            onReset={
+                                activeDomain
+                                    ? () => handleReset("overlayColor")
+                                    : undefined
+                            }
+                        />
                     </div>
                     {isColorpickerVisible &&
-                        !(
-                            !settings.useMouseWheelVolume ||
-                            !settings.useOverlay
-                        ) && (
+                        !(!useMouseWheelVolume || !useOverlay) && (
                             <TwitterPicker
                                 colors={colors}
-                                color={settings.overlayColor}
+                                color={overlayColor}
                                 onChange={handleOverlayColorChange}
                                 width="220px"
                             />
                         )}
                 </div>
-                <div id="overlayPositionDropdownContainer">
+                <div
+                    id="overlayPositionDropdownContainer"
+                    style={{ display: "flex", alignItems: "center" }}
+                >
                     <Tooltip title="Set overlay position">
-                        <span>
+                        <span style={{ flexGrow: 1, marginRight: "8px" }}>
                             <select
                                 id="overlayPositionSelector"
                                 onChange={handlePositionChange}
-                                defaultValue={settings.overlayPosition}
-                                disabled={!settings.useMouseWheelVolume}
+                                value={overlayPosition}
+                                disabled={!useMouseWheelVolume}
+                                style={{
+                                    width: "100%",
+                                    borderColor: isOverridden("overlayPosition")
+                                        ? "#FCB900"
+                                        : "inherit",
+                                    boxShadow: isOverridden("overlayPosition")
+                                        ? "0 0 8px rgba(252, 185, 0, 0.4)"
+                                        : "none",
+                                    color: "black",
+                                }}
                             >
                                 <option value="mouse">Relative to Mouse</option>
                                 <option value="tl">Top Left</option>
@@ -280,60 +462,110 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                             </select>
                         </span>
                     </Tooltip>
+                    <ResetButton
+                        isOverridden={isOverridden("overlayPosition")}
+                        onReset={
+                            activeDomain
+                                ? () => handleReset("overlayPosition")
+                                : undefined
+                        }
+                    />
                 </div>
                 <div id="overlayXContainer">
                     <div id="overlayXPos" className="sliderDisplayContainer">
                         <Typography variant="body1">
                             Horizontal position
                         </Typography>
-                        <SettingsValueDisplay
-                            id="overlayXPosDisplay"
-                            className="sliderDisplay"
-                            value={settings.overlayXPos}
-                            tooltip="Current increment"
+                        <div
+                            style={{
+                                marginRight: activeDomain ? "42px" : "0px",
+                            }}
+                        >
+                            <SettingsValueDisplay
+                                id="overlayXPosDisplay"
+                                className="sliderDisplay"
+                                value={xPos}
+                                tooltip="Current increment"
+                                isOverridden={isOverridden("overlayXPos")}
+                            />
+                        </div>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                        <SettingsSlider
+                            min={5}
+                            max={95}
+                            step={5}
+                            ariaLabel="Horizontal position"
+                            value={xPos}
+                            disabled={
+                                !useMouseWheelVolume ||
+                                overlayPosition !== "custom" ||
+                                !useOverlay
+                            }
+                            onChange={handleXChange}
+                            tooltip="The horizontal position of the overlay"
+                            isOverridden={isOverridden("overlayXPos")}
+                        />
+                        <ResetButton
+                            isOverridden={
+                                overlayPosition === "custom" &&
+                                isOverridden("overlayXPos")
+                            }
+                            onReset={
+                                activeDomain
+                                    ? () => handleReset("overlayXPos")
+                                    : undefined
+                            }
                         />
                     </div>
-                    <SettingsSlider
-                        min={5}
-                        max={95}
-                        step={5}
-                        ariaLabel="Horizontal position"
-                        value={xPos}
-                        disabled={
-                            !settings.useMouseWheelVolume ||
-                            settings.overlayPosition !== "custom" ||
-                            !settings.useOverlay
-                        }
-                        onChange={handleXChange}
-                        tooltip="The horizontal position of the overlay"
-                    />
                 </div>
                 <div id="overlayYContainer">
                     <div id="overlayYPos" className="sliderDisplayContainer">
                         <Typography variant="body1">
                             Vertical position
                         </Typography>
-                        <SettingsValueDisplay
-                            id="overlayYPosDisplay"
-                            className="sliderDisplay"
-                            value={settings.overlayYPos}
-                            tooltip="Current increment"
+                        <div
+                            style={{
+                                marginRight: activeDomain ? "42px" : "0px",
+                            }}
+                        >
+                            <SettingsValueDisplay
+                                id="overlayYPosDisplay"
+                                className="sliderDisplay"
+                                value={yPos}
+                                tooltip="Current increment"
+                                isOverridden={isOverridden("overlayYPos")}
+                            />
+                        </div>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                        <SettingsSlider
+                            min={5}
+                            max={95}
+                            step={5}
+                            ariaLabel="Vertical position"
+                            value={yPos}
+                            disabled={
+                                !useMouseWheelVolume ||
+                                overlayPosition !== "custom" ||
+                                !useOverlay
+                            }
+                            onChange={handleYChange}
+                            tooltip="The vertical position of the overlay"
+                            isOverridden={isOverridden("overlayYPos")}
+                        />
+                        <ResetButton
+                            isOverridden={
+                                overlayPosition === "custom" &&
+                                isOverridden("overlayYPos")
+                            }
+                            onReset={
+                                activeDomain
+                                    ? () => handleReset("overlayYPos")
+                                    : undefined
+                            }
                         />
                     </div>
-                    <SettingsSlider
-                        min={5}
-                        max={95}
-                        step={5}
-                        ariaLabel="Vertical position"
-                        value={yPos}
-                        disabled={
-                            !settings.useMouseWheelVolume ||
-                            settings.overlayPosition !== "custom" ||
-                            !settings.useOverlay
-                        }
-                        onChange={handleYChange}
-                        tooltip="The vertical position of the overlay"
-                    />
                 </div>
             </div>
         </div>
