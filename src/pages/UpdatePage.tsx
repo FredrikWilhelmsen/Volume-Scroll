@@ -29,9 +29,6 @@ const UpdatePage: React.FC<UpdatePageInterface> = ({ settings, setPage }) => {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const originalWidth = document.body.style.width;
-        document.body.style.width = "500px"; // Widen popup for this page
-
         const fetchReleases = async () => {
             try {
                 const response = await fetch(
@@ -52,10 +49,6 @@ const UpdatePage: React.FC<UpdatePageInterface> = ({ settings, setPage }) => {
         };
 
         fetchReleases();
-
-        return () => {
-            document.body.style.width = originalWidth; // Revert on unmount
-        };
     }, []);
 
     return (

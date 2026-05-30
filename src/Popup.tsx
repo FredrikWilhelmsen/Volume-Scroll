@@ -19,49 +19,60 @@ import "@fontsource/roboto/700.css";
 import { ExtensionData } from "./types";
 
 const SettingsPopup = () => {
-    const [extensionData, setExtensionData] = useState<ExtensionData | null>(null);
+    const [extensionData, setExtensionData] = useState<ExtensionData | null>(
+        null,
+    );
     const [activeDomain, setActiveDomain] = useState<string | null>(null);
     const [page, setPage] = useState<Pages>("menu");
 
     useEffect(() => {
         //Load saved settings when the component mounts
-        browser.storage.sync
-            .get("extensionData")
-            .then((result) => {
-                const data: ExtensionData = (result.extensionData as ExtensionData) || { globalSettings: defaultSettings, domainOverrides: {}, lastVersionRead: "0.0.0" };
-                setExtensionData(data);
-            });
+        browser.storage.sync.get("extensionData").then((result) => {
+            const data: ExtensionData =
+                (result.extensionData as ExtensionData) || {
+                    globalSettings: defaultSettings,
+                    domainOverrides: {},
+                    lastVersionRead: "0.0.0",
+                };
+            setExtensionData(data);
+        });
     }, []);
 
     useEffect(() => {
-        // Make the popup wider on override pages to accommodate undo buttons
-        if (activeDomain && page !== "domains") {
-            document.body.style.width = "315px";
+        if (page === "updatePage") {
+            document.body.style.width = "500px"; // Expand for update notes
+        } else if (activeDomain && page !== "domains") {
+            document.body.style.width = "315px"; // Slightly wider for overrides
         } else {
-            document.body.style.width = "275px";
+            document.body.style.width = "275px"; // Normal popup width
         }
     }, [activeDomain, page]);
 
     //Handler for updating settings
-    const handleSettingChange = (key: keyof Settings, value: any, overrideDomain?: string) => {
+    const handleSettingChange = (
+        key: keyof Settings,
+        value: any,
+        overrideDomain?: string,
+    ) => {
         setExtensionData((prevData) => {
             if (prevData === null) return prevData;
 
             let updatedData = { ...prevData };
 
             if (overrideDomain) {
-                const existingOverrides = prevData.domainOverrides[overrideDomain] || {};
+                const existingOverrides =
+                    prevData.domainOverrides[overrideDomain] || {};
                 updatedData.domainOverrides = {
                     ...prevData.domainOverrides,
                     [overrideDomain]: {
                         ...existingOverrides,
-                        [key]: value
-                    }
+                        [key]: value,
+                    },
                 };
             } else {
                 updatedData.globalSettings = {
                     ...prevData.globalSettings,
-                    [key]: value
+                    [key]: value,
                 };
             }
 
@@ -71,13 +82,17 @@ const SettingsPopup = () => {
         });
     };
 
-    const handleSettingReset = (key: keyof Settings, overrideDomain: string) => {
+    const handleSettingReset = (
+        key: keyof Settings,
+        overrideDomain: string,
+    ) => {
         setExtensionData((prevData) => {
             if (prevData === null) return prevData;
 
             let updatedData = { ...prevData };
-            const existingOverrides = prevData.domainOverrides[overrideDomain] || {};
-            
+            const existingOverrides =
+                prevData.domainOverrides[overrideDomain] || {};
+
             const newOverrides = { ...existingOverrides };
             delete newOverrides[key];
 
@@ -88,7 +103,7 @@ const SettingsPopup = () => {
             } else {
                 updatedData.domainOverrides = {
                     ...prevData.domainOverrides,
-                    [overrideDomain]: newOverrides
+                    [overrideDomain]: newOverrides,
                 };
             }
 
@@ -100,7 +115,9 @@ const SettingsPopup = () => {
     if (extensionData === null) return <LoadingPage />;
 
     const currentGlobalSettings = extensionData.globalSettings;
-    const currentOverrideSettings = activeDomain ? extensionData.domainOverrides[activeDomain] : undefined;
+    const currentOverrideSettings = activeDomain
+        ? extensionData.domainOverrides[activeDomain]
+        : undefined;
 
     return (
         <div className="centerWrapper">
@@ -166,7 +183,10 @@ const SettingsPopup = () => {
                     />
                 )}
                 {page === "updatePage" && (
-                    <UpdatePage settings={currentGlobalSettings} setPage={setPage} />
+                    <UpdatePage
+                        settings={currentGlobalSettings}
+                        setPage={setPage}
+                    />
                 )}
             </div>
         </div>
