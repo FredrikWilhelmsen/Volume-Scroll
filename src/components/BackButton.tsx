@@ -6,17 +6,22 @@ import Typography from '@mui/material/Typography/Typography';
 
 interface BackButtonInterface {
     setPage: React.Dispatch<React.SetStateAction<Pages>>,
-    title: string
+    title: string,
+    targetPage?: Pages,
+    isOverride?: boolean
 }
 
-const BackButton: React.FC<BackButtonInterface> = ({ setPage, title }) => {
+const BackButton: React.FC<BackButtonInterface> = ({ setPage, title, targetPage = "menu", isOverride = false }) => {
     const clickHandler = () => {
-        setPage("menu");
+        setPage(targetPage);
     }
 
     return (
         <div id="backWrapper" onClick={clickHandler}>
-            <Typography variant="h6">
+            <Typography 
+                variant="h6"
+                style={{ color: isOverride ? "#FCB900" : "inherit" }}
+            >
                 {title}
             </Typography>
 

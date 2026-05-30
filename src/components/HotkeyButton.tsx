@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Button from '@mui/material/Button/Button';
 import Tooltip from '@mui/material/Tooltip/Tooltip';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import IconButton from '@mui/material/IconButton/IconButton';
 import { getMouseKey } from '../utils';
 
 interface HotkeyButtonProps {
@@ -10,6 +12,7 @@ interface HotkeyButtonProps {
     tooltip: string;
     allowedKeys?: string[];
     allowMouse45?: boolean;
+    isOverridden?: boolean;
 }
 
 const HotkeyButton: React.FC<HotkeyButtonProps> = ({
@@ -18,7 +21,8 @@ const HotkeyButton: React.FC<HotkeyButtonProps> = ({
     disabled,
     tooltip,
     allowedKeys = [],
-    allowMouse45 = true
+    allowMouse45 = true,
+    isOverridden = false
 }) => {
     const [isSetting, setIsSetting] = useState(false);
     const lastSetTime = useRef(0);
@@ -104,19 +108,29 @@ const HotkeyButton: React.FC<HotkeyButtonProps> = ({
     };
 
     return (
-        <Tooltip title={tooltip} placement="top" disableInteractive>
-            <span>
-                <Button
-                    onClick={handleClick}
-                    className="button"
-                    variant="outlined"
-                    sx={{ color: "white" }}
-                    disabled={disabled}
-                >
-                    {isSetting ? "-----" : (value === " " ? "Space" : value)}
-                </Button>
-            </span>
-        </Tooltip>
+        <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+            <Tooltip title={tooltip} placement="top" disableInteractive>
+                <span style={{ width: '100%' }}>
+                    <Button
+                        fullWidth
+                        onClick={handleClick}
+                        className="button"
+                        variant="outlined"
+                        color={isOverridden ? "warning" : "primary"}
+                        sx={{ 
+                            color: isOverridden ? "#FCB900" : "white",
+                            ...(isOverridden && {
+                                borderColor: '#FCB900',
+                                boxShadow: '0 0 8px rgba(252, 185, 0, 0.4)'
+                            })
+                        }}
+                        disabled={disabled}
+                    >
+                        {isSetting ? "-----" : (value === " " ? "Space" : value)}
+                    </Button>
+                </span>
+            </Tooltip>
+        </div>
     );
 };
 

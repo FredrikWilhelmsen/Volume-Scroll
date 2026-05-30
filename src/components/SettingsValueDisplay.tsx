@@ -8,6 +8,7 @@ interface SettingsValueDisplayProps {
     id?: string;
     className?: string;
     sx?: any;
+    isOverridden?: boolean;
 }
 
 const SettingsValueDisplay: React.FC<SettingsValueDisplayProps> = ({
@@ -15,12 +16,24 @@ const SettingsValueDisplay: React.FC<SettingsValueDisplayProps> = ({
     tooltip,
     id,
     className,
-    sx
+    sx,
+    isOverridden = false
 }) => {
     return (
         <Tooltip title={tooltip} placement="top" disableInteractive>
-            <div id={id} className={className}>
-                <Typography variant="body2" sx={sx}>
+            <div 
+                id={id} 
+                className={className}
+                style={isOverridden ? {
+                    boxShadow: '0 0 8px rgba(252, 185, 0, 0.4)',
+                    outline: '1px solid #FCB900',
+                    outlineOffset: '-1px'
+                } : {}}
+            >
+                <Typography 
+                    variant="body2" 
+                    sx={{ ...sx }}
+                >
                     {value}
                 </Typography>
             </div>
