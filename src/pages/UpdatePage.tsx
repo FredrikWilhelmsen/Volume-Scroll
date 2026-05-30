@@ -9,6 +9,8 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Divider from "@mui/material/Divider";
 
+import GitHubIcon from "@mui/icons-material/GitHub";
+
 interface UpdatePageInterface {
     settings: Settings;
     setPage: React.Dispatch<React.SetStateAction<Pages>>;
@@ -58,6 +60,36 @@ const UpdatePage: React.FC<UpdatePageInterface> = ({ settings, setPage }) => {
             <BackButton setPage={setPage} title={"Update notes"} />
 
             <hr></hr>
+
+            <Typography
+                variant="body2"
+                sx={{
+                    fontSize: "16px",
+                    paddingTop: "16px",
+                    display: "flex",
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                    gap: "6px",
+                    color: "gray",
+                }}
+            >
+                <span>Contribute or report an issue on</span>
+                <a
+                    style={{
+                        color: "#7c2eb8",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        textDecoration: "none", // Optional: removes underline from the icon spacing
+                    }}
+                    href="https://github.com/FredrikWilhelmsen/Volume-Scroll/issues"
+                    target="_blank"
+                    rel="noreferrer"
+                >
+                    <GitHubIcon sx={{ fontSize: 20, color: "white" }} />
+                    GitHub
+                </a>
+            </Typography>
 
             <Divider style={{ marginBottom: "16px" }} />
 
