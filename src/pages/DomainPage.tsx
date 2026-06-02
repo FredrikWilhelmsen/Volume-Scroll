@@ -24,7 +24,7 @@ interface DomainPageInterface {
         value: any,
         overrideDomain?: string,
     ) => void;
-    setPage: React.Dispatch<React.SetStateAction<Pages>>;
+    setPage: (targetPage: Pages) => void;
     setActiveDomain: React.Dispatch<React.SetStateAction<string | null>>;
     activeDomain?: string | null;
 }

@@ -19,7 +19,7 @@ interface OverlayPageInterface {
     activeDomain?: string;
     editSetting: (key: keyof Settings, value: any, domain?: string) => void;
     resetSetting?: (key: keyof Settings, domain: string) => void;
-    setPage: React.Dispatch<React.SetStateAction<Pages>>;
+    setPage: (targetPage: Pages) => void;
 }
 
 const OverlayPage: React.FC<OverlayPageInterface> = ({

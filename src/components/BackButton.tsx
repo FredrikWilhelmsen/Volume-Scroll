@@ -1,33 +1,38 @@
-import React from 'react';
-import ClearOutlinedIcon from '@mui/icons-material/ClearOutlined';
+import React from "react";
+import ClearOutlinedIcon from "@mui/icons-material/ClearOutlined";
 import { Pages } from "../types";
-import "../style/backButton.css"
-import Typography from '@mui/material/Typography/Typography';
+import "../style/backButton.css";
+import Typography from "@mui/material/Typography/Typography";
 
 interface BackButtonInterface {
-    setPage: React.Dispatch<React.SetStateAction<Pages>>,
-    title: string,
-    targetPage?: Pages,
-    isOverride?: boolean
+    setPage: (targetPage: Pages) => void;
+    title: string;
+    targetPage?: Pages;
+    isOverride?: boolean;
 }
 
-const BackButton: React.FC<BackButtonInterface> = ({ setPage, title, targetPage = "menu", isOverride = false }) => {
+const BackButton: React.FC<BackButtonInterface> = ({
+    setPage,
+    title,
+    targetPage = "menu",
+    isOverride = false,
+}) => {
     const clickHandler = () => {
         setPage(targetPage);
-    }
+    };
 
     return (
         <div id="backWrapper" onClick={clickHandler}>
-            <Typography 
+            <Typography
                 variant="h6"
                 style={{ color: isOverride ? "#FCB900" : "inherit" }}
             >
                 {title}
             </Typography>
 
-            <ClearOutlinedIcon id="backButton"/>
+            <ClearOutlinedIcon id="backButton" />
         </div>
     );
-}
+};
 
 export default BackButton;
