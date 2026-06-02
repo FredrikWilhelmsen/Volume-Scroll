@@ -13,7 +13,7 @@ import GitHubIcon from "@mui/icons-material/GitHub";
 
 interface UpdatePageInterface {
     settings: Settings;
-    setPage: React.Dispatch<React.SetStateAction<Pages>>;
+    setPage: (targetPage: Pages) => void;
 }
 
 interface GitHubRelease {
