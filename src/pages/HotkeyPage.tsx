@@ -12,7 +12,7 @@ interface HotkeyPageInterface {
     activeDomain?: string;
     editSetting: (key: keyof Settings, value: any, domain?: string) => void;
     resetSetting?: (key: keyof Settings, domain: string) => void;
-    setPage: React.Dispatch<React.SetStateAction<Pages>>;
+    setPage: (targetPage: Pages) => void;
 }
 
 const HotkeyPage: React.FC<HotkeyPageInterface> = ({
@@ -98,8 +98,21 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({
             <hr></hr>
 
             <div className="settingsContainer">
-                <div id="modifierKeyContainer" style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                    <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
+                <div
+                    id="modifierKeyContainer"
+                    style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "8px",
+                    }}
+                >
+                    <div
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            width: "100%",
+                        }}
+                    >
                         <SettingsSwitch
                             label="Modifier key"
                             checked={useModifierKey}
@@ -110,15 +123,27 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({
                         />
                         <ResetButton
                             isOverridden={isOverridden("useModifierKey")}
-                            onReset={activeDomain ? () => handleReset("useModifierKey") : undefined}
+                            onReset={
+                                activeDomain
+                                    ? () => handleReset("useModifierKey")
+                                    : undefined
+                            }
                         />
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
+                    <div
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            width: "100%",
+                        }}
+                    >
                         <div style={{ flexGrow: 1 }}>
                             <HotkeyButton
                                 value={modifierKey}
                                 onSet={handleModifierKeyChange}
-                                disabled={!useMouseWheelVolume || !useModifierKey}
+                                disabled={
+                                    !useMouseWheelVolume || !useModifierKey
+                                }
                                 tooltip="Click to change modifier hotkey. Limited to mouse buttons and modifier keys (Alt, Ctrl, Shift)."
                                 allowedKeys={["Shift", "Alt", "Control"]}
                                 allowMouse45={true}
@@ -127,11 +152,18 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({
                         </div>
                         <ResetButton
                             isOverridden={isOverridden("modifierKey")}
-                            onReset={activeDomain ? () => handleReset("modifierKey") : undefined}
+                            onReset={
+                                activeDomain
+                                    ? () => handleReset("modifierKey")
+                                    : undefined
+                            }
                         />
                     </div>
                 </div>
-                <div id="invertedModifierKeyContainer" style={{ display: "flex", alignItems: "center" }}>
+                <div
+                    id="invertedModifierKeyContainer"
+                    style={{ display: "flex", alignItems: "center" }}
+                >
                     <SettingsSwitch
                         label="Invert modifier key"
                         checked={invertModifierKey}
@@ -142,11 +174,28 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({
                     />
                     <ResetButton
                         isOverridden={isOverridden("invertModifierKey")}
-                        onReset={activeDomain ? () => handleReset("invertModifierKey") : undefined}
+                        onReset={
+                            activeDomain
+                                ? () => handleReset("invertModifierKey")
+                                : undefined
+                        }
                     />
                 </div>
-                <div id="toggleMuteKeyContainer" style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                    <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
+                <div
+                    id="toggleMuteKeyContainer"
+                    style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "8px",
+                    }}
+                >
+                    <div
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            width: "100%",
+                        }}
+                    >
                         <SettingsSwitch
                             label="Mute toggle"
                             checked={useToggleMuteKey}
@@ -157,15 +206,27 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({
                         />
                         <ResetButton
                             isOverridden={isOverridden("useToggleMuteKey")}
-                            onReset={activeDomain ? () => handleReset("useToggleMuteKey") : undefined}
+                            onReset={
+                                activeDomain
+                                    ? () => handleReset("useToggleMuteKey")
+                                    : undefined
+                            }
                         />
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
+                    <div
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            width: "100%",
+                        }}
+                    >
                         <div style={{ flexGrow: 1 }}>
                             <HotkeyButton
                                 value={toggleMuteKey}
                                 onSet={handleToggleMuteKeyChange}
-                                disabled={!useMouseWheelVolume || !useToggleMuteKey}
+                                disabled={
+                                    !useMouseWheelVolume || !useToggleMuteKey
+                                }
                                 tooltip="Click to change mute hotkey. Limited to mouse buttons (excluding Mouse 4 & 5)."
                                 allowedKeys={[]}
                                 allowMouse45={false}
@@ -174,12 +235,29 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({
                         </div>
                         <ResetButton
                             isOverridden={isOverridden("toggleMuteKey")}
-                            onReset={activeDomain ? () => handleReset("toggleMuteKey") : undefined}
+                            onReset={
+                                activeDomain
+                                    ? () => handleReset("toggleMuteKey")
+                                    : undefined
+                            }
                         />
                     </div>
                 </div>
-                <div id="togglePauseKeyContainer" style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                    <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
+                <div
+                    id="togglePauseKeyContainer"
+                    style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "8px",
+                    }}
+                >
+                    <div
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            width: "100%",
+                        }}
+                    >
                         <SettingsSwitch
                             label="Pause toggle"
                             checked={useTogglePauseKey}
@@ -190,15 +268,27 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({
                         />
                         <ResetButton
                             isOverridden={isOverridden("useTogglePauseKey")}
-                            onReset={activeDomain ? () => handleReset("useTogglePauseKey") : undefined}
+                            onReset={
+                                activeDomain
+                                    ? () => handleReset("useTogglePauseKey")
+                                    : undefined
+                            }
                         />
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
+                    <div
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            width: "100%",
+                        }}
+                    >
                         <div style={{ flexGrow: 1 }}>
                             <HotkeyButton
                                 value={togglePauseKey}
                                 onSet={handleTogglePauseKeyChange}
-                                disabled={!useMouseWheelVolume || !useTogglePauseKey}
+                                disabled={
+                                    !useMouseWheelVolume || !useTogglePauseKey
+                                }
                                 tooltip="Click to change pause hotkey. Limited to mouse buttons (excluding Mouse 4 & 5)."
                                 allowedKeys={[]}
                                 allowMouse45={false}
@@ -207,7 +297,11 @@ const HotkeyPage: React.FC<HotkeyPageInterface> = ({
                         </div>
                         <ResetButton
                             isOverridden={isOverridden("togglePauseKey")}
-                            onReset={activeDomain ? () => handleReset("togglePauseKey") : undefined}
+                            onReset={
+                                activeDomain
+                                    ? () => handleReset("togglePauseKey")
+                                    : undefined
+                            }
                         />
                     </div>
                 </div>

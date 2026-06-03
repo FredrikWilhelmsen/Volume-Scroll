@@ -20,7 +20,7 @@ interface MiscPageInterface {
     activeDomain?: string;
     editSetting: (key: keyof Settings, value: any, domain?: string) => void;
     resetSetting?: (key: keyof Settings, domain: string) => void;
-    setPage: React.Dispatch<React.SetStateAction<Pages>>;
+    setPage: (targetPage: Pages) => void;
 }
 
 const MiscPage: React.FC<MiscPageInterface> = ({
@@ -134,22 +134,24 @@ const MiscPage: React.FC<MiscPageInterface> = ({
         "alternateVolumeIncrementHotkey",
     );
 
-    const hasCategoryOverride = !!activeDomain && [
-        "useDefaultVolume",
-        "defaultVolume",
-        "startMuted",
-        "doBoostVolume",
-        "volumeBoostAmount",
-        "boostedColor",
-        "useAlternateVolumeIncrement",
-        "alternateVolumeIncrement",
-        "alternateVolumeIncrementHotkey"
-    ].some(key => isOverridden(key as keyof Settings));
+    const hasCategoryOverride =
+        !!activeDomain &&
+        [
+            "useDefaultVolume",
+            "defaultVolume",
+            "startMuted",
+            "doBoostVolume",
+            "volumeBoostAmount",
+            "boostedColor",
+            "useAlternateVolumeIncrement",
+            "alternateVolumeIncrement",
+            "alternateVolumeIncrementHotkey",
+        ].some((key) => isOverridden(key as keyof Settings));
 
     return (
         <div>
-            <BackButton 
-                setPage={setPage} 
+            <BackButton
+                setPage={setPage}
                 title={activeDomain ? "Misc (Override)" : "Misc"}
                 targetPage={activeDomain ? "domains" : "menu"}
                 isOverride={hasCategoryOverride}
@@ -175,7 +177,11 @@ const MiscPage: React.FC<MiscPageInterface> = ({
                         />
                         <ResetButton
                             isOverridden={isOverridden("useDefaultVolume")}
-                            onReset={activeDomain ? () => handleReset("useDefaultVolume") : undefined}
+                            onReset={
+                                activeDomain
+                                    ? () => handleReset("useDefaultVolume")
+                                    : undefined
+                            }
                         />
                     </div>
                     <div style={{ display: "flex", alignItems: "center" }}>
@@ -192,7 +198,11 @@ const MiscPage: React.FC<MiscPageInterface> = ({
                         />
                         <ResetButton
                             isOverridden={isOverridden("defaultVolume")}
-                            onReset={activeDomain ? () => handleReset("defaultVolume") : undefined}
+                            onReset={
+                                activeDomain
+                                    ? () => handleReset("defaultVolume")
+                                    : undefined
+                            }
                         />
                     </div>
                     <div style={{ display: "flex", alignItems: "center" }}>
@@ -206,7 +216,11 @@ const MiscPage: React.FC<MiscPageInterface> = ({
                         />
                         <ResetButton
                             isOverridden={isOverridden("startMuted")}
-                            onReset={activeDomain ? () => handleReset("startMuted") : undefined}
+                            onReset={
+                                activeDomain
+                                    ? () => handleReset("startMuted")
+                                    : undefined
+                            }
                         />
                     </div>
                 </div>
@@ -227,7 +241,11 @@ const MiscPage: React.FC<MiscPageInterface> = ({
                         />
                         <ResetButton
                             isOverridden={isOverridden("doBoostVolume")}
-                            onReset={activeDomain ? () => handleReset("doBoostVolume") : undefined}
+                            onReset={
+                                activeDomain
+                                    ? () => handleReset("doBoostVolume")
+                                    : undefined
+                            }
                         />
                     </div>
                     <div style={{ display: "flex", alignItems: "center" }}>
@@ -244,7 +262,11 @@ const MiscPage: React.FC<MiscPageInterface> = ({
                         />
                         <ResetButton
                             isOverridden={isOverridden("volumeBoostAmount")}
-                            onReset={activeDomain ? () => handleReset("volumeBoostAmount") : undefined}
+                            onReset={
+                                activeDomain
+                                    ? () => handleReset("volumeBoostAmount")
+                                    : undefined
+                            }
                         />
                     </div>
                 </div>
@@ -296,7 +318,11 @@ const MiscPage: React.FC<MiscPageInterface> = ({
                         </Typography>
                         <ResetButton
                             isOverridden={isOverridden("boostedColor")}
-                            onReset={activeDomain ? () => handleReset("boostedColor") : undefined}
+                            onReset={
+                                activeDomain
+                                    ? () => handleReset("boostedColor")
+                                    : undefined
+                            }
                         />
                     </div>
 
@@ -332,8 +358,17 @@ const MiscPage: React.FC<MiscPageInterface> = ({
                             )}
                         />
                         <ResetButton
-                            isOverridden={isOverridden("useAlternateVolumeIncrement")}
-                            onReset={activeDomain ? () => handleReset("useAlternateVolumeIncrement") : undefined}
+                            isOverridden={isOverridden(
+                                "useAlternateVolumeIncrement",
+                            )}
+                            onReset={
+                                activeDomain
+                                    ? () =>
+                                          handleReset(
+                                              "useAlternateVolumeIncrement",
+                                          )
+                                    : undefined
+                            }
                         />
                     </div>
                     <div style={{ display: "flex", alignItems: "center" }}>
@@ -346,14 +381,32 @@ const MiscPage: React.FC<MiscPageInterface> = ({
                             disabled={!useAlternateVolumeIncrement}
                             onChange={handleAlternateIncrementChange}
                             tooltip="How much the volume will change per step using the alternate increment hotkey"
-                            isOverridden={isOverridden("alternateVolumeIncrement")}
+                            isOverridden={isOverridden(
+                                "alternateVolumeIncrement",
+                            )}
                         />
                         <ResetButton
-                            isOverridden={isOverridden("alternateVolumeIncrement")}
-                            onReset={activeDomain ? () => handleReset("alternateVolumeIncrement") : undefined}
+                            isOverridden={isOverridden(
+                                "alternateVolumeIncrement",
+                            )}
+                            onReset={
+                                activeDomain
+                                    ? () =>
+                                          handleReset(
+                                              "alternateVolumeIncrement",
+                                          )
+                                    : undefined
+                            }
                         />
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", width: "100%", marginTop: "12px" }}>
+                    <div
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            width: "100%",
+                            marginTop: "12px",
+                        }}
+                    >
                         <div style={{ flexGrow: 1 }}>
                             <HotkeyButton
                                 value={alternateVolumeIncrementHotkey}
@@ -371,8 +424,17 @@ const MiscPage: React.FC<MiscPageInterface> = ({
                             />
                         </div>
                         <ResetButton
-                            isOverridden={isOverridden("alternateVolumeIncrementHotkey")}
-                            onReset={activeDomain ? () => handleReset("alternateVolumeIncrementHotkey") : undefined}
+                            isOverridden={isOverridden(
+                                "alternateVolumeIncrementHotkey",
+                            )}
+                            onReset={
+                                activeDomain
+                                    ? () =>
+                                          handleReset(
+                                              "alternateVolumeIncrementHotkey",
+                                          )
+                                    : undefined
+                            }
                         />
                     </div>
                 </div>

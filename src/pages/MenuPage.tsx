@@ -20,7 +20,7 @@ interface MenuPageInterface {
         React.SetStateAction<ExtensionData | null>
     >;
     editSetting: (key: keyof Settings, value: any) => void;
-    setPage: React.Dispatch<React.SetStateAction<Pages>>;
+    setPage: (targetPage: Pages) => void;
 }
 
 const userAgent = navigator.userAgent.toLowerCase();

@@ -48,7 +48,14 @@ const SettingsPopup = () => {
         }
     }, [activeDomain, page]);
 
-    //Handler for updating settings
+    const navigateTo = (targetPage: Pages): void => {
+        if (targetPage === "menu") {
+            setActiveDomain(null);
+        }
+        setPage(targetPage);
+    };
+
+    // Handler for updating settings
     const handleSettingChange = (
         key: keyof Settings,
         value: any,
@@ -128,7 +135,7 @@ const SettingsPopup = () => {
                         extensionData={extensionData}
                         setExtensionData={setExtensionData}
                         editSetting={handleSettingChange}
-                        setPage={setPage}
+                        setPage={navigateTo}
                     />
                 )}
                 {page === "scroll" && (
@@ -138,7 +145,7 @@ const SettingsPopup = () => {
                         activeDomain={activeDomain || undefined}
                         editSetting={handleSettingChange}
                         resetSetting={handleSettingReset}
-                        setPage={setPage}
+                        setPage={navigateTo}
                     />
                 )}
                 {page === "hotkeys" && (
@@ -148,7 +155,7 @@ const SettingsPopup = () => {
                         activeDomain={activeDomain || undefined}
                         editSetting={handleSettingChange}
                         resetSetting={handleSettingReset}
-                        setPage={setPage}
+                        setPage={navigateTo}
                     />
                 )}
                 {page === "overlay" && (
@@ -158,7 +165,7 @@ const SettingsPopup = () => {
                         activeDomain={activeDomain || undefined}
                         editSetting={handleSettingChange}
                         resetSetting={handleSettingReset}
-                        setPage={setPage}
+                        setPage={navigateTo}
                     />
                 )}
                 {page === "misc" && (
@@ -168,7 +175,7 @@ const SettingsPopup = () => {
                         activeDomain={activeDomain || undefined}
                         editSetting={handleSettingChange}
                         resetSetting={handleSettingReset}
-                        setPage={setPage}
+                        setPage={navigateTo}
                     />
                 )}
                 {page === "domains" && (
@@ -177,7 +184,7 @@ const SettingsPopup = () => {
                         extensionData={extensionData}
                         setExtensionData={setExtensionData}
                         editSetting={handleSettingChange}
-                        setPage={setPage}
+                        setPage={navigateTo}
                         setActiveDomain={setActiveDomain}
                         activeDomain={activeDomain}
                     />
@@ -185,7 +192,7 @@ const SettingsPopup = () => {
                 {page === "updatePage" && (
                     <UpdatePage
                         settings={currentGlobalSettings}
-                        setPage={setPage}
+                        setPage={navigateTo}
                     />
                 )}
             </div>
