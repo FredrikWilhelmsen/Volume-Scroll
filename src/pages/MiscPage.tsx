@@ -290,15 +290,16 @@ const MiscPage: React.FC<MiscPageInterface> = ({
                                 width: 40,
                                 height: 20,
                                 mr: 1,
+                                marginLeft: "4px",
                                 cursor:
                                     !getValue("useMouseWheelVolume") ||
                                     !doBoostVolume
                                         ? "default"
                                         : "pointer",
-                                ...(isOverridden("boostedColor") && {
-                                    outline: "2px solid #FCB900",
-                                    outlineOffset: "2px",
-                                }),
+                                outline: isOverridden("boostedColor")
+                                    ? "2px solid #FCB900"
+                                    : "2px solid #1976d2",
+                                outlineOffset: "2px",
                             }}
                             onClick={handleBoostColorPickerClick}
                         />
