@@ -387,14 +387,15 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                                 width: 40,
                                 height: 20,
                                 mr: 1,
+                                marginLeft: "4px",
                                 cursor:
                                     !useMouseWheelVolume || !useOverlay
                                         ? "default"
                                         : "pointer",
-                                ...(isOverridden("overlayColor") && {
-                                    outline: "2px solid #FCB900",
-                                    outlineOffset: "2px",
-                                }),
+                                outline: isOverridden("overlayColor")
+                                    ? "2px solid #FCB900"
+                                    : "2px solid #1976d2",
+                                outlineOffset: "2px",
                             }}
                             onClick={handleColorPickerClick}
                         />
