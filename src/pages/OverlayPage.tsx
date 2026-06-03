@@ -101,6 +101,10 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
         setOverlayBackgroundOpacity(value);
     };
 
+    const handleUseDutchAngleToggle = (value: boolean) => {
+        editSetting("useDutchAngle", value, activeDomain);
+    };
+
     const handleOverlayColorChange = (color: any) => {
         if (!getValue("useMouseWheelVolume") || !getValue("useOverlay")) return;
         editSetting("overlayColor", color.hex, activeDomain);
@@ -148,6 +152,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
     const useOverlayBackground = getValue("useOverlayBackground");
     const overlayColor = getValue("overlayColor");
     const overlayPosition = getValue("overlayPosition");
+    const useDutchAngle = getValue("useDutchAngle");
 
     const hasCategoryOverride =
         !!activeDomain &&
@@ -161,6 +166,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
             "overlayPosition",
             "overlayXPos",
             "overlayYPos",
+            "useDutchAngle",
         ].some((key) => isOverridden(key as keyof Settings));
 
     return (
@@ -185,6 +191,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                         onChange={handleUseOverlayToggle}
                         tooltip="Enable or disable the overlay"
                         isOverridden={isOverridden("useOverlay")}
+                        disabled={!useMouseWheelVolume}
                     />
                     <ResetButton
                         isOverridden={isOverridden("useOverlay")}
@@ -370,6 +377,30 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                         />
                     </div>
                 </div>
+                <div
+                    id="useDutchAngleContainer"
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                    }}
+                >
+                    <SettingsSwitch
+                        label="Dutch Angle"
+                        checked={useDutchAngle}
+                        onChange={handleUseDutchAngleToggle}
+                        tooltip="Slightly tilt the overlay"
+                        isOverridden={isOverridden("useDutchAngle")}
+                        disabled={!useMouseWheelVolume || !useOverlay}
+                    />
+                    <ResetButton
+                        isOverridden={isOverridden("useDutchAngle")}
+                        onReset={
+                            activeDomain
+                                ? () => handleReset("useDutchAngle")
+                                : undefined
+                        }
+                    />
+                </div>
                 <div id="overlayColorPickerContainer">
                     <div
                         id="colorDisplay"
@@ -378,6 +409,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                                 !useMouseWheelVolume || !useOverlay ? 0.5 : 1,
                             display: "flex",
                             alignItems: "center",
+                            marginTop: "12px",
                         }}
                     >
                         <Paper
