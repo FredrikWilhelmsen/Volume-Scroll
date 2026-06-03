@@ -39,6 +39,7 @@ export interface Settings {
     overlayXPos: number;
     overlayYPos: number;
     overlayDuration: number;
+    useDutchAngle: boolean;
 
     enableDefault: boolean;
 
@@ -86,6 +87,7 @@ export const defaultSettings: Settings = {
     overlayXPos: 5,
     overlayYPos: 5,
     overlayDuration: 2000,
+    useDutchAngle: false,
 
     enableDefault: true,
 
