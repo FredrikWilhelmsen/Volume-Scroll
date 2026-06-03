@@ -26,7 +26,7 @@ browser.runtime.onInstalled.addListener(async (details) => {
                     ...currentData.globalSettings,
                 },
                 domainOverrides: currentData.domainOverrides || {},
-                lastVersionRead: browser.runtime.getManifest().version,
+                lastVersionRead: currentData.lastVersionRead,
             };
             await browser.storage.sync.set({ extensionData: newExtensionData });
             return;
