@@ -1,12 +1,3 @@
 import * as controller from "./VolumeScrollController";
 
-window.addEventListener("wheel", controller.onScroll, { passive: false, capture: true });
-window.addEventListener("mousedown", controller.onMouseDown, { passive: false, capture: true });
-window.addEventListener("pointerdown", controller.onMouseDown, { passive: false, capture: true });
-window.addEventListener("mouseup", controller.onMouseUp, { passive: false, capture: true });
-window.addEventListener("pointerup", controller.onMouseUp, { passive: false, capture: true });
-window.addEventListener("mousemove", controller.onMouseMove, { capture: true });
-window.addEventListener("contextmenu", controller.onContextMenu, { capture: true });
-window.addEventListener("auxclick", controller.onAuxClick, { capture: true });
-window.addEventListener("click", controller.onClick, { capture: true });
 controller.init();

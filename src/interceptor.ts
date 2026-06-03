@@ -19,6 +19,10 @@
                 return originalVolGet.call(this);
             },
             set: function (val: number) {
+                if (document.documentElement.hasAttribute("data-volume-scroll-disabled")) {
+                    originalVolSet.call(this, val);
+                    return;
+                }
                 const locked = this.getAttribute("data-vs-locked-volume");
                 if (locked !== null) {
                     const target = parseFloat(locked);
@@ -38,6 +42,10 @@
                 return originalMuteGet.call(this);
             },
             set: function (val: boolean) {
+                if (document.documentElement.hasAttribute("data-volume-scroll-disabled")) {
+                    originalMuteSet.call(this, val);
+                    return;
+                }
                 const locked = this.getAttribute("data-vs-locked-mute");
                 if (locked !== null) {
                     const target = locked === "true";
