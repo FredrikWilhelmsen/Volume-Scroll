@@ -507,6 +507,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                             >
                                 <option value="number">Number</option>
                                 <option value="bar">Bar</option>
+                                <option value="circle">Circle</option>
                             </select>
                         </span>
                     </Tooltip>
@@ -519,7 +520,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                         }
                     />
                 </div>
-                {overlayStyle === "number" && (
+                {(overlayStyle === "number" || overlayStyle === "circle") && (
                     <>
                         <div
                             id="overlayPositionDropdownContainer"
@@ -588,7 +589,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                                         id="overlayXPosDisplay"
                                         className="sliderDisplay"
                                         value={xPos}
-                                        tooltip="Current increment"
+                                        tooltip="Current horizontal position"
                                         isOverridden={isOverridden(
                                             "overlayXPos",
                                         )}
@@ -648,7 +649,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                                         id="overlayYPosDisplay"
                                         className="sliderDisplay"
                                         value={yPos}
-                                        tooltip="Current increment"
+                                        tooltip="Current vertical position"
                                         isOverridden={isOverridden(
                                             "overlayYPos",
                                         )}
