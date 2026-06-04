@@ -123,7 +123,13 @@ export type OverlayType = "volume" | "mute" | "unmute" | "pause" | "play";
 
 export type OverlayStyle = "number" | "bar";
 
-export type OverlayNumberPosition = "tl" | "tr" | "bl" | "br" | "mouse";
+export type OverlayNumberPosition =
+    | "tl"
+    | "tr"
+    | "bl"
+    | "br"
+    | "custom"
+    | "mouse";
 
 export type OverlayBarSide = "left" | "right";
 
