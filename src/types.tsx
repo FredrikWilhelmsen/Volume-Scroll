@@ -121,7 +121,7 @@ export type Pages =
 
 export type OverlayType = "volume" | "mute" | "unmute" | "pause" | "play";
 
-export type OverlayStyle = "number" | "bar";
+export type OverlayStyle = "number" | "bar" | "circle";
 
 export type OverlayNumberPosition =
     | "tl"
