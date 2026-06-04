@@ -153,6 +153,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
     const overlayColor = getValue("overlayColor");
     const overlayPosition = getValue("overlayPosition");
     const useDutchAngle = getValue("useDutchAngle");
+    const overlayStyle = getValue("overlayStyle");
 
     const hasCategoryOverride =
         !!activeDomain &&
@@ -167,6 +168,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
             "overlayXPos",
             "overlayYPos",
             "useDutchAngle",
+            "overlayStyle",
         ].some((key) => isOverridden(key as keyof Settings));
 
     return (
@@ -465,6 +467,47 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                         )}
                 </div>
                 <div
+                    id="overlayStyleDropdownContainer"
+                    style={{ display: "flex", alignItems: "center", marginTop: "10px", marginBottom: "10px" }}
+                >
+                    <Typography variant="body1" sx={{ flexGrow: 1 }}>
+                        Style
+                    </Typography>
+                    <Tooltip title="Set overlay style">
+                        <span style={{ marginRight: "8px" }}>
+                            <select
+                                id="overlayStyleSelector"
+                                onChange={(e) => editSetting("overlayStyle", e.currentTarget.value, activeDomain)}
+                                value={overlayStyle}
+                                disabled={!useMouseWheelVolume || !useOverlay}
+                                style={{
+                                    width: "150px",
+                                    borderColor: isOverridden("overlayStyle")
+                                        ? "#FCB900"
+                                        : "inherit",
+                                    boxShadow: isOverridden("overlayStyle")
+                                        ? "0 0 8px rgba(252, 185, 0, 0.4)"
+                                        : "none",
+                                    color: "black",
+                                }}
+                            >
+                                <option value="number">Number</option>
+                                <option value="bar">Bar</option>
+                            </select>
+                        </span>
+                    </Tooltip>
+                    <ResetButton
+                        isOverridden={isOverridden("overlayStyle")}
+                        onReset={
+                            activeDomain
+                                ? () => handleReset("overlayStyle")
+                                : undefined
+                        }
+                    />
+                </div>
+                {overlayStyle === "number" && (
+                <>
+                <div
                     id="overlayPositionDropdownContainer"
                     style={{ display: "flex", alignItems: "center" }}
                 >
@@ -600,6 +643,8 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                         />
                     </div>
                 </div>
+                </>
+                )}
             </div>
         </div>
     );

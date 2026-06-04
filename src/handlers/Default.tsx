@@ -257,28 +257,11 @@ export class DefaultHandler {
             }
         }
 
-        // Position the overlay
-        let x = 0;
-        let y = 0;
-
         const parentRect = (
             container.offsetParent || body
         ).getBoundingClientRect();
 
-        if (this.settings.overlayPosition === "mouse") {
-            x = e.clientX - parentRect.left;
-            y = e.clientY - parentRect.top;
-        } else {
-            const displayRect = display.getBoundingClientRect();
-            x =
-                displayRect.left -
-                parentRect.left +
-                (displayRect.width / 100) * this.settings.overlayXPos;
-            y =
-                displayRect.top -
-                parentRect.top +
-                (displayRect.height / 100) * this.settings.overlayYPos;
-        }
+        const displayRect = display.getBoundingClientRect();
 
         this.animationKey++;
 
@@ -288,13 +271,15 @@ export class DefaultHandler {
             <VolumeOverlay
                 key={state.videoId}
                 volume={volume}
-                x={x}
-                y={y}
+                mouseX={e.clientX}
+                mouseY={e.clientY}
                 isMuted={video.muted}
                 isPaused={video.paused}
                 settings={this.settings}
                 type={type}
                 animationKey={this.animationKey}
+                playerRect={displayRect}
+                parentRect={parentRect}
             />,
         );
     }
