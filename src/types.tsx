@@ -37,13 +37,13 @@ export interface Settings {
     overlayBackgroundOpacity: number;
     overlayDuration: number;
     useDutchAngle: boolean;
-    overlayStyle: overlayStyle;
+    overlayStyle: OverlayStyle;
 
-    overlayPosition: overlayNumberPosition;
+    overlayPosition: OverlayNumberPosition;
     overlayXPos: number;
     overlayYPos: number;
 
-    overlayBarSide: overlayBarSide;
+    overlayBarSide: OverlayBarSide;
 
     enableDefault: boolean;
 
@@ -121,11 +121,11 @@ export type Pages =
 
 export type OverlayType = "volume" | "mute" | "unmute" | "pause" | "play";
 
-export type overlayStyle = "number" | "bar";
+export type OverlayStyle = "number" | "bar";
 
-export type overlayNumberPosition = "tl" | "tr" | "bl" | "br";
+export type OverlayNumberPosition = "tl" | "tr" | "bl" | "br" | "mouse";
 
-export type overlayBarSide = "left" | "right";
+export type OverlayBarSide = "left" | "right";
 
 export interface videoElements {
     display: HTMLBaseElement;
