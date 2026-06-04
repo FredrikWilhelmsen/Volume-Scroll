@@ -35,6 +35,11 @@ export const BarOverlay: React.FC<BarOverlayProps> = ({
         playerRect && parentRect ? playerRect.top - parentRect.top : 0;
     const barLeft =
         playerRect && parentRect ? playerRect.left - parentRect.left : 0;
+
+    // Calculate right-side offset relative to parent container
+    const barRight =
+        playerRect && parentRect ? parentRect.right - playerRect.right : 0;
+
     const barHeight = playerRect ? playerRect.height : 200;
 
     const normalHeight = Math.min(volume, 100) + "%";
@@ -67,8 +72,29 @@ export const BarOverlay: React.FC<BarOverlayProps> = ({
         );
     }
 
-    // Determine rotation transform based on the Dutch angle setting (note, anchored top left, would need changing if positioned differently)
-    const rotation = settings.useDutchAngle ? "rotate(-6deg)" : "none";
+    // Determine layout and rotation parameters based on side ("left" or "right")
+    const isRightSide = settings.overlayBarSide === "right";
+    const rotation = settings.useDutchAngle
+        ? isRightSide
+            ? "rotate(6deg)"
+            : "rotate(-6deg)"
+        : "none";
+
+    const transformOrigin = isRightSide ? "right top" : "left top";
+    const flexDirection = isRightSide ? "row-reverse" : "row";
+
+    // Adjust the seamless adjacent borders dynamically
+    const barBorderRadius = isRightSide
+        ? icons.length > 0
+            ? "0 12px 12px 12px"
+            : "12px" // Flatten top-left corner
+        : icons.length > 0
+          ? "12px 0 12px 12px"
+          : "12px"; // Flatten top-right corner
+
+    const iconsBorderRadius = isRightSide ? "12px 0 0 12px" : "0 12px 12px 0";
+    const iconsPaddingLeft = isRightSide ? "16px" : "0";
+    const iconsPaddingRight = isRightSide ? "0" : "16px";
 
     return (
         <React.Fragment>
@@ -87,26 +113,27 @@ export const BarOverlay: React.FC<BarOverlayProps> = ({
                     animation: ${settings.overlayDuration === 0 ? "none" : `volumeScrollFade ${settings.overlayDuration}ms normal forwards`};
                     
                     display: flex;
-                    flex-direction: row;
+                    flex-direction: ${flexDirection};
                     align-items: flex-start;
                     
-                    /* Applies rotation with an anchor pinned to the top-left */
+                    /* Dynamic Dutch angle setup */
                     transform: ${rotation} !important;
-                    transform-origin: left top !important;
+                    transform-origin: ${transformOrigin} !important;
                 }
                 .volumeScrollBarBackgroundWrapper {
                     background-color: ${settings.useOverlayBackground ? `rgba(30, 30, 30, ${settings.overlayBackgroundOpacity / 100})` : "transparent"};
                     height: 100%;
                     padding: 16px;
                     box-sizing: border-box;
-                    border-radius: ${icons.length > 0 ? "12px 0 12px 12px" : "12px"};
+                    border-radius: ${barBorderRadius};
                 }
                 .volumeScrollBarIconsWrapper {
                     background-color: ${settings.useOverlayBackground ? `rgba(30, 30, 30, ${settings.overlayBackgroundOpacity / 100})` : "transparent"};
                     padding: 16px;
-                    padding-left: 0;
+                    padding-left: ${iconsPaddingLeft};
+                    padding-right: ${iconsPaddingRight};
                     box-sizing: border-box;
-                    border-radius: 0 12px 12px 0;
+                    border-radius: ${iconsBorderRadius};
                 }
                 .volumeScrollBarIcons {
                     display: flex;
@@ -152,9 +179,12 @@ export const BarOverlay: React.FC<BarOverlayProps> = ({
                 key={animationKey}
                 className="volumeScrollBarOverlay"
                 style={{
-                    left: `${barLeft + 20}px`,
                     top: `${barTop + barHeight * 0.1}px`,
                     height: `${barHeight * 0.8}px`,
+                    // Symmetrical positioning from the video container boundaries
+                    ...(isRightSide
+                        ? { right: `${barRight + 20}px` }
+                        : { left: `${barLeft + 20}px` }),
                 }}
             >
                 <div className="volumeScrollBarBackgroundWrapper">
