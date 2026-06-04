@@ -35,11 +35,15 @@ export interface Settings {
     useOverlay: boolean;
     useOverlayBackground: boolean;
     overlayBackgroundOpacity: number;
-    overlayPosition: string;
-    overlayXPos: number;
-    overlayYPos: number;
     overlayDuration: number;
     useDutchAngle: boolean;
+    overlayStyle: OverlayStyle;
+
+    overlayPosition: OverlayNumberPosition;
+    overlayXPos: number;
+    overlayYPos: number;
+
+    overlayBarSide: OverlayBarSide;
 
     enableDefault: boolean;
 
@@ -56,7 +60,7 @@ export const defaultSettings: Settings = {
     useRoundToNearestIncrement: true,
     useAlternateVolumeIncrement: false,
     alternateVolumeIncrement: 10,
-    alternateVolumeIncrementHotkey: "Shift",
+    alternateVolumeIncrementHotkey: "Control",
 
     usePreciseScroll: true,
     useCustomPreciseScrollThreshold: false,
@@ -66,14 +70,14 @@ export const defaultSettings: Settings = {
     volumeBoostAmount: 200,
     boostedColor: "#EB144C",
 
-    modifierKey: "Right Mouse",
+    modifierKey: "Shift",
     useModifierKey: false,
     invertModifierKey: false,
 
     toggleMuteKey: "Middle Mouse",
     useToggleMuteKey: false,
 
-    togglePauseKey: "Left Mouse",
+    togglePauseKey: "Right Mouse",
     useTogglePauseKey: false,
 
     fullscreenOnly: false,
@@ -83,11 +87,17 @@ export const defaultSettings: Settings = {
     useOverlay: true,
     useOverlayBackground: true,
     overlayBackgroundOpacity: 65,
+    overlayDuration: 2000,
+    useDutchAngle: false,
+    overlayStyle: "number",
+
+    // Number style settings
     overlayPosition: "tl",
     overlayXPos: 5,
     overlayYPos: 5,
-    overlayDuration: 2000,
-    useDutchAngle: false,
+
+    // Bar style settings
+    overlayBarSide: "left",
 
     enableDefault: true,
 
@@ -110,6 +120,18 @@ export type Pages =
     | "updatePage";
 
 export type OverlayType = "volume" | "mute" | "unmute" | "pause" | "play";
+
+export type OverlayStyle = "number" | "bar";
+
+export type OverlayNumberPosition =
+    | "tl"
+    | "tr"
+    | "bl"
+    | "br"
+    | "custom"
+    | "mouse";
+
+export type OverlayBarSide = "left" | "right";
 
 export interface videoElements {
     display: HTMLBaseElement;

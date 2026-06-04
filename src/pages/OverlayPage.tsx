@@ -115,6 +115,10 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
         setIsColorpickerVisible(!isColorpickerVisible);
     };
 
+    const handleOverlayStyleChange = (e: any) => {
+        editSetting("overlayStyle", e.currentTarget.value, activeDomain);
+    };
+
     const handlePositionChange = (e: any) => {
         editSetting("overlayPosition", e.currentTarget.value, activeDomain);
 
@@ -146,6 +150,10 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
         setYPos(value);
     };
 
+    const handleOverlayBarSideChange = (e: any) => {
+        editSetting("overlayBarSide", e.currentTarget.value, activeDomain);
+    };
+
     const useMouseWheelVolume = getValue("useMouseWheelVolume");
     const useOverlay = getValue("useOverlay");
     const overlayDurationValue = getValue("overlayDuration");
@@ -153,6 +161,8 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
     const overlayColor = getValue("overlayColor");
     const overlayPosition = getValue("overlayPosition");
     const useDutchAngle = getValue("useDutchAngle");
+    const overlayStyle = getValue("overlayStyle");
+    const overlayBarSide = getValue("overlayBarSide");
 
     const hasCategoryOverride =
         !!activeDomain &&
@@ -167,6 +177,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
             "overlayXPos",
             "overlayYPos",
             "useDutchAngle",
+            "overlayStyle",
         ].some((key) => isOverridden(key as keyof Settings));
 
     return (
@@ -465,141 +476,275 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                         )}
                 </div>
                 <div
-                    id="overlayPositionDropdownContainer"
-                    style={{ display: "flex", alignItems: "center" }}
+                    id="overlayStyleDropdownContainer"
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        marginTop: "10px",
+                        marginBottom: "10px",
+                    }}
                 >
-                    <Tooltip title="Set overlay position">
-                        <span style={{ flexGrow: 1, marginRight: "8px" }}>
+                    <Typography variant="body1" sx={{ flexGrow: 1 }}>
+                        Style
+                    </Typography>
+                    <Tooltip title="Set overlay style">
+                        <span style={{ marginRight: "8px" }}>
                             <select
-                                id="overlayPositionSelector"
-                                onChange={handlePositionChange}
-                                value={overlayPosition}
-                                disabled={!useMouseWheelVolume}
+                                id="overlayStyleSelector"
+                                onChange={handleOverlayStyleChange}
+                                value={overlayStyle}
+                                disabled={!useMouseWheelVolume || !useOverlay}
                                 style={{
-                                    width: "100%",
-                                    borderColor: isOverridden("overlayPosition")
+                                    width: "150px",
+                                    borderColor: isOverridden("overlayStyle")
                                         ? "#FCB900"
                                         : "inherit",
-                                    boxShadow: isOverridden("overlayPosition")
+                                    boxShadow: isOverridden("overlayStyle")
                                         ? "0 0 8px rgba(252, 185, 0, 0.4)"
                                         : "none",
                                     color: "black",
                                 }}
                             >
-                                <option value="mouse">Relative to Mouse</option>
-                                <option value="tl">Top Left</option>
-                                <option value="tr">Top Right</option>
-                                <option value="bl">Bottom Left</option>
-                                <option value="br">Bottom Right</option>
-                                <option value="custom">Custom</option>
+                                <option value="number">Number</option>
+                                <option value="bar">Bar</option>
                             </select>
                         </span>
                     </Tooltip>
                     <ResetButton
-                        isOverridden={isOverridden("overlayPosition")}
+                        isOverridden={isOverridden("overlayStyle")}
                         onReset={
                             activeDomain
-                                ? () => handleReset("overlayPosition")
+                                ? () => handleReset("overlayStyle")
                                 : undefined
                         }
                     />
                 </div>
-                <div id="overlayXContainer">
-                    <div id="overlayXPos" className="sliderDisplayContainer">
-                        <Typography variant="body1">
-                            Horizontal position
-                        </Typography>
+                {overlayStyle === "number" && (
+                    <>
                         <div
-                            style={{
-                                marginRight: activeDomain ? "42px" : "0px",
-                            }}
+                            id="overlayPositionDropdownContainer"
+                            style={{ display: "flex", alignItems: "center" }}
                         >
-                            <SettingsValueDisplay
-                                id="overlayXPosDisplay"
-                                className="sliderDisplay"
-                                value={xPos}
-                                tooltip="Current increment"
-                                isOverridden={isOverridden("overlayXPos")}
+                            <Tooltip title="Set overlay position">
+                                <span
+                                    style={{ flexGrow: 1, marginRight: "8px" }}
+                                >
+                                    <select
+                                        id="overlayPositionSelector"
+                                        onChange={handlePositionChange}
+                                        value={overlayPosition}
+                                        disabled={!useMouseWheelVolume}
+                                        style={{
+                                            width: "100%",
+                                            borderColor: isOverridden(
+                                                "overlayPosition",
+                                            )
+                                                ? "#FCB900"
+                                                : "inherit",
+                                            boxShadow: isOverridden(
+                                                "overlayPosition",
+                                            )
+                                                ? "0 0 8px rgba(252, 185, 0, 0.4)"
+                                                : "none",
+                                            color: "black",
+                                        }}
+                                    >
+                                        <option value="mouse">
+                                            Relative to Mouse
+                                        </option>
+                                        <option value="tl">Top Left</option>
+                                        <option value="tr">Top Right</option>
+                                        <option value="bl">Bottom Left</option>
+                                        <option value="br">Bottom Right</option>
+                                        <option value="custom">Custom</option>
+                                    </select>
+                                </span>
+                            </Tooltip>
+                            <ResetButton
+                                isOverridden={isOverridden("overlayPosition")}
+                                onReset={
+                                    activeDomain
+                                        ? () => handleReset("overlayPosition")
+                                        : undefined
+                                }
                             />
                         </div>
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center" }}>
-                        <SettingsSlider
-                            min={5}
-                            max={95}
-                            step={5}
-                            ariaLabel="Horizontal position"
-                            value={xPos}
-                            disabled={
-                                !useMouseWheelVolume ||
-                                overlayPosition !== "custom" ||
-                                !useOverlay
-                            }
-                            onChange={handleXChange}
-                            tooltip="The horizontal position of the overlay"
-                            isOverridden={isOverridden("overlayXPos")}
-                        />
-                        <ResetButton
-                            isOverridden={
-                                overlayPosition === "custom" &&
-                                isOverridden("overlayXPos")
-                            }
-                            onReset={
-                                activeDomain
-                                    ? () => handleReset("overlayXPos")
-                                    : undefined
-                            }
-                        />
-                    </div>
-                </div>
-                <div id="overlayYContainer">
-                    <div id="overlayYPos" className="sliderDisplayContainer">
-                        <Typography variant="body1">
-                            Vertical position
-                        </Typography>
+                        <div id="overlayXContainer">
+                            <div
+                                id="overlayXPos"
+                                className="sliderDisplayContainer"
+                            >
+                                <Typography variant="body1">
+                                    Horizontal position
+                                </Typography>
+                                <div
+                                    style={{
+                                        marginRight: activeDomain
+                                            ? "42px"
+                                            : "0px",
+                                    }}
+                                >
+                                    <SettingsValueDisplay
+                                        id="overlayXPosDisplay"
+                                        className="sliderDisplay"
+                                        value={xPos}
+                                        tooltip="Current increment"
+                                        isOverridden={isOverridden(
+                                            "overlayXPos",
+                                        )}
+                                    />
+                                </div>
+                            </div>
+                            <div
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                }}
+                            >
+                                <SettingsSlider
+                                    min={5}
+                                    max={95}
+                                    step={5}
+                                    ariaLabel="Horizontal position"
+                                    value={xPos}
+                                    disabled={
+                                        !useMouseWheelVolume ||
+                                        overlayPosition !== "custom" ||
+                                        !useOverlay
+                                    }
+                                    onChange={handleXChange}
+                                    tooltip="The horizontal position of the overlay"
+                                    isOverridden={isOverridden("overlayXPos")}
+                                />
+                                <ResetButton
+                                    isOverridden={
+                                        overlayPosition === "custom" &&
+                                        isOverridden("overlayXPos")
+                                    }
+                                    onReset={
+                                        activeDomain
+                                            ? () => handleReset("overlayXPos")
+                                            : undefined
+                                    }
+                                />
+                            </div>
+                        </div>
+                        <div id="overlayYContainer">
+                            <div
+                                id="overlayYPos"
+                                className="sliderDisplayContainer"
+                            >
+                                <Typography variant="body1">
+                                    Vertical position
+                                </Typography>
+                                <div
+                                    style={{
+                                        marginRight: activeDomain
+                                            ? "42px"
+                                            : "0px",
+                                    }}
+                                >
+                                    <SettingsValueDisplay
+                                        id="overlayYPosDisplay"
+                                        className="sliderDisplay"
+                                        value={yPos}
+                                        tooltip="Current increment"
+                                        isOverridden={isOverridden(
+                                            "overlayYPos",
+                                        )}
+                                    />
+                                </div>
+                            </div>
+                            <div
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                }}
+                            >
+                                <SettingsSlider
+                                    min={5}
+                                    max={95}
+                                    step={5}
+                                    ariaLabel="Vertical position"
+                                    value={yPos}
+                                    disabled={
+                                        !useMouseWheelVolume ||
+                                        overlayPosition !== "custom" ||
+                                        !useOverlay
+                                    }
+                                    onChange={handleYChange}
+                                    tooltip="The vertical position of the overlay"
+                                    isOverridden={isOverridden("overlayYPos")}
+                                />
+                                <ResetButton
+                                    isOverridden={
+                                        overlayPosition === "custom" &&
+                                        isOverridden("overlayYPos")
+                                    }
+                                    onReset={
+                                        activeDomain
+                                            ? () => handleReset("overlayYPos")
+                                            : undefined
+                                    }
+                                />
+                            </div>
+                        </div>
+                    </>
+                )}
+                {overlayStyle === "bar" && (
+                    <>
                         <div
+                            id="overlayBarSideContainer"
                             style={{
-                                marginRight: activeDomain ? "42px" : "0px",
+                                display: "flex",
+                                alignItems: "center",
+                                marginTop: "10px",
+                                marginBottom: "10px",
                             }}
                         >
-                            <SettingsValueDisplay
-                                id="overlayYPosDisplay"
-                                className="sliderDisplay"
-                                value={yPos}
-                                tooltip="Current increment"
-                                isOverridden={isOverridden("overlayYPos")}
+                            <Typography variant="body1" sx={{ flexGrow: 1 }}>
+                                Side
+                            </Typography>
+                            <Tooltip title="Set bar side">
+                                <span style={{ marginRight: "8px" }}>
+                                    <select
+                                        id="overlayBarSideSelector"
+                                        onChange={handleOverlayBarSideChange}
+                                        value={overlayBarSide}
+                                        disabled={
+                                            !useMouseWheelVolume || !useOverlay
+                                        }
+                                        style={{
+                                            width: "150px",
+                                            borderColor: isOverridden(
+                                                "overlayBarSide",
+                                            )
+                                                ? "#FCB900"
+                                                : "inherit",
+                                            boxShadow: isOverridden(
+                                                "overlayBarSide",
+                                            )
+                                                ? "0 0 8px rgba(252, 185, 0, 0.4)"
+                                                : "none",
+                                            color: "black",
+                                        }}
+                                    >
+                                        <option value="left">Left</option>
+                                        <option value="right">Right</option>
+                                    </select>
+                                </span>
+                            </Tooltip>
+                            <ResetButton
+                                isOverridden={isOverridden("overlayBarSide")}
+                                onReset={
+                                    activeDomain
+                                        ? () => handleReset("overlayBarSide")
+                                        : undefined
+                                }
                             />
                         </div>
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center" }}>
-                        <SettingsSlider
-                            min={5}
-                            max={95}
-                            step={5}
-                            ariaLabel="Vertical position"
-                            value={yPos}
-                            disabled={
-                                !useMouseWheelVolume ||
-                                overlayPosition !== "custom" ||
-                                !useOverlay
-                            }
-                            onChange={handleYChange}
-                            tooltip="The vertical position of the overlay"
-                            isOverridden={isOverridden("overlayYPos")}
-                        />
-                        <ResetButton
-                            isOverridden={
-                                overlayPosition === "custom" &&
-                                isOverridden("overlayYPos")
-                            }
-                            onReset={
-                                activeDomain
-                                    ? () => handleReset("overlayYPos")
-                                    : undefined
-                            }
-                        />
-                    </div>
-                </div>
+                    </>
+                )}
             </div>
         </div>
     );
