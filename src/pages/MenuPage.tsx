@@ -6,6 +6,7 @@ import Typography from "@mui/material/Typography/Typography";
 import ButtonGroup from "@mui/material/ButtonGroup/ButtonGroup";
 import Tooltip from "@mui/material/Tooltip/Tooltip";
 import SettingsSwitch from "../components/SettingsSwitch";
+import ResetButton from "../components/ResetButton";
 import MenuButton from "../components/MenuButton";
 import MouseIcon from "@mui/icons-material/Mouse";
 import KeyboardIcon from "@mui/icons-material/Keyboard";
@@ -75,16 +76,17 @@ const MenuPage: React.FC<MenuPageInterface> = ({
 
     const domainSetting =
         extensionData.domainOverrides?.[hostname.toLowerCase()];
-    const hasOverride = domainSetting !== undefined;
+    const isEnableDefaultOverridden =
+        domainSetting?.enableDefault !== undefined;
     const isEnabled = domainSetting?.enableDefault ?? settings.enableDefault;
 
-    const labelText = hasOverride
+    const labelText = isEnableDefaultOverridden
         ? isEnabled
-            ? "Enabled on this site"
-            : "Disabled on this site"
+            ? "Enabled on site"
+            : "Disabled on site"
         : isEnabled
-          ? "Enabled by default"
-          : "Disabled by default";
+          ? "Enabled: default"
+          : "Disabled: default";
 
     const handleEnableToggle = (value: boolean) => {
         const lowerHost = hostname.toLowerCase();
@@ -94,6 +96,27 @@ const MenuPage: React.FC<MenuPageInterface> = ({
             if (!prev) return prev;
             const newOverrides = { ...prev.domainOverrides };
             newOverrides[lowerHost] = { ...existing, enableDefault: value };
+            const newData = { ...prev, domainOverrides: newOverrides };
+            browser.storage.sync.set({ extensionData: newData });
+            return newData;
+        });
+    };
+
+    const handleUndoOverride = () => {
+        const lowerHost = hostname.toLowerCase();
+        setExtensionData((prev) => {
+            if (!prev) return prev;
+            const newOverrides = { ...prev.domainOverrides };
+            const existing = { ...newOverrides[lowerHost] };
+
+            delete existing.enableDefault;
+
+            if (Object.keys(existing).length === 0) {
+                delete newOverrides[lowerHost];
+            } else {
+                newOverrides[lowerHost] = existing;
+            }
+
             const newData = { ...prev, domainOverrides: newOverrides };
             browser.storage.sync.set({ extensionData: newData });
             return newData;
@@ -128,13 +151,21 @@ const MenuPage: React.FC<MenuPageInterface> = ({
 
     return (
         <div className="menuContainer">
-            <div id="blacklistContainer">
+            <div
+                id="blacklistContainer"
+                style={{ display: "flex", alignItems: "center", width: "100%" }}
+            >
                 <SettingsSwitch
                     label={labelText}
                     checked={isEnabled}
                     onChange={handleEnableToggle}
                     tooltip="Enable or disable Volume Scroll for this site"
                     placement="bottom"
+                    isOverridden={isEnableDefaultOverridden}
+                />
+                <ResetButton
+                    isOverridden={isEnableDefaultOverridden}
+                    onReset={handleUndoOverride}
                 />
             </div>
 
