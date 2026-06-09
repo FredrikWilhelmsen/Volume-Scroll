@@ -114,6 +114,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
     const useDutchAngle = getValue("useDutchAngle");
     const overlayStyle = getValue("overlayStyle");
     const overlayBarSide = getValue("overlayBarSide");
+    const showNumericValue = getValue("showNumericValue");
 
     const hasCategoryOverride =
         !!activeDomain &&
@@ -130,6 +131,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
             "useDutchAngle",
             "overlayStyle",
             "overlayBarSide",
+            "showNumericValue",
         ].some((key) => isOverridden(key as keyof Settings));
 
     const getDropdownSx = (overrideKey: keyof Settings) => {
@@ -494,6 +496,20 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                             selectId="overlayBarSideSelector"
                         />
                     </>
+                )}
+                {overlayStyle !== "number" && (
+                    <Toggle
+                        label="Show numeric value"
+                        settingKey="showNumericValue"
+                        checked={showNumericValue}
+                        disabled={!useMouseWheelVolume || !useOverlay}
+                        tooltip="Show the numeric value of the volume"
+                        activeDomain={activeDomain}
+                        editSetting={editSetting}
+                        isOverridden={isOverridden}
+                        handleReset={handleReset}
+                        id="showNumericValueContainer"
+                    />
                 )}
             </div>
         </div>
