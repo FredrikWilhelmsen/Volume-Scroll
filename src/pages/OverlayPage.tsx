@@ -508,6 +508,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                                 <option value="number">Number</option>
                                 <option value="bar">Bar</option>
                                 <option value="circle">Circle</option>
+                                <option value="retro">Retro Bar</option>
                             </select>
                         </span>
                     </Tooltip>
@@ -692,7 +693,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                         </div>
                     </>
                 )}
-                {overlayStyle === "bar" && (
+                {(overlayStyle === "bar" || overlayStyle === "retro") && (
                     <>
                         <div
                             id="overlayBarSideContainer"
