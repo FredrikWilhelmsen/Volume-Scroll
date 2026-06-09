@@ -3,6 +3,7 @@ import { Settings, OverlayType } from "../types";
 import { NumberOverlay } from "./overlays/NumberOverlay";
 import { BarOverlay } from "./overlays/BarOverlay";
 import { CircleOverlay } from "./overlays/CircleOverlay";
+import { RetroBarOverlay } from "./overlays/RetroBarOverlay";
 
 export interface VolumeOverlayProps {
     type: OverlayType;
@@ -129,6 +130,25 @@ export const VolumeOverlay: React.FC<VolumeOverlayProps> = ({
     if (settings.overlayStyle === "circle") {
         return (
             <CircleOverlay
+                volume={volume}
+                mouseX={mouseX}
+                mouseY={mouseY}
+                settings={settings}
+                animationKey={animationKey}
+                fadeStartPercentage={fadeStartPercentage}
+                playerRect={playerRect}
+                parentRect={parentRect}
+                isMuteSticky={isMuteSticky}
+                lastMuteStickyType={lastMuteStickyType}
+                isPauseSticky={isPauseSticky}
+                lastPauseStickyType={lastPauseStickyType}
+            />
+        );
+    }
+
+    if (settings.overlayStyle === "retro") {
+        return (
+            <RetroBarOverlay
                 volume={volume}
                 mouseX={mouseX}
                 mouseY={mouseY}
