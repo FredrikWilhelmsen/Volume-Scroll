@@ -3,8 +3,6 @@ import { Settings, Pages } from "../types";
 import BackButton from "../components/BackButton";
 import Tooltip from "@mui/material/Tooltip/Tooltip";
 import Typography from "@mui/material/Typography/Typography";
-import IconButton from "@mui/material/IconButton/IconButton";
-import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import "../style/overlayPage.css";
 import Paper from "@mui/material/Paper";
 import { TwitterPicker } from "@hello-pangea/color-picker";
@@ -12,6 +10,10 @@ import SettingsSlider from "../components/SettingsSlider";
 import SettingsSwitch from "../components/SettingsSwitch";
 import SettingsValueDisplay from "../components/SettingsValueDisplay";
 import ResetButton from "../components/ResetButton";
+
+import FormControl from "@mui/material/FormControl";
+import Select, { SelectChangeEvent } from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
 
 interface OverlayPageInterface {
     settings: Settings;
@@ -55,6 +57,16 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
     );
 
     const [isColorpickerVisible, setIsColorpickerVisible] = useState(false);
+
+    // States to control Tooltip visibility manually depending on Select state
+    const [styleTooltipOpen, setStyleTooltipOpen] = useState(false);
+    const [styleSelectOpen, setStyleSelectOpen] = useState(false);
+
+    const [positionTooltipOpen, setPositionTooltipOpen] = useState(false);
+    const [positionSelectOpen, setPositionSelectOpen] = useState(false);
+
+    const [sideTooltipOpen, setSideTooltipOpen] = useState(false);
+    const [sideSelectOpen, setSideSelectOpen] = useState(false);
 
     useEffect(() => {
         setXPos(getValue("overlayXPos"));
@@ -115,12 +127,13 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
         setIsColorpickerVisible(!isColorpickerVisible);
     };
 
-    const handleOverlayStyleChange = (e: any) => {
-        editSetting("overlayStyle", e.currentTarget.value, activeDomain);
+    const handleOverlayStyleChange = (e: SelectChangeEvent<string>) => {
+        editSetting("overlayStyle", e.target.value, activeDomain);
     };
 
-    const handlePositionChange = (e: any) => {
-        editSetting("overlayPosition", e.currentTarget.value, activeDomain);
+    const handlePositionChange = (e: SelectChangeEvent<string>) => {
+        const val = e.target.value;
+        editSetting("overlayPosition", val, activeDomain);
 
         const save = (x: number, y: number) => {
             setXPos(x);
@@ -129,13 +142,13 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
             editSetting("overlayYPos", y, activeDomain);
         };
 
-        if (e.currentTarget.value === "tl") {
+        if (val === "tl") {
             save(5, 5);
-        } else if (e.currentTarget.value === "tr") {
+        } else if (val === "tr") {
             save(95, 5);
-        } else if (e.currentTarget.value === "bl") {
+        } else if (val === "bl") {
             save(5, 95);
-        } else if (e.currentTarget.value === "br") {
+        } else if (val === "br") {
             save(95, 95);
         }
     };
@@ -150,8 +163,8 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
         setYPos(value);
     };
 
-    const handleOverlayBarSideChange = (e: any) => {
-        editSetting("overlayBarSide", e.currentTarget.value, activeDomain);
+    const handleOverlayBarSideChange = (e: SelectChangeEvent<string>) => {
+        editSetting("overlayBarSide", e.target.value, activeDomain);
     };
 
     const useMouseWheelVolume = getValue("useMouseWheelVolume");
@@ -178,7 +191,69 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
             "overlayYPos",
             "useDutchAngle",
             "overlayStyle",
+            "overlayBarSide",
         ].some((key) => isOverridden(key as keyof Settings));
+
+    // Dynamic style configuration for standard bottom-line inputs
+    const getDropdownSx = (overrideKey: keyof Settings) => {
+        const hasOverride = isOverridden(overrideKey);
+        const accentColor = hasOverride ? "#FCB900" : "#1976d2";
+
+        return {
+            height: "32px",
+            fontSize: "0.9rem",
+            color: "white",
+            "& .MuiSelect-icon": {
+                color: "white",
+            },
+            "&:before": {
+                borderColor: accentColor,
+            },
+            "&:hover:not(.Mui-disabled):before": {
+                borderColor: `${accentColor} !important`,
+            },
+            "&:after": {
+                borderColor: accentColor,
+            },
+            boxShadow: "none", // Removed golden glow / dropshadow
+        };
+    };
+
+    // Advanced Menu styling configs for white background, soft blue hover, and aligned anchor placement
+    const menuPropsSettings = {
+        disableScrollLock: true,
+        anchorOrigin: {
+            vertical: "bottom" as const,
+            horizontal: "left" as const,
+        },
+        transformOrigin: {
+            vertical: "top" as const,
+            horizontal: "left" as const,
+        },
+        PaperProps: {
+            sx: {
+                bgcolor: "white", // Forces solid white background
+                boxShadow: "0px 4px 12px rgba(0,0,0,0.15)",
+                marginTop: "4px", // Tiny space below the line
+                "& .MuiMenuItem-root": {
+                    fontSize: "0.85rem", // Smaller, compact size
+                    padding: "6px 16px",
+                    color: "black", // Forces text color to black inside menu
+                    "&:hover": {
+                        bgcolor: "rgba(25, 118, 210, 0.12) !important", // Soft MUI Blue hover highlight
+                    },
+                    "&.Mui-selected": {
+                        bgcolor: "rgba(25, 118, 210, 0.2) !important", // Soft blue selected indicator
+                        color: "#1976d2", // Blue highlight for selected text
+                        fontWeight: 500,
+                        "&:hover": {
+                            bgcolor: "rgba(25, 118, 210, 0.28) !important",
+                        },
+                    },
+                },
+            },
+        },
+    };
 
     return (
         <div>
@@ -475,6 +550,8 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                             />
                         )}
                 </div>
+
+                {/* Style Dropdown Container */}
                 <div
                     id="overlayStyleDropdownContainer"
                     style={{
@@ -487,29 +564,36 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                     <Typography variant="body1" sx={{ flexGrow: 1 }}>
                         Style
                     </Typography>
-                    <Tooltip title="Set overlay style">
+                    <Tooltip
+                        title="Set overlay style"
+                        open={styleTooltipOpen && !styleSelectOpen}
+                        onOpen={() => setStyleTooltipOpen(true)}
+                        onClose={() => setStyleTooltipOpen(false)}
+                    >
                         <span style={{ marginRight: "8px" }}>
-                            <select
-                                id="overlayStyleSelector"
-                                onChange={handleOverlayStyleChange}
-                                value={overlayStyle}
-                                disabled={!useMouseWheelVolume || !useOverlay}
-                                style={{
-                                    width: "150px",
-                                    borderColor: isOverridden("overlayStyle")
-                                        ? "#FCB900"
-                                        : "inherit",
-                                    boxShadow: isOverridden("overlayStyle")
-                                        ? "0 0 8px rgba(252, 185, 0, 0.4)"
-                                        : "none",
-                                    color: "black",
-                                }}
+                            <FormControl
+                                variant="standard"
+                                size="small"
+                                style={{ width: "150px" }}
                             >
-                                <option value="number">Number</option>
-                                <option value="bar">Bar</option>
-                                <option value="circle">Circle</option>
-                                <option value="retro">Retro Bar</option>
-                            </select>
+                                <Select
+                                    id="overlayStyleSelector"
+                                    value={overlayStyle}
+                                    onChange={handleOverlayStyleChange}
+                                    disabled={
+                                        !useMouseWheelVolume || !useOverlay
+                                    }
+                                    onOpen={() => setStyleSelectOpen(true)}
+                                    onClose={() => setStyleSelectOpen(false)}
+                                    sx={getDropdownSx("overlayStyle")}
+                                    MenuProps={menuPropsSettings}
+                                >
+                                    <MenuItem value="number">Number</MenuItem>
+                                    <MenuItem value="bar">Bar</MenuItem>
+                                    <MenuItem value="circle">Circle</MenuItem>
+                                    <MenuItem value="retro">Retro Bar</MenuItem>
+                                </Select>
+                            </FormControl>
                         </span>
                     </Tooltip>
                     <ResetButton
@@ -521,45 +605,71 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                         }
                     />
                 </div>
+
                 {(overlayStyle === "number" || overlayStyle === "circle") && (
                     <>
+                        {/* Position Dropdown Container */}
                         <div
                             id="overlayPositionDropdownContainer"
-                            style={{ display: "flex", alignItems: "center" }}
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                marginTop: "10px",
+                                marginBottom: "10px",
+                            }}
                         >
-                            <Tooltip title="Set overlay position">
+                            <Tooltip
+                                title="Set overlay position"
+                                open={
+                                    positionTooltipOpen && !positionSelectOpen
+                                }
+                                onOpen={() => setPositionTooltipOpen(true)}
+                                onClose={() => setPositionTooltipOpen(false)}
+                            >
                                 <span
                                     style={{ flexGrow: 1, marginRight: "8px" }}
                                 >
-                                    <select
-                                        id="overlayPositionSelector"
-                                        onChange={handlePositionChange}
-                                        value={overlayPosition}
-                                        disabled={!useMouseWheelVolume}
-                                        style={{
-                                            width: "100%",
-                                            borderColor: isOverridden(
-                                                "overlayPosition",
-                                            )
-                                                ? "#FCB900"
-                                                : "inherit",
-                                            boxShadow: isOverridden(
-                                                "overlayPosition",
-                                            )
-                                                ? "0 0 8px rgba(252, 185, 0, 0.4)"
-                                                : "none",
-                                            color: "black",
-                                        }}
+                                    <FormControl
+                                        variant="standard"
+                                        size="small"
+                                        fullWidth
                                     >
-                                        <option value="mouse">
-                                            Relative to Mouse
-                                        </option>
-                                        <option value="tl">Top Left</option>
-                                        <option value="tr">Top Right</option>
-                                        <option value="bl">Bottom Left</option>
-                                        <option value="br">Bottom Right</option>
-                                        <option value="custom">Custom</option>
-                                    </select>
+                                        <Select
+                                            id="overlayPositionSelector"
+                                            value={overlayPosition}
+                                            onChange={handlePositionChange}
+                                            disabled={!useMouseWheelVolume}
+                                            onOpen={() =>
+                                                setPositionSelectOpen(true)
+                                            }
+                                            onClose={() =>
+                                                setPositionSelectOpen(false)
+                                            }
+                                            sx={getDropdownSx(
+                                                "overlayPosition",
+                                            )}
+                                            MenuProps={menuPropsSettings}
+                                        >
+                                            <MenuItem value="mouse">
+                                                Relative to Mouse
+                                            </MenuItem>
+                                            <MenuItem value="tl">
+                                                Top Left
+                                            </MenuItem>
+                                            <MenuItem value="tr">
+                                                Top Right
+                                            </MenuItem>
+                                            <MenuItem value="bl">
+                                                Bottom Left
+                                            </MenuItem>
+                                            <MenuItem value="br">
+                                                Bottom Right
+                                            </MenuItem>
+                                            <MenuItem value="custom">
+                                                Custom
+                                            </MenuItem>
+                                        </Select>
+                                    </FormControl>
                                 </span>
                             </Tooltip>
                             <ResetButton
@@ -695,6 +805,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                 )}
                 {(overlayStyle === "bar" || overlayStyle === "retro") && (
                     <>
+                        {/* Side Dropdown Container */}
                         <div
                             id="overlayBarSideContainer"
                             style={{
@@ -707,33 +818,45 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                             <Typography variant="body1" sx={{ flexGrow: 1 }}>
                                 Side
                             </Typography>
-                            <Tooltip title="Set bar side">
+                            <Tooltip
+                                title="Set bar side"
+                                open={sideTooltipOpen && !sideSelectOpen}
+                                onOpen={() => setSideTooltipOpen(true)}
+                                onClose={() => setSideTooltipOpen(false)}
+                            >
                                 <span style={{ marginRight: "8px" }}>
-                                    <select
-                                        id="overlayBarSideSelector"
-                                        onChange={handleOverlayBarSideChange}
-                                        value={overlayBarSide}
-                                        disabled={
-                                            !useMouseWheelVolume || !useOverlay
-                                        }
-                                        style={{
-                                            width: "150px",
-                                            borderColor: isOverridden(
-                                                "overlayBarSide",
-                                            )
-                                                ? "#FCB900"
-                                                : "inherit",
-                                            boxShadow: isOverridden(
-                                                "overlayBarSide",
-                                            )
-                                                ? "0 0 8px rgba(252, 185, 0, 0.4)"
-                                                : "none",
-                                            color: "black",
-                                        }}
+                                    <FormControl
+                                        variant="standard"
+                                        size="small"
+                                        style={{ width: "150px" }}
                                     >
-                                        <option value="left">Left</option>
-                                        <option value="right">Right</option>
-                                    </select>
+                                        <Select
+                                            id="overlayBarSideSelector"
+                                            value={overlayBarSide}
+                                            onChange={
+                                                handleOverlayBarSideChange
+                                            }
+                                            disabled={
+                                                !useMouseWheelVolume ||
+                                                !useOverlay
+                                            }
+                                            onOpen={() =>
+                                                setSideSelectOpen(true)
+                                            }
+                                            onClose={() =>
+                                                setSideSelectOpen(false)
+                                            }
+                                            sx={getDropdownSx("overlayBarSide")}
+                                            MenuProps={menuPropsSettings}
+                                        >
+                                            <MenuItem value="left">
+                                                Left
+                                            </MenuItem>
+                                            <MenuItem value="right">
+                                                Right
+                                            </MenuItem>
+                                        </Select>
+                                    </FormControl>
                                 </span>
                             </Tooltip>
                             <ResetButton
