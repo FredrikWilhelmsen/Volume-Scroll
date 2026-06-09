@@ -118,7 +118,7 @@ export class DefaultHandler {
         return gainNode;
     }
 
-    private hasAudio(video: any): boolean {
+    protected hasAudio(video: any): boolean {
         if (video.audioTracks && video.audioTracks.length > 0) {
             return true;
         }
