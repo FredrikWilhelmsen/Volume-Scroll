@@ -408,6 +408,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                                 checked={useOverlayBackground}
                                 onChange={handleOverlayBackgroundToggle}
                                 tooltip="Enable or disable overlay background"
+                                disabled={!useMouseWheelVolume || !useOverlay}
                                 isOverridden={isOverridden(
                                     "useOverlayBackground",
                                 )}
@@ -638,7 +639,10 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                                             id="overlayPositionSelector"
                                             value={overlayPosition}
                                             onChange={handlePositionChange}
-                                            disabled={!useMouseWheelVolume}
+                                            disabled={
+                                                !useMouseWheelVolume ||
+                                                !useOverlay
+                                            }
                                             onOpen={() =>
                                                 setPositionSelectOpen(true)
                                             }
