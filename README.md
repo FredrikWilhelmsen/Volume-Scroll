@@ -31,6 +31,7 @@ A highly customizable browser extension for changing video volume by scrolling.
 - **Set a default** volume level for a video, and optionally start them muted.
 - **Extremely customizable**, change every setting on a per site basis.
 - **Boost audio** up to 500%.
+- Also works with YT Music and Spotify!
 
 _Take it to the next level, and scroll to change the settings in the extension!_
 
