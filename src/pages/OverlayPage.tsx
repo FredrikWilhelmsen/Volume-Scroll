@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Settings, Pages } from "../types";
+import { Settings, Pages, colors } from "../types";
 import BackButton from "../components/BackButton";
 import Tooltip from "@mui/material/Tooltip/Tooltip";
-import Typography from "@mui/material/Typography/Typography";
 import "../style/overlayPage.css";
 import ResetButton from "../components/ResetButton";
-
 import FormControl from "@mui/material/FormControl";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
-
 import Toggle from "../components/Toggle";
 import Slider from "../components/Slider";
 import ToggleSlider from "../components/ToggleSlider";
@@ -68,20 +65,6 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
         setOverlayDuration(getValue("overlayDuration"));
         setOverlayBackgroundOpacity(getValue("overlayBackgroundOpacity"));
     }, [settings, overrideSettings]);
-
-    const colors: string[] = [
-        "#FF6900",
-        "#FCB900",
-        "#7BDCB5",
-        "#00D084",
-        "#8ED1FC",
-        "#0693E3",
-        "#ABB8C3",
-        "#EB144C",
-        "#F78DA7",
-        "#9900EF",
-        "#DABDAB",
-    ];
 
     const handlePositionChange = (e: SelectChangeEvent<string>) => {
         const val = e.target.value;
