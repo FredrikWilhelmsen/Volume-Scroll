@@ -329,8 +329,8 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                     options={[
                         { value: "number", label: "Number" },
                         { value: "bar", label: "Bar" },
-                        { value: "circle", label: "Circle" },
                         { value: "retro", label: "Retro Bar" },
+                        { value: "circle", label: "Circle" },
                     ]}
                     disabled={!useMouseWheelVolume || !useOverlay}
                     tooltip="Set overlay style"
