@@ -44,6 +44,7 @@ export interface Settings {
     overlayYPos: number;
 
     overlayBarSide: OverlayBarSide;
+    showNumericValue: boolean;
 
     enableDefault: boolean;
 
@@ -98,6 +99,7 @@ export const defaultSettings: Settings = {
 
     // Bar style settings
     overlayBarSide: "left",
+    showNumericValue: false,
 
     enableDefault: true,
 
