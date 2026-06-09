@@ -1,18 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Settings, Pages } from "../types";
 import BackButton from "../components/BackButton";
-import Typography from "@mui/material/Typography/Typography";
-import IconButton from "@mui/material/IconButton/IconButton";
-import RestartAltIcon from "@mui/icons-material/RestartAlt";
-import Tooltip from "@mui/material/Tooltip/Tooltip";
 import "../style/miscPage.css";
-import Paper from "@mui/material/Paper";
-import { TwitterPicker } from "@hello-pangea/color-picker";
-import SettingsSlider from "../components/SettingsSlider";
-import HotkeyButton from "../components/HotkeyButton";
-import SettingsSwitch from "../components/SettingsSwitch";
-import SettingsValueDisplay from "../components/SettingsValueDisplay";
-import ResetButton from "../components/ResetButton";
+import ToggleSlider from "../components/ToggleSlider";
+import Toggle from "../components/Toggle";
+import ColorPicker from "../components/ColorPicker";
+import Hotkey from "../components/Hotkey";
 
 interface MiscPageInterface {
     settings: Settings;
@@ -55,8 +48,6 @@ const MiscPage: React.FC<MiscPageInterface> = ({
     const [alternateVolumeIncrement, setAlternateVolumeIncrement] = useState(
         getValue("alternateVolumeIncrement"),
     );
-    const [isBoostColorPickerVisible, setIsBoostColorPickerVisible] =
-        useState(false);
 
     useEffect(() => {
         setDefaultVolume(getValue("defaultVolume"));
@@ -77,53 +68,6 @@ const MiscPage: React.FC<MiscPageInterface> = ({
         "#9900EF",
         "#DABDAB",
     ];
-
-    const handleUseDefaultVolumeToggle = (value: boolean) => {
-        editSetting("useDefaultVolume", value, activeDomain);
-    };
-
-    const handleDefaultVolumeChange = (value: number) => {
-        setDefaultVolume(value);
-        editSetting("defaultVolume", value, activeDomain);
-    };
-
-    const handleStartMutedToggle = (value: boolean) => {
-        editSetting("startMuted", value, activeDomain);
-    };
-
-    const handleBoostVolumeToggle = (value: boolean) => {
-        editSetting("doBoostVolume", value, activeDomain);
-    };
-
-    const handleBoostVolumeChange = (value: number) => {
-        setVolumeBoostAmount(value);
-        editSetting("volumeBoostAmount", value, activeDomain);
-    };
-
-    const handleBoostColorChange = (color: any) => {
-        if (!getValue("useMouseWheelVolume") || !getValue("doBoostVolume"))
-            return;
-        editSetting("boostedColor", color.hex, activeDomain);
-    };
-
-    const handleBoostColorPickerClick = () => {
-        if (!getValue("useMouseWheelVolume") || !getValue("doBoostVolume"))
-            return;
-        setIsBoostColorPickerVisible(!isBoostColorPickerVisible);
-    };
-
-    const handleAlternateIncrementToggle = (value: boolean) => {
-        editSetting("useAlternateVolumeIncrement", value, activeDomain);
-    };
-
-    const handleAlternateIncrementChange = (value: number) => {
-        editSetting("alternateVolumeIncrement", value, activeDomain);
-        setAlternateVolumeIncrement(value);
-    };
-
-    const handleAlternateIncrementHotkeySet = (value: string) => {
-        editSetting("alternateVolumeIncrementHotkey", value, activeDomain);
-    };
 
     const useDefaultVolume = getValue("useDefaultVolume");
     const startMuted = getValue("startMuted");
@@ -161,283 +105,113 @@ const MiscPage: React.FC<MiscPageInterface> = ({
 
             <div className="settingsContainer">
                 <div id="defaultVolumeContainer">
-                    <div id="defaultVolumeToggleContainer">
-                        <SettingsSwitch
-                            label="Default volume"
-                            checked={useDefaultVolume}
-                            onChange={handleUseDefaultVolumeToggle}
-                            tooltip="Enable or disable default volume"
-                            isOverridden={isOverridden("useDefaultVolume")}
-                        />
-                        <SettingsValueDisplay
-                            id="defaultVolumeDisplay"
-                            value={defaultVolume}
-                            tooltip="Current default volume"
-                            isOverridden={isOverridden("defaultVolume")}
-                        />
-                        <ResetButton
-                            isOverridden={isOverridden("useDefaultVolume")}
-                            onReset={
-                                activeDomain
-                                    ? () => handleReset("useDefaultVolume")
-                                    : undefined
-                            }
-                        />
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center" }}>
-                        <SettingsSlider
-                            min={0}
-                            max={100}
-                            step={5}
-                            ariaLabel="Default volume"
-                            value={defaultVolume}
-                            disabled={!useDefaultVolume}
-                            onChange={handleDefaultVolumeChange}
-                            tooltip="Set what volume videos should start at"
-                            isOverridden={isOverridden("defaultVolume")}
-                        />
-                        <ResetButton
-                            isOverridden={isOverridden("defaultVolume")}
-                            onReset={
-                                activeDomain
-                                    ? () => handleReset("defaultVolume")
-                                    : undefined
-                            }
-                        />
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center" }}>
-                        <SettingsSwitch
-                            label="Start muted"
-                            checked={startMuted}
-                            onChange={handleStartMutedToggle}
-                            disabled={!useDefaultVolume}
-                            tooltip="Makes default volume start new videos muted"
-                            isOverridden={isOverridden("startMuted")}
-                        />
-                        <ResetButton
-                            isOverridden={isOverridden("startMuted")}
-                            onReset={
-                                activeDomain
-                                    ? () => handleReset("startMuted")
-                                    : undefined
-                            }
-                        />
-                    </div>
+                    <ToggleSlider
+                        label="Default volume"
+                        switchKey="useDefaultVolume"
+                        sliderKey="defaultVolume"
+                        checked={useDefaultVolume}
+                        value={defaultVolume}
+                        min={0}
+                        max={100}
+                        step={5}
+                        ariaLabel="Default volume"
+                        switchTooltip="Enable or disable default volume"
+                        sliderTooltip="Set what volume videos should start at"
+                        valueTooltip="Current default volume"
+                        activeDomain={activeDomain}
+                        editSetting={editSetting}
+                        isOverridden={isOverridden}
+                        handleReset={handleReset}
+                        onValueChange={setDefaultVolume}
+                        toggleContainerId="defaultVolumeToggleContainer"
+                        valueDisplayId="defaultVolumeDisplay"
+                    />
+                    <Toggle
+                        label="Start muted"
+                        settingKey="startMuted"
+                        checked={startMuted}
+                        disabled={!useDefaultVolume}
+                        tooltip="Makes default volume start new videos muted"
+                        activeDomain={activeDomain}
+                        editSetting={editSetting}
+                        isOverridden={isOverridden}
+                        handleReset={handleReset}
+                        containerStyle={{ display: "flex", alignItems: "center" }}
+                    />
                 </div>
-                <div id="boostVolumeContainer">
-                    <div id="boostVolumeToggleContainer">
-                        <SettingsSwitch
-                            label="Boost volume"
-                            checked={doBoostVolume}
-                            onChange={handleBoostVolumeToggle}
-                            tooltip="Increase volume limit past 100% - Experimental, disable if you experience issues"
-                            isOverridden={isOverridden("doBoostVolume")}
-                        />
-                        <SettingsValueDisplay
-                            id="boostVolumeDisplay"
-                            value={volumeBoostAmount}
-                            tooltip="Current volume limit"
-                            isOverridden={isOverridden("volumeBoostAmount")}
-                        />
-                        <ResetButton
-                            isOverridden={isOverridden("doBoostVolume")}
-                            onReset={
-                                activeDomain
-                                    ? () => handleReset("doBoostVolume")
-                                    : undefined
-                            }
-                        />
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center" }}>
-                        <SettingsSlider
-                            min={100}
-                            max={500}
-                            step={5}
-                            ariaLabel="Volume boost"
-                            value={volumeBoostAmount}
-                            disabled={!doBoostVolume}
-                            onChange={handleBoostVolumeChange}
-                            tooltip="Current volume limit"
-                            isOverridden={isOverridden("volumeBoostAmount")}
-                        />
-                        <ResetButton
-                            isOverridden={isOverridden("volumeBoostAmount")}
-                            onReset={
-                                activeDomain
-                                    ? () => handleReset("volumeBoostAmount")
-                                    : undefined
-                            }
-                        />
-                    </div>
-                </div>
-                <div id="boostColorPickerContainer">
-                    <div
-                        id="colorDisplay"
-                        style={{
-                            opacity:
-                                !getValue("useMouseWheelVolume") ||
-                                !doBoostVolume
-                                    ? 0.5
-                                    : 1,
-                            display: "flex",
-                            alignItems: "center",
-                        }}
-                    >
-                        <Paper
-                            elevation={2}
-                            sx={{
-                                bgcolor: boostedColor,
-                                width: 40,
-                                height: 20,
-                                mr: 1,
-                                marginLeft: "4px",
-                                cursor:
-                                    !getValue("useMouseWheelVolume") ||
-                                    !doBoostVolume
-                                        ? "default"
-                                        : "pointer",
-                                outline: isOverridden("boostedColor")
-                                    ? "2px solid #FCB900"
-                                    : "2px solid #1976d2",
-                                outlineOffset: "2px",
-                            }}
-                            onClick={handleBoostColorPickerClick}
-                        />
-                        <Typography
-                            variant="body1"
-                            sx={{
-                                flexGrow: 1,
-                                color: isOverridden("boostedColor")
-                                    ? "#FCB900"
-                                    : "inherit",
-                                textShadow: isOverridden("boostedColor")
-                                    ? "0 0 8px rgba(252, 185, 0, 0.4)"
-                                    : "none",
-                            }}
-                        >
-                            Boosted color
-                        </Typography>
-                        <ResetButton
-                            isOverridden={isOverridden("boostedColor")}
-                            onReset={
-                                activeDomain
-                                    ? () => handleReset("boostedColor")
-                                    : undefined
-                            }
-                        />
-                    </div>
-
-                    {isBoostColorPickerVisible &&
-                        !(
-                            !getValue("useMouseWheelVolume") || !doBoostVolume
-                        ) && (
-                            <TwitterPicker
-                                colors={colors}
-                                color={boostedColor}
-                                onChange={handleBoostColorChange}
-                                width="220px"
-                            />
-                        )}
-                </div>
+                <ToggleSlider
+                    label="Boost volume"
+                    switchKey="doBoostVolume"
+                    sliderKey="volumeBoostAmount"
+                    checked={doBoostVolume}
+                    value={volumeBoostAmount}
+                    min={100}
+                    max={500}
+                    step={5}
+                    ariaLabel="Volume boost"
+                    switchTooltip="Increase volume limit past 100% - Experimental, disable if you experience issues"
+                    sliderTooltip="Current volume limit"
+                    valueTooltip="Current volume limit"
+                    activeDomain={activeDomain}
+                    editSetting={editSetting}
+                    isOverridden={isOverridden}
+                    handleReset={handleReset}
+                    onValueChange={setVolumeBoostAmount}
+                    containerId="boostVolumeContainer"
+                    toggleContainerId="boostVolumeToggleContainer"
+                    valueDisplayId="boostVolumeDisplay"
+                />
+                <ColorPicker
+                    label="Boosted color"
+                    settingKey="boostedColor"
+                    color={boostedColor}
+                    colors={colors}
+                    disabled={!getValue("useMouseWheelVolume") || !doBoostVolume}
+                    tooltip="Set the color of the overlay when volume is boosted"
+                    activeDomain={activeDomain}
+                    editSetting={editSetting}
+                    isOverridden={isOverridden}
+                    handleReset={handleReset}
+                    containerId="boostColorPickerContainer"
+                />
                 <div id="alternateIncrementContainer">
-                    <div id="alternateIncrementToggleContainer">
-                        <SettingsSwitch
-                            label="Alt. Step"
-                            checked={useAlternateVolumeIncrement}
-                            onChange={handleAlternateIncrementToggle}
-                            tooltip="Enable or disable alternate increment hotkey"
-                            isOverridden={isOverridden(
-                                "useAlternateVolumeIncrement",
-                            )}
-                        />
-                        <SettingsValueDisplay
-                            id="alternateIncrementDisplay"
-                            value={alternateVolumeIncrement}
-                            tooltip="Current alternate increment"
-                            isOverridden={isOverridden(
-                                "alternateVolumeIncrement",
-                            )}
-                        />
-                        <ResetButton
-                            isOverridden={isOverridden(
-                                "useAlternateVolumeIncrement",
-                            )}
-                            onReset={
-                                activeDomain
-                                    ? () =>
-                                          handleReset(
-                                              "useAlternateVolumeIncrement",
-                                          )
-                                    : undefined
-                            }
-                        />
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center" }}>
-                        <SettingsSlider
-                            min={1}
-                            max={50}
-                            step={1}
-                            ariaLabel="Alternate volume increment"
-                            value={alternateVolumeIncrement}
-                            disabled={!useAlternateVolumeIncrement}
-                            onChange={handleAlternateIncrementChange}
-                            tooltip="How much the volume will change per step using the alternate increment hotkey"
-                            isOverridden={isOverridden(
-                                "alternateVolumeIncrement",
-                            )}
-                        />
-                        <ResetButton
-                            isOverridden={isOverridden(
-                                "alternateVolumeIncrement",
-                            )}
-                            onReset={
-                                activeDomain
-                                    ? () =>
-                                          handleReset(
-                                              "alternateVolumeIncrement",
-                                          )
-                                    : undefined
-                            }
-                        />
-                    </div>
-                    <div
-                        style={{
-                            display: "flex",
-                            alignItems: "center",
-                            width: "100%",
-                            marginTop: "12px",
-                        }}
-                    >
-                        <div style={{ flexGrow: 1 }}>
-                            <HotkeyButton
-                                value={alternateVolumeIncrementHotkey}
-                                onSet={handleAlternateIncrementHotkeySet}
-                                disabled={
-                                    !getValue("useMouseWheelVolume") ||
-                                    !useAlternateVolumeIncrement
-                                }
-                                tooltip="Click to change alternate step hotkey. Limited to mouse buttons and modifier keys (Alt, Ctrl, Shift)."
-                                allowedKeys={["Shift", "Alt", "Control"]}
-                                allowMouse45={true}
-                                isOverridden={isOverridden(
-                                    "alternateVolumeIncrementHotkey",
-                                )}
-                            />
-                        </div>
-                        <ResetButton
-                            isOverridden={isOverridden(
-                                "alternateVolumeIncrementHotkey",
-                            )}
-                            onReset={
-                                activeDomain
-                                    ? () =>
-                                          handleReset(
-                                              "alternateVolumeIncrementHotkey",
-                                          )
-                                    : undefined
-                            }
-                        />
-                    </div>
+                    <ToggleSlider
+                        label="Alt. Step"
+                        switchKey="useAlternateVolumeIncrement"
+                        sliderKey="alternateVolumeIncrement"
+                        checked={useAlternateVolumeIncrement}
+                        value={alternateVolumeIncrement}
+                        min={1}
+                        max={50}
+                        step={1}
+                        ariaLabel="Alternate volume increment"
+                        switchTooltip="Enable or disable alternate increment hotkey"
+                        sliderTooltip="How much the volume will change per step using the alternate increment hotkey"
+                        valueTooltip="Current alternate increment"
+                        activeDomain={activeDomain}
+                        editSetting={editSetting}
+                        isOverridden={isOverridden}
+                        handleReset={handleReset}
+                        onValueChange={setAlternateVolumeIncrement}
+                        toggleContainerId="alternateIncrementToggleContainer"
+                        valueDisplayId="alternateIncrementDisplay"
+                    />
+                    <Hotkey
+                        settingKey="alternateVolumeIncrementHotkey"
+                        value={alternateVolumeIncrementHotkey}
+                        disabled={
+                            !getValue("useMouseWheelVolume") ||
+                            !useAlternateVolumeIncrement
+                        }
+                        tooltip="Click to change alternate step hotkey. Limited to mouse buttons and modifier keys (Alt, Ctrl, Shift)."
+                        allowedKeys={["Shift", "Alt", "Control"]}
+                        allowMouse45={true}
+                        activeDomain={activeDomain}
+                        editSetting={editSetting}
+                        isOverridden={isOverridden}
+                        handleReset={handleReset}
+                        containerStyle={{ marginTop: "12px" }}
+                    />
                 </div>
             </div>
         </div>
