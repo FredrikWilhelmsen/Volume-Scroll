@@ -83,12 +83,14 @@ export const BarOverlay: React.FC<BarOverlayProps> = ({
     const transformOrigin = isRightSide ? "right top" : "left top";
     const flexDirection = isRightSide ? "row-reverse" : "row";
 
+    const showIconsWrapper = icons.length > 0 || settings.showNumericValue;
+
     // Adjust the seamless adjacent borders dynamically
     const barBorderRadius = isRightSide
-        ? icons.length > 0
+        ? showIconsWrapper
             ? "0 12px 12px 12px"
             : "12px" // Flatten top-left corner
-        : icons.length > 0
+        : showIconsWrapper
           ? "12px 0 12px 12px"
           : "12px"; // Flatten top-right corner
 
@@ -201,9 +203,29 @@ export const BarOverlay: React.FC<BarOverlayProps> = ({
                         </div>
                     </div>
                 </div>
-                {icons.length > 0 && (
+                {showIconsWrapper && (
                     <div className="volumeScrollBarIconsWrapper">
-                        <div className="volumeScrollBarIcons">{icons}</div>
+                        <div className="volumeScrollBarIcons">
+                            {settings.showNumericValue && (
+                                <div
+                                    style={{
+                                        fontWeight: "bold",
+                                        fontFamily: "Roboto, Arial, sans-serif",
+                                        textShadow:
+                                            "-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000",
+                                        color:
+                                            volume > 100
+                                                ? settings.boostedColor
+                                                : settings.overlayColor,
+                                        fontSize: `${settings.fontSize * 0.85}px`,
+                                        lineHeight: 1,
+                                    }}
+                                >
+                                    {Math.round(volume)}
+                                </div>
+                            )}
+                            {icons}
+                        </div>
                     </div>
                 )}
             </div>

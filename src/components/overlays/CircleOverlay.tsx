@@ -223,7 +223,7 @@ export const CircleOverlay: React.FC<CircleOverlayProps> = ({
                         )}
                     </svg>
 
-                    {/* Centered content block containing only icons */}
+                    {/* Centered content block containing icons and/or numeric value */}
                     <div
                         className="volumeScrollCircleInner"
                         style={{
@@ -231,6 +231,26 @@ export const CircleOverlay: React.FC<CircleOverlayProps> = ({
                             height: `${size - strokeWidth * 2.5}px`,
                         }}
                     >
+                        {settings.showNumericValue && (
+                            <div
+                                style={{
+                                    fontWeight: "bold",
+                                    fontFamily: "Roboto, Arial, sans-serif",
+                                    textShadow:
+                                        "-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000",
+                                    color:
+                                        volume > 100
+                                            ? settings.boostedColor
+                                            : settings.overlayColor,
+                                    fontSize: `${settings.fontSize * 0.85}px`,
+                                    lineHeight: 1,
+                                    marginBottom:
+                                        icons.length > 0 ? "4px" : "0px",
+                                }}
+                            >
+                                {Math.round(volume)}
+                            </div>
+                        )}
                         {icons.length > 0 && (
                             <div
                                 className="volumeScrollCircleInnerIcons"
