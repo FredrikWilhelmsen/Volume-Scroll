@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Settings, Pages } from "../types";
+import { Settings, Pages, colors } from "../types";
 import BackButton from "../components/BackButton";
 import "../style/miscPage.css";
 import ToggleSlider from "../components/ToggleSlider";
@@ -54,20 +54,6 @@ const MiscPage: React.FC<MiscPageInterface> = ({
         setVolumeBoostAmount(getValue("volumeBoostAmount"));
         setAlternateVolumeIncrement(getValue("alternateVolumeIncrement"));
     }, [settings, overrideSettings]);
-
-    const colors: string[] = [
-        "#FF6900",
-        "#FCB900",
-        "#7BDCB5",
-        "#00D084",
-        "#8ED1FC",
-        "#0693E3",
-        "#ABB8C3",
-        "#EB144C",
-        "#F78DA7",
-        "#9900EF",
-        "#DABDAB",
-    ];
 
     const useDefaultVolume = getValue("useDefaultVolume");
     const startMuted = getValue("startMuted");
@@ -136,7 +122,10 @@ const MiscPage: React.FC<MiscPageInterface> = ({
                         editSetting={editSetting}
                         isOverridden={isOverridden}
                         handleReset={handleReset}
-                        containerStyle={{ display: "flex", alignItems: "center" }}
+                        containerStyle={{
+                            display: "flex",
+                            alignItems: "center",
+                        }}
                     />
                 </div>
                 <ToggleSlider
@@ -166,7 +155,9 @@ const MiscPage: React.FC<MiscPageInterface> = ({
                     settingKey="boostedColor"
                     color={boostedColor}
                     colors={colors}
-                    disabled={!getValue("useMouseWheelVolume") || !doBoostVolume}
+                    disabled={
+                        !getValue("useMouseWheelVolume") || !doBoostVolume
+                    }
                     tooltip="Set the color of the overlay when volume is boosted"
                     activeDomain={activeDomain}
                     editSetting={editSetting}
