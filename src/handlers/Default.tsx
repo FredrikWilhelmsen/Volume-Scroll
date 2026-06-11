@@ -17,8 +17,10 @@ export class DefaultHandler {
     protected settings: Settings = defaultSettings;
 
     protected volumeTargets = new WeakMap<HTMLVideoElement, VideoState>();
-    protected watchdogs = new WeakSet<HTMLVideoElement>();
+    protected watchdogs = new Set<HTMLVideoElement>();
+    protected watchdogListeners = new WeakMap<HTMLVideoElement, () => void>();
     protected isSettingInternally = false;
+    protected isDisabled: boolean = false;
 
     // Web Audio API
     protected audioCtx: AudioContext | null = null;
@@ -319,10 +321,13 @@ export class DefaultHandler {
     }
 
     private attachVolumeWatchdog(video: HTMLVideoElement): void {
+        if (this.isDisabled) return;
+        if (this.watchdogs.has(video)) return;
         this.watchdogs.add(video);
         debug("Attached volume watchdog");
 
         const enforceVolume = () => {
+            if (this.isDisabled) return;
             const state: VideoState | undefined = this.volumeTargets.get(video);
 
             if (state === undefined || this.isSettingInternally) return;
@@ -354,6 +359,7 @@ export class DefaultHandler {
 
                 // Force it back. We use setTimeout to ensure we run after any other site listeners
                 setTimeout(() => {
+                    if (this.isDisabled) return;
                     if (state.targetVolume > 1) {
                         this.isSettingInternally = true;
                         video.volume = 1;
@@ -392,6 +398,22 @@ export class DefaultHandler {
         // or they do it right after play starts.
         video.addEventListener("play", enforceVolume);
         video.addEventListener("playing", enforceVolume);
+
+        this.watchdogListeners.set(video, enforceVolume);
+    }
+
+    private removeVolumeWatchdog(video: HTMLVideoElement): void {
+        const enforceVolume = this.watchdogListeners.get(video);
+        if (enforceVolume) {
+            video.removeEventListener("volumechange", enforceVolume);
+            video.removeEventListener("play", enforceVolume);
+            video.removeEventListener("playing", enforceVolume);
+            this.watchdogs.delete(video);
+            this.watchdogListeners.delete(video);
+            video.removeAttribute("data-vs-locked-volume");
+            video.removeAttribute("data-vs-locked-mute");
+            debug("Removed volume watchdog");
+        }
     }
 
     protected setVolume(
@@ -399,6 +421,7 @@ export class DefaultHandler {
         video: HTMLVideoElement,
         isMuted?: boolean,
     ): number {
+        if (this.isDisabled) return volume;
         debug(`New volume set to: ${volume}`);
 
         // Set volume initially
@@ -712,7 +735,35 @@ export class DefaultHandler {
         );
     }
 
+    public stopVideoObserver() {
+        if (this.observer) {
+            this.observer.disconnect();
+            this.observer = null;
+            debug("Stopped MutationObserver");
+        }
+    }
+
+    public removeAllWatchdogs(): void {
+        const videos = Array.from(this.watchdogs);
+        for (const video of videos) {
+            this.removeVolumeWatchdog(video);
+        }
+        this.watchdogs.clear();
+    }
+
+    public setDisabled(disabled: boolean): void {
+        if (this.isDisabled === disabled) return;
+        this.isDisabled = disabled;
+        debug(`Handler disabled state changed to: ${disabled}`);
+
+        if (disabled) {
+            this.stopVideoObserver();
+            this.removeAllWatchdogs();
+        }
+    }
+
     public setDefaultVolume(body: HTMLElement) {
+        if (this.isDisabled) return;
         const videoCollection: HTMLVideoElement[] =
             this.getAllVideos() as HTMLVideoElement[];
         debug("Setting default volume for: ", videoCollection);
@@ -724,6 +775,9 @@ export class DefaultHandler {
                     "Already tracking this video, skipping default volume reset",
                     video,
                 );
+                if (!this.watchdogs.has(video)) {
+                    this.attachVolumeWatchdog(video);
+                }
                 continue;
             }
             this.applyDefaultVolume(video);
