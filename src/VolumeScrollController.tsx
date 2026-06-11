@@ -119,9 +119,14 @@ export function updateListenerState(): void {
             "true",
         );
         unbindListeners();
+        handler.setDisabled(true);
     } else {
         document.documentElement.removeAttribute("data-volume-scroll-disabled");
         bindListeners();
+        handler.setDisabled(false);
+        if (settings.useDefaultVolume) {
+            handler.setDefaultVolume(body);
+        }
     }
 }
 
