@@ -36,11 +36,14 @@ export const RetroBarOverlay: React.FC<RetroBarOverlayProps> = ({
     const barLeft =
         playerRect && parentRect ? playerRect.left - parentRect.left : 0;
 
-    // Calculate right-side offset relative to parent container
+    // Calculate right-side and bottom-side offset relative to parent container
     const barRight =
         playerRect && parentRect ? parentRect.right - playerRect.right : 0;
+    const barBottom =
+        playerRect && parentRect ? parentRect.bottom - playerRect.bottom : 0;
 
     const barHeight = playerRect ? playerRect.height : 200;
+    const barWidth = playerRect ? playerRect.width : 200;
 
     const borderColor =
         volume > 100 ? settings.boostedColor : settings.overlayColor;
@@ -65,31 +68,86 @@ export const RetroBarOverlay: React.FC<RetroBarOverlayProps> = ({
         );
     }
 
-    // Determine layout and rotation parameters based on side ("left" or "right")
+    // Determine layout and rotation parameters based on side
     const isRightSide = settings.overlayBarSide === "right";
+    const isBottomSide = settings.overlayBarSide === "bottom";
+    const isHorizontal =
+        settings.overlayBarSide === "top" ||
+        settings.overlayBarSide === "bottom";
+
     const rotation = settings.useDutchAngle
-        ? isRightSide
-            ? "rotate(6deg)"
-            : "rotate(-6deg)"
+        ? isHorizontal
+            ? isBottomSide
+                ? "rotate(2deg)"
+                : "rotate(-2deg)"
+            : isRightSide
+              ? "rotate(6deg)"
+              : "rotate(-6deg)"
         : "none";
 
-    const transformOrigin = isRightSide ? "right top" : "left top";
-    const flexDirection = isRightSide ? "row-reverse" : "row";
+    const transformOrigin = isHorizontal
+        ? isBottomSide
+            ? "center bottom"
+            : "center top"
+        : isRightSide
+          ? "right top"
+          : "left top";
+
+    const flexDirection = isHorizontal
+        ? isBottomSide
+            ? "column-reverse"
+            : "column"
+        : isRightSide
+          ? "row-reverse"
+          : "row";
+
+    const alignItems = "flex-start";
 
     const showIconsWrapper = icons.length > 0 || settings.showNumericValue;
 
     // Adjust the seamless adjacent borders dynamically
-    const barBorderRadius = isRightSide
-        ? showIconsWrapper
-            ? "0 12px 12px 12px"
-            : "12px"
-        : showIconsWrapper
-          ? "12px 0 12px 12px"
-          : "12px";
+    let barBorderRadius = "12px";
+    let iconsBorderRadius = "12px";
 
-    const iconsBorderRadius = isRightSide ? "12px 0 0 12px" : "0 12px 12px 0";
-    const iconsPaddingLeft = isRightSide ? "16px" : "0";
-    const iconsPaddingRight = isRightSide ? "0" : "16px";
+    if (isHorizontal) {
+        if (showIconsWrapper) {
+            if (isBottomSide) {
+                // Icons above bar
+                barBorderRadius = "0 0 12px 12px";
+                iconsBorderRadius = "12px 12px 0 0";
+            } else {
+                // Bar above icons
+                barBorderRadius = "12px 12px 0 0";
+                iconsBorderRadius = "0 0 12px 12px";
+            }
+        }
+    } else {
+        barBorderRadius = isRightSide
+            ? showIconsWrapper
+                ? "0 12px 12px 12px"
+                : "12px"
+            : showIconsWrapper
+              ? "12px 0 12px 12px"
+              : "12px";
+        iconsBorderRadius = isRightSide ? "12px 0 0 12px" : "0 12px 12px 0";
+    }
+
+    const iconsPaddingTop = isHorizontal
+        ? isBottomSide
+            ? "16px"
+            : "0"
+        : "16px";
+    const iconsPaddingBottom = isHorizontal
+        ? isBottomSide
+            ? "0"
+            : "16px"
+        : "16px";
+    const iconsPaddingLeft = isHorizontal ? "16px" : isRightSide ? "16px" : "0";
+    const iconsPaddingRight = isHorizontal
+        ? "16px"
+        : isRightSide
+          ? "0"
+          : "16px";
 
     // Safe increment check
     const increment =
@@ -175,6 +233,11 @@ export const RetroBarOverlay: React.FC<RetroBarOverlayProps> = ({
         });
     }
 
+    const rotationStr = rotation === "none" ? "" : rotation;
+    const transform = isBottomSide
+        ? `translateY(-100%) ${rotationStr}`.trim()
+        : rotation;
+
     return (
         <React.Fragment>
             <style>{`
@@ -193,22 +256,24 @@ export const RetroBarOverlay: React.FC<RetroBarOverlayProps> = ({
                     
                     display: flex;
                     flex-direction: ${flexDirection};
-                    align-items: flex-start;
+                    align-items: ${alignItems};
                     
                     /* Dynamic Dutch angle setup */
-                    transform: ${rotation} !important;
+                    transform: ${transform} !important;
                     transform-origin: ${transformOrigin} !important;
                 }
                 .volumeScrollBarBackgroundWrapper {
                     background-color: ${settings.useOverlayBackground ? `rgba(30, 30, 30, ${settings.overlayBackgroundOpacity / 100})` : "transparent"};
-                    height: 100%;
+                    width: ${isHorizontal ? "100%" : "auto"};
+                    height: ${isHorizontal ? "auto" : "100%"};
                     padding: 16px;
                     box-sizing: border-box;
                     border-radius: ${barBorderRadius};
                 }
                 .volumeScrollBarIconsWrapper {
                     background-color: ${settings.useOverlayBackground ? `rgba(30, 30, 30, ${settings.overlayBackgroundOpacity / 100})` : "transparent"};
-                    padding: 16px;
+                    padding-top: ${iconsPaddingTop};
+                    padding-bottom: ${iconsPaddingBottom};
                     padding-left: ${iconsPaddingLeft};
                     padding-right: ${iconsPaddingRight};
                     box-sizing: border-box;
@@ -216,7 +281,7 @@ export const RetroBarOverlay: React.FC<RetroBarOverlayProps> = ({
                 }
                 .volumeScrollBarIcons {
                     display: flex;
-                    flex-direction: column;
+                    flex-direction: ${isHorizontal ? "row" : "column"};
                     align-items: center;
                     gap: 16px;
                     color: ${volume > 100 ? settings.boostedColor : settings.overlayColor};
@@ -224,15 +289,15 @@ export const RetroBarOverlay: React.FC<RetroBarOverlayProps> = ({
                 }
                 .volumeScrollBarContainer {
                     position: relative;
-                    width: 40px;
-                    height: 100%;
+                    width: ${isHorizontal ? "100%" : "40px"};
+                    height: ${isHorizontal ? "40px" : "100%"};
                     border: 4px solid ${borderColor};
                     padding: 6px;
                     box-sizing: border-box;
                 }
                 .volumeScrollBarBlockContainer {
                     display: flex;
-                    flex-direction: column-reverse; /* Bottom blocks render first */
+                    flex-direction: ${isHorizontal ? "row" : "column-reverse"};
                     gap: 3px;
                     height: 100%;
                     width: 100%;
@@ -241,6 +306,7 @@ export const RetroBarOverlay: React.FC<RetroBarOverlayProps> = ({
                     position: relative;
                     flex: 1;
                     width: 100%;
+                    height: 100%;
                     overflow: hidden;
                     border-radius: 1px;
                 }
@@ -255,8 +321,7 @@ export const RetroBarOverlay: React.FC<RetroBarOverlayProps> = ({
                     position: absolute;
                     bottom: 0;
                     left: 0;
-                    width: 100%;
-                    transition: height 0.08s ease-out;
+                    transition: width 0.08s ease-out, height 0.08s ease-out;
                     z-index: 2;
                 }
             `}</style>
@@ -264,11 +329,21 @@ export const RetroBarOverlay: React.FC<RetroBarOverlayProps> = ({
                 key={animationKey}
                 className="volumeScrollBarOverlay"
                 style={{
-                    top: `${barTop + barHeight * 0.1}px`,
-                    height: `${barHeight * 0.8}px`,
-                    ...(isRightSide
-                        ? { right: `${barRight + 20}px` }
-                        : { left: `${barLeft + 20}px` }),
+                    ...(isHorizontal
+                        ? {
+                              left: `${barLeft + barWidth * 0.1}px`,
+                              width: `${barWidth * 0.8}px`,
+                              top: isBottomSide
+                                  ? `${barTop + barHeight - 20}px`
+                                  : `${barTop + 20}px`,
+                          }
+                        : {
+                              top: `${barTop + barHeight * 0.1}px`,
+                              height: `${barHeight * 0.8}px`,
+                              ...(isRightSide
+                                  ? { right: `${barRight + 20}px` }
+                                  : { left: `${barLeft + 20}px` }),
+                          }),
                 }}
             >
                 <div className="volumeScrollBarBackgroundWrapper">
@@ -292,7 +367,15 @@ export const RetroBarOverlay: React.FC<RetroBarOverlayProps> = ({
                                     <div
                                         className="volumeScrollBarBlockFill"
                                         style={{
-                                            height: `${block.fillRatio * 100}%`,
+                                            ...(isHorizontal
+                                                ? {
+                                                      width: `${block.fillRatio * 100}%`,
+                                                      height: "100%",
+                                                  }
+                                                : {
+                                                      height: `${block.fillRatio * 100}%`,
+                                                      width: "100%",
+                                                  }),
                                             backgroundColor: block.fillColor,
                                         }}
                                     />
@@ -309,8 +392,12 @@ export const RetroBarOverlay: React.FC<RetroBarOverlayProps> = ({
                                     style={{
                                         fontWeight: "bold",
                                         fontFamily: "Roboto, Arial, sans-serif",
-                                        textShadow: "-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000",
-                                        color: volume > 100 ? settings.boostedColor : settings.overlayColor,
+                                        textShadow:
+                                            "-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000",
+                                        color:
+                                            volume > 100
+                                                ? settings.boostedColor
+                                                : settings.overlayColor,
                                         fontSize: `${settings.fontSize * 0.85}px`,
                                         lineHeight: 1,
                                     }}

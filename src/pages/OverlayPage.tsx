@@ -468,6 +468,8 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                             options={[
                                 { value: "left", label: "Left" },
                                 { value: "right", label: "Right" },
+                                { value: "top", label: "Top" },
+                                { value: "bottom", label: "Bottom" },
                             ]}
                             disabled={!useMouseWheelVolume || !useOverlay}
                             tooltip="Set bar side"
