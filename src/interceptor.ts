@@ -44,14 +44,58 @@
 
                 proxy.addEventListener("volumechange", () => {
                     if (!proxy) return;
+                    console.log("[Volume Scroll] proxy volumechange event fired, volume:", proxy.volume, "muted:", proxy.muted);
                     for (const player of capturedPlayers) {
                         if (player.volume !== proxy.volume) {
+                            console.log("[Volume Scroll] Syncing player volume to:", proxy.volume);
                             originalVolSet.call(player, proxy.volume);
                         }
                         if (player.muted !== proxy.muted) {
+                            console.log("[Volume Scroll] Syncing player muted to:", proxy.muted);
                             originalMuteSet.call(player, proxy.muted);
                         }
                     }
+                });
+
+                const observer = new MutationObserver((mutations) => {
+                    console.log("[Volume Scroll] proxy MutationObserver triggered");
+                    for (const mutation of mutations) {
+                        if (mutation.type === "attributes") {
+                            const attr = mutation.attributeName;
+                            if (attr === "data-vs-locked-volume") {
+                                const lockedVol = proxy!.getAttribute("data-vs-locked-volume");
+                                console.log("[Volume Scroll] data-vs-locked-volume changed to:", lockedVol);
+                                if (lockedVol !== null) {
+                                    const vol = parseFloat(lockedVol);
+                                    if (!isNaN(vol)) {
+                                        for (const player of capturedPlayers) {
+                                            if (originalVolGet.call(player) !== vol) {
+                                                console.log("[Volume Scroll] Syncing player volume to (via observer):", vol);
+                                                originalVolSet.call(player, vol);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            if (attr === "data-vs-locked-mute") {
+                                const lockedMute = proxy!.getAttribute("data-vs-locked-mute");
+                                console.log("[Volume Scroll] data-vs-locked-mute changed to:", lockedMute);
+                                if (lockedMute !== null) {
+                                    const mute = lockedMute === "true";
+                                    for (const player of capturedPlayers) {
+                                        if (originalMuteGet.call(player) !== mute) {
+                                            console.log("[Volume Scroll] Syncing player muted to (via observer):", mute);
+                                            originalMuteSet.call(player, mute);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                observer.observe(proxy, {
+                    attributes: true,
+                    attributeFilter: ["data-vs-locked-volume", "data-vs-locked-mute"],
                 });
 
                 proxy.addEventListener("play", () => {
@@ -87,10 +131,11 @@
                     player.removeAttribute("data-vs-locked-volume");
                     player.removeAttribute("data-vs-locked-mute");
 
+                    const p = createProxy();
+
                     player.addEventListener("volumechange", () => {
                         player.removeAttribute("data-vs-locked-volume");
                         player.removeAttribute("data-vs-locked-mute");
-                        const p = createProxy();
                         const currentVol = originalVolGet.call(player);
                         const currentMute = originalMuteGet.call(player);
                         if (p.volume !== currentVol) {
@@ -101,9 +146,18 @@
                         }
                     });
 
-                    if (proxy) {
-                        const currentVol = originalVolGet.call(proxy);
-                        const currentMute = originalMuteGet.call(proxy);
+                    if (capturedPlayers.length === 1) {
+                        const currentVol = originalVolGet.call(player);
+                        const currentMute = originalMuteGet.call(player);
+                        if (p.volume !== currentVol) {
+                            p.volume = currentVol;
+                        }
+                        if (p.muted !== currentMute) {
+                            p.muted = currentMute;
+                        }
+                    } else {
+                        const currentVol = originalVolGet.call(p);
+                        const currentMute = originalMuteGet.call(p);
                         if (player.volume !== currentVol) {
                             originalVolSet.call(player, currentVol);
                         }
