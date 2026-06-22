@@ -147,7 +147,7 @@ export type OverlayNumberPosition =
     | "custom"
     | "mouse";
 
-export type OverlayBarSide = "left" | "right";
+export type OverlayBarSide = "left" | "right" | "top" | "bottom";
 
 export interface videoElements {
     display: HTMLBaseElement;
