@@ -1,3 +1,21 @@
+/*
+ * Volume Scroll - Scrollable volume for any video on the internet
+ * Copyright (C) 2026  Fredrik Wilhelmsen
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 (function () {
     try {
         const originalCreateElement = document.createElement;
@@ -44,47 +62,85 @@
 
                 proxy.addEventListener("volumechange", () => {
                     if (!proxy) return;
-                    console.log("[Volume Scroll] proxy volumechange event fired, volume:", proxy.volume, "muted:", proxy.muted);
+                    console.log(
+                        "[Volume Scroll] proxy volumechange event fired, volume:",
+                        proxy.volume,
+                        "muted:",
+                        proxy.muted,
+                    );
                     for (const player of capturedPlayers) {
                         if (player.volume !== proxy.volume) {
-                            console.log("[Volume Scroll] Syncing player volume to:", proxy.volume);
+                            console.log(
+                                "[Volume Scroll] Syncing player volume to:",
+                                proxy.volume,
+                            );
                             originalVolSet.call(player, proxy.volume);
                         }
                         if (player.muted !== proxy.muted) {
-                            console.log("[Volume Scroll] Syncing player muted to:", proxy.muted);
+                            console.log(
+                                "[Volume Scroll] Syncing player muted to:",
+                                proxy.muted,
+                            );
                             originalMuteSet.call(player, proxy.muted);
                         }
                     }
                 });
 
                 const observer = new MutationObserver((mutations) => {
-                    console.log("[Volume Scroll] proxy MutationObserver triggered");
+                    console.log(
+                        "[Volume Scroll] proxy MutationObserver triggered",
+                    );
                     for (const mutation of mutations) {
                         if (mutation.type === "attributes") {
                             const attr = mutation.attributeName;
                             if (attr === "data-vs-locked-volume") {
-                                const lockedVol = proxy!.getAttribute("data-vs-locked-volume");
-                                console.log("[Volume Scroll] data-vs-locked-volume changed to:", lockedVol);
+                                const lockedVol = proxy!.getAttribute(
+                                    "data-vs-locked-volume",
+                                );
+                                console.log(
+                                    "[Volume Scroll] data-vs-locked-volume changed to:",
+                                    lockedVol,
+                                );
                                 if (lockedVol !== null) {
                                     const vol = parseFloat(lockedVol);
                                     if (!isNaN(vol)) {
                                         for (const player of capturedPlayers) {
-                                            if (originalVolGet.call(player) !== vol) {
-                                                console.log("[Volume Scroll] Syncing player volume to (via observer):", vol);
-                                                originalVolSet.call(player, vol);
+                                            if (
+                                                originalVolGet.call(player) !==
+                                                vol
+                                            ) {
+                                                console.log(
+                                                    "[Volume Scroll] Syncing player volume to (via observer):",
+                                                    vol,
+                                                );
+                                                originalVolSet.call(
+                                                    player,
+                                                    vol,
+                                                );
                                             }
                                         }
                                     }
                                 }
                             }
                             if (attr === "data-vs-locked-mute") {
-                                const lockedMute = proxy!.getAttribute("data-vs-locked-mute");
-                                console.log("[Volume Scroll] data-vs-locked-mute changed to:", lockedMute);
+                                const lockedMute = proxy!.getAttribute(
+                                    "data-vs-locked-mute",
+                                );
+                                console.log(
+                                    "[Volume Scroll] data-vs-locked-mute changed to:",
+                                    lockedMute,
+                                );
                                 if (lockedMute !== null) {
                                     const mute = lockedMute === "true";
                                     for (const player of capturedPlayers) {
-                                        if (originalMuteGet.call(player) !== mute) {
-                                            console.log("[Volume Scroll] Syncing player muted to (via observer):", mute);
+                                        if (
+                                            originalMuteGet.call(player) !==
+                                            mute
+                                        ) {
+                                            console.log(
+                                                "[Volume Scroll] Syncing player muted to (via observer):",
+                                                mute,
+                                            );
                                             originalMuteSet.call(player, mute);
                                         }
                                     }
@@ -95,7 +151,10 @@
                 });
                 observer.observe(proxy, {
                     attributes: true,
-                    attributeFilter: ["data-vs-locked-volume", "data-vs-locked-mute"],
+                    attributeFilter: [
+                        "data-vs-locked-volume",
+                        "data-vs-locked-mute",
+                    ],
                 });
 
                 proxy.addEventListener("play", () => {

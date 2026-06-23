@@ -1,12 +1,28 @@
+/*
+ * Volume Scroll - Scrollable volume for any video on the internet
+ * Copyright (C) 2026  Fredrik Wilhelmsen
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import { videoElements } from "../types";
 import { debug } from "../utils";
 import { DefaultHandler } from "./Default";
 
 export class RedditHandler extends DefaultHandler {
     protected name: string = "RedditHandler";
-    protected domains: string[] = [
-        "www.reddit.com"
-    ];
+    protected domains: string[] = ["www.reddit.com"];
 
     private processPlayer(player: HTMLElement) {
         if (!player.shadowRoot) {
@@ -16,10 +32,15 @@ export class RedditHandler extends DefaultHandler {
             return;
         }
 
-        const video = player.shadowRoot.querySelector("video") as HTMLVideoElement;
+        const video = player.shadowRoot.querySelector(
+            "video",
+        ) as HTMLVideoElement;
         if (video) {
             if (this.volumeTargets.has(video)) {
-                debug("Already tracking this video, skipping default volume reset", video);
+                debug(
+                    "Already tracking this video, skipping default volume reset",
+                    video,
+                );
             } else {
                 debug("Found video immediately in shadow root: ", video);
                 this.applyDefaultVolume(video);
@@ -27,15 +48,23 @@ export class RedditHandler extends DefaultHandler {
             return;
         }
 
-        // If not found, the Shadow DOM is likely still hydrating. 
+        // If not found, the Shadow DOM is likely still hydrating.
         // Observe the SHADOW ROOT specifically for the video tag to appear.
-        debug("Player found but video not ready. Observing Shadow DOM...", player);
+        debug(
+            "Player found but video not ready. Observing Shadow DOM...",
+            player,
+        );
 
         const shadowObserver = new MutationObserver((shadowMutations, obs) => {
-            const lateVideo = player.shadowRoot?.querySelector("video") as HTMLVideoElement;
+            const lateVideo = player.shadowRoot?.querySelector(
+                "video",
+            ) as HTMLVideoElement;
             if (lateVideo) {
                 if (this.volumeTargets.has(lateVideo)) {
-                    debug("Already tracking this late video, skipping", lateVideo);
+                    debug(
+                        "Already tracking this late video, skipping",
+                        lateVideo,
+                    );
                 } else {
                     debug("Found video in shadow root", lateVideo);
                     this.applyDefaultVolume(lateVideo);
@@ -46,7 +75,10 @@ export class RedditHandler extends DefaultHandler {
             }
         });
 
-        shadowObserver.observe(player.shadowRoot, { childList: true, subtree: true });
+        shadowObserver.observe(player.shadowRoot, {
+            childList: true,
+            subtree: true,
+        });
     }
 
     protected startVideoObserver(body: HTMLElement) {
@@ -66,7 +98,8 @@ export class RedditHandler extends DefaultHandler {
                         }
                         // Check if the added node contains players
                         else {
-                            const nestedPlayers = node.querySelectorAll("shreddit-player");
+                            const nestedPlayers =
+                                node.querySelectorAll("shreddit-player");
                             nestedPlayers.forEach((player) => {
                                 this.processPlayer(player as HTMLElement);
                             });
@@ -83,7 +116,7 @@ export class RedditHandler extends DefaultHandler {
         // Handle existing Reddit players first
         const players = document.querySelectorAll("shreddit-player");
         debug(`Found ${players.length} existing Reddit players on page load`);
-        players.forEach(player => this.processPlayer(player as HTMLElement));
+        players.forEach((player) => this.processPlayer(player as HTMLElement));
 
         // Let the base class handle any standard videos and start the body observer
         super.setDefaultVolume(body);
@@ -121,12 +154,14 @@ export class RedditHandler extends DefaultHandler {
                 const shadow = element.shadowRoot;
                 if (!shadow) continue;
 
-                const video: HTMLVideoElement = shadow.querySelector("VIDEO") as HTMLVideoElement;
+                const video: HTMLVideoElement = shadow.querySelector(
+                    "VIDEO",
+                ) as HTMLVideoElement;
                 if (!video) continue;
 
                 return {
                     display: element as HTMLBaseElement,
-                    video: video
+                    video: video,
                 };
             }
         }
