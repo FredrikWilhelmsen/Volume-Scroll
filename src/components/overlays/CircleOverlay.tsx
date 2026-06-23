@@ -31,6 +31,19 @@ export const CircleOverlay: React.FC<CircleOverlayProps> = ({
     isPauseSticky,
     lastPauseStickyType,
 }) => {
+    // Sizing calculations for the progress circle
+    const size = Math.max(60, settings.fontSize * 2.8);
+    const strokeWidth = size * 0.08;
+    const center = size / 2;
+    const radius = (size - strokeWidth) / 2;
+    const circumference = 2 * Math.PI * radius;
+
+    // Outer background sizing and padding
+    const padding = settings.useOverlayBackground
+        ? Math.max(8, settings.fontSize * 0.4)
+        : 0;
+    const containerSize = size + padding * 2;
+
     // Coordinate calculation (matching NumberOverlay)
     let x = 0;
     let y = 0;
@@ -49,25 +62,35 @@ export const CircleOverlay: React.FC<CircleOverlayProps> = ({
             (playerRect.height / 100) * settings.overlayYPos;
     }
 
+    // Clamp coordinates within the video player bounds, taking circle size into consideration
+    if (playerRect && parentRect) {
+        const halfSize = containerSize / 2;
+        const playerLeftRel = playerRect.left - parentRect.left;
+        const playerTopRel = playerRect.top - parentRect.top;
+
+        if (playerRect.width < containerSize) {
+            x = playerLeftRel + playerRect.width / 2;
+        } else {
+            const minX = playerLeftRel + halfSize;
+            const maxX = playerLeftRel + playerRect.width - halfSize;
+            x = Math.max(minX, Math.min(x, maxX));
+        }
+
+        if (playerRect.height < containerSize) {
+            y = playerTopRel + playerRect.height / 2;
+        } else {
+            const minY = playerTopRel + halfSize;
+            const maxY = playerTopRel + playerRect.height - halfSize;
+            y = Math.max(minY, Math.min(y, maxY));
+        }
+    }
+
     const rotation =
         settings.useDutchAngle && settings.overlayPosition !== "mouse"
             ? settings.overlayXPos <= 50
                 ? " rotate(-6deg)"
                 : " rotate(6deg)"
             : "";
-
-    // Sizing calculations for the progress circle
-    const size = Math.max(60, settings.fontSize * 2.8);
-    const strokeWidth = size * 0.08;
-    const center = size / 2;
-    const radius = (size - strokeWidth) / 2;
-    const circumference = 2 * Math.PI * radius;
-
-    // Outer background sizing and padding
-    const padding = settings.useOverlayBackground
-        ? Math.max(8, settings.fontSize * 0.4)
-        : 0;
-    const containerSize = size + padding * 2;
 
     // Volume progression calculations
     const normalPercent = Math.min(volume, 100);
