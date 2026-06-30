@@ -5,10 +5,10 @@
 
 # Volume-Scroll
 
-[<img src="./Webstore-assets/Chrome.png" height="60">][link-chrome]
-[<img src="./Webstore-assets/Firefox.png" height="60">][link-firefox]
-[<img src="./Webstore-assets/Microsoft.png" height="60">][link-edge]
-[<img src="./Webstore-assets/GitHub_Invertocat_White.png" height="60">][link-releases]
+[<img src="./readme-assets/Chrome.png" height="60">][link-chrome]
+[<img src="./readme-assets/Firefox.png" height="60">][link-firefox]
+[<img src="./readme-assets/Microsoft.png" height="60">][link-edge]
+[<img src="./readme-assets/GitHub_Invertocat_White.png" height="60">][link-releases]
 
 ![Chrome Web Store Rating](https://img.shields.io/chrome-web-store/rating/gkmagiadkkhdilnaicdnngcjhmhaeaoh)
 ![GitHub Release](https://img.shields.io/github/v/release/FredrikWilhelmsen/Volume-Scroll)
