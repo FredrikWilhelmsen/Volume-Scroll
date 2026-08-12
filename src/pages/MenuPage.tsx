@@ -123,30 +123,61 @@ const MenuPage: React.FC<MenuPageInterface> = ({
         });
     };
 
-    const handleCopyLogs = async () => {
-        console.log("Log button clicked");
+    const fetchDebugLogs = async (): Promise<string> => {
         const tabs = await browser.tabs.query({
             active: true,
             currentWindow: true,
         });
         const activeTab = tabs[0];
-        console.log("Active tab:", activeTab);
         if (activeTab?.id) {
             try {
-                console.log("Sending message");
                 const response = await browser.tabs.sendMessage(activeTab.id, {
                     type: "GET_DEBUG_LOGS",
                 });
-                console.log("Response:", response);
                 if (response) {
-                    await navigator.clipboard.writeText(
-                        JSON.stringify(response, null, 2),
-                    );
+                    return JSON.stringify(response, null, 2);
                 }
             } catch (e) {
-                console.error("Failed to copy logs:", e);
+                console.error("Failed to fetch debug logs:", e);
             }
         }
+        return "";
+    };
+
+    const handleCopyLogs = async () => {
+        const logs = await fetchDebugLogs();
+        if (logs) {
+            await navigator.clipboard.writeText(logs);
+        }
+    };
+
+    const handleReportIssue = async (
+        e: React.MouseEvent<HTMLAnchorElement>,
+    ) => {
+        e.preventDefault();
+        const platform = isFirefox
+            ? "Firefox"
+            : isEdge
+              ? "Edge"
+              : userAgent.includes("brave") || (navigator as any).brave
+                ? "Brave"
+                : userAgent.includes("chrome")
+                  ? "Google Chrome"
+                  : "Unknown Browser";
+
+        const lowerHost = hostname.toLowerCase();
+        const siteOverride = extensionData.domainOverrides?.[lowerHost] || {};
+        const activeSettings = { ...settings, ...siteOverride };
+
+        const settingsData = JSON.stringify(activeSettings, null, 2);
+
+        const subject = encodeURIComponent(`Issue on ${platform}`);
+        const body = encodeURIComponent(
+            `Please describe the issue below:\n\n\n--- Active Settings ---\n${settingsData}`,
+        );
+
+        const mailtoUrl = `mailto:Volumescroll@gmail.com?subject=${subject}&body=${body}`;
+        await browser.tabs.create({ url: mailtoUrl });
     };
 
     return (
@@ -222,6 +253,10 @@ const MenuPage: React.FC<MenuPageInterface> = ({
                         rel="noreferrer"
                     >
                         coffee
+                    </a>
+                    <br />
+                    <a href="#" onClick={handleReportIssue}>
+                        Report an issue
                     </a>
                 </Typography>
             </footer>
