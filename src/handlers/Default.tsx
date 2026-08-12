@@ -539,6 +539,11 @@ export class DefaultHandler {
         direction: number,
         body: HTMLElement,
     ): void {
+        //Invert direction if enabled
+        if (this.settings.invertScrollDirection) {
+            direction *= -1;
+        }
+
         // Retrieve stored previous volume
         const state: VideoState | undefined = this.volumeTargets.get(
             videoGroup.video,

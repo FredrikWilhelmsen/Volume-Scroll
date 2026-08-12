@@ -4,6 +4,7 @@ export interface Settings {
     startMuted: boolean;
 
     useMouseWheelVolume: boolean;
+    invertScrollDirection: boolean;
     volumeIncrement: number;
     useRoundToNearestIncrement: boolean;
     useAlternateVolumeIncrement: boolean;
@@ -57,6 +58,7 @@ export const defaultSettings: Settings = {
     startMuted: false,
 
     useMouseWheelVolume: true,
+    invertScrollDirection: false,
     volumeIncrement: 5,
     useRoundToNearestIncrement: true,
     useAlternateVolumeIncrement: false,

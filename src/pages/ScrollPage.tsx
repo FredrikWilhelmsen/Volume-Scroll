@@ -51,6 +51,7 @@ const ScrollPage: React.FC<ScrollPageInterface> = ({
 
     // Effective values
     const useMouseWheelVolume = getValue("useMouseWheelVolume");
+    const invertScrollDirection = getValue("invertScrollDirection");
     const useRoundToNearestIncrement = getValue("useRoundToNearestIncrement");
     const usePreciseScroll = getValue("usePreciseScroll");
     const useCustomPreciseScrollThreshold = getValue(
@@ -62,6 +63,7 @@ const ScrollPage: React.FC<ScrollPageInterface> = ({
         !!activeDomain &&
         [
             "useMouseWheelVolume",
+            "invertScrollDirection",
             "volumeIncrement",
             "useRoundToNearestIncrement",
             "usePreciseScroll",
@@ -103,6 +105,18 @@ const ScrollPage: React.FC<ScrollPageInterface> = ({
                     containerId="scrollIncrementContainer"
                     toggleContainerId="incrementToggleContainer"
                     valueDisplayId="incrementDisplay"
+                />
+                <Toggle
+                    label="Invert scroll direction"
+                    settingKey="invertScrollDirection"
+                    checked={invertScrollDirection}
+                    disabled={!useMouseWheelVolume}
+                    tooltip="Invert the scroll direction for volume control"
+                    activeDomain={activeDomain}
+                    editSetting={editSetting}
+                    isOverridden={isOverridden}
+                    handleReset={handleReset}
+                    id="invertScrollDirectionContainer"
                 />
                 <Toggle
                     label="Round to increment"
