@@ -14,7 +14,7 @@
         "default_popup": "popup.html"
     },
     "background": {
-        "service_worker": "volumeScrollBackground.tsx",
+        "service_worker": "volumeScrollBackground.ts",
         "type": "module"
     },
     "content_scripts": [
