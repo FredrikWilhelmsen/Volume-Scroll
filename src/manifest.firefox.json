@@ -20,8 +20,8 @@
         "default_popup": "popup.html"
     },
     "background": {
-        "scripts": ["volumeScrollBackground.tsx"],
-        "service_worker": "volumeScrollBackground.tsx",
+        "scripts": ["volumeScrollBackground.ts"],
+        "service_worker": "volumeScrollBackground.ts",
         "type": "module"
     },
     "content_scripts": [
