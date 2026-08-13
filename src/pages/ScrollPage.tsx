@@ -58,6 +58,7 @@ const ScrollPage: React.FC<ScrollPageInterface> = ({
         "useCustomPreciseScrollThreshold",
     );
     const fullscreenOnly = getValue("fullscreenOnly");
+    const playingOnly = getValue("playingOnly");
 
     const hasCategoryOverride =
         !!activeDomain &&
@@ -70,6 +71,7 @@ const ScrollPage: React.FC<ScrollPageInterface> = ({
             "useCustomPreciseScrollThreshold",
             "customPreciseScrollThreshold",
             "fullscreenOnly",
+            "playingOnly",
         ].some((key) => isOverridden(key as keyof Settings));
 
     return (
@@ -181,6 +183,18 @@ const ScrollPage: React.FC<ScrollPageInterface> = ({
                     isOverridden={isOverridden}
                     handleReset={handleReset}
                     id="fullscreenOnlyContainer"
+                />
+                <Toggle
+                    label="Playing only"
+                    settingKey="playingOnly"
+                    checked={playingOnly}
+                    disabled={!useMouseWheelVolume}
+                    tooltip="Volume scroll will only be enabled when the hovered video is playing"
+                    activeDomain={activeDomain}
+                    editSetting={editSetting}
+                    isOverridden={isOverridden}
+                    handleReset={handleReset}
+                    id="playingOnlyContainer"
                 />
             </div>
         </div>

@@ -30,6 +30,7 @@ export interface Settings {
     useTogglePauseKey: boolean;
 
     fullscreenOnly: boolean;
+    playingOnly: boolean;
 
     overlayColor: string;
     fontSize: number;
@@ -84,6 +85,7 @@ export const defaultSettings: Settings = {
     useTogglePauseKey: false,
 
     fullscreenOnly: false,
+    playingOnly: false,
 
     overlayColor: "#FCB900",
     fontSize: 40,
