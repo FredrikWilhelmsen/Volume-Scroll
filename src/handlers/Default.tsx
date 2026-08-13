@@ -551,20 +551,23 @@ export class DefaultHandler {
         let previousVolume: number = 0;
         let type: OverlayType = "volume";
 
+        let isCurrentlyMuted = false;
         if (state !== undefined && !isNaN(state.targetVolume)) {
-            // If currently muted, we want to scroll relative to the unmuted target volume
-            if (state.isMuted) {
-                previousVolume = Math.round(state.targetVolume * 100);
-                type = "unmute";
-            } else {
-                previousVolume = Math.round(state.targetVolume * 100);
-            }
+            previousVolume = Math.round(state.targetVolume * 100);
+            isCurrentlyMuted = state.isMuted;
         } else {
             previousVolume = Math.round(videoGroup.video.volume * 100);
+            isCurrentlyMuted = videoGroup.video.muted;
         }
 
         if (isNaN(previousVolume)) {
             previousVolume = 0;
+        }
+
+        if (isCurrentlyMuted) {
+            if (previousVolume > 0 || direction === 1) {
+                type = "unmute";
+            }
         }
 
         debug(`Previous volume was: ${previousVolume}`);
@@ -625,6 +628,10 @@ export class DefaultHandler {
         // Defensive check: if setVolume returns undefined/NaN (e.g. build issue), fallback to newVolume
         if (effectiveVolume === undefined || isNaN(effectiveVolume)) {
             effectiveVolume = newVolume;
+        }
+
+        if (previousVolume > 0 && effectiveVolume === 0) {
+            type = "mute";
         }
 
         this.updateOverlay(
