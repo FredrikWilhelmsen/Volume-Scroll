@@ -663,6 +663,13 @@ export class DefaultHandler {
             return false;
         }
 
+        if (this.settings.playingOnly && videoGroup.video.paused) {
+            debug(
+                "Video is paused and playingOnly setting is enabled, returning",
+            );
+            return false;
+        }
+
         // Video found, prevent default scroll behaviour and stop propagation to site listeners
         if (e.preventDefault) e.preventDefault();
         if (e.stopPropagation) e.stopPropagation();
