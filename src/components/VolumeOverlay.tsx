@@ -45,9 +45,6 @@ export const VolumeOverlay: React.FC<VolumeOverlayProps> = ({
         if (type === "unmute" || type === "mute") {
             setLastMuteStickyTime(Date.now());
             setLastMuteStickyType(type);
-        } else if (type === "volume" && currentIsMuted) {
-            setLastMuteStickyTime(Date.now());
-            setLastMuteStickyType("mute");
         }
 
         if (type === "pause" || type === "play") {
