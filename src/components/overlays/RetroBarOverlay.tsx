@@ -75,23 +75,32 @@ export const RetroBarOverlay: React.FC<RetroBarOverlayProps> = ({
         settings.overlayBarSide === "top" ||
         settings.overlayBarSide === "bottom";
 
+    const angle = settings.dutchAngleValue;
     const rotation = settings.useDutchAngle
         ? isHorizontal
             ? isBottomSide
-                ? "rotate(2deg)"
-                : "rotate(-2deg)"
+                ? `rotate(${-angle}deg)`
+                : `rotate(${angle}deg)`
             : isRightSide
-              ? "rotate(6deg)"
-              : "rotate(-6deg)"
+              ? `rotate(${angle}deg)`
+              : `rotate(${-angle}deg)`
         : "none";
 
     const transformOrigin = isHorizontal
         ? isBottomSide
-            ? "center bottom"
-            : "center top"
+            ? angle < 0
+                ? "right bottom"
+                : "left bottom"
+            : angle < 0
+              ? "right top"
+              : "left top"
         : isRightSide
-          ? "right top"
-          : "left top";
+          ? angle < 0
+              ? "right bottom"
+              : "right top"
+          : angle < 0
+            ? "left bottom"
+            : "left top";
 
     const flexDirection = isHorizontal
         ? isBottomSide

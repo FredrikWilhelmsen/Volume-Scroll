@@ -39,6 +39,7 @@ export interface Settings {
     overlayBackgroundOpacity: number;
     overlayDuration: number;
     useDutchAngle: boolean;
+    dutchAngleValue: number;
     overlayStyle: OverlayStyle;
 
     overlayPosition: OverlayNumberPosition;
@@ -94,6 +95,7 @@ export const defaultSettings: Settings = {
     overlayBackgroundOpacity: 65,
     overlayDuration: 2000,
     useDutchAngle: false,
+    dutchAngleValue: 6,
     overlayStyle: "number",
 
     // Number style settings

@@ -53,6 +53,9 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
     const [overlayBackgroundOpacity, setOverlayBackgroundOpacity] = useState(
         getValue("overlayBackgroundOpacity"),
     );
+    const [dutchAngleValue, setDutchAngleValue] = useState(
+        getValue("dutchAngleValue"),
+    );
 
     // States to control Tooltip visibility manually depending on Select state
     const [positionTooltipOpen, setPositionTooltipOpen] = useState(false);
@@ -64,6 +67,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
         setFontSize(getValue("fontSize"));
         setOverlayDuration(getValue("overlayDuration"));
         setOverlayBackgroundOpacity(getValue("overlayBackgroundOpacity"));
+        setDutchAngleValue(getValue("dutchAngleValue"));
     }, [settings, overrideSettings]);
 
     const handlePositionChange = (e: SelectChangeEvent<string>) => {
@@ -95,6 +99,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
     const overlayColor = getValue("overlayColor");
     const overlayPosition = getValue("overlayPosition");
     const useDutchAngle = getValue("useDutchAngle");
+    const dutchAngleVal = getValue("dutchAngleValue");
     const overlayStyle = getValue("overlayStyle");
     const overlayBarSide = getValue("overlayBarSide");
     const showNumericValue = getValue("showNumericValue");
@@ -112,6 +117,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
             "overlayXPos",
             "overlayYPos",
             "useDutchAngle",
+            "dutchAngleValue",
             "overlayStyle",
             "overlayBarSide",
             "showNumericValue",
@@ -280,17 +286,32 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                     toggleContainerId="overlayBackgroundToggleContainer"
                     valueDisplayId="overlayBackgroundDisplay"
                 />
-                <Toggle
+                <ToggleSlider
                     label="Dutch Angle"
-                    settingKey="useDutchAngle"
+                    switchKey="useDutchAngle"
+                    sliderKey="dutchAngleValue"
                     checked={useDutchAngle}
+                    value={dutchAngleVal}
+                    min={-45}
+                    max={45}
+                    step={1}
+                    ariaLabel="Dutch Angle Rotation"
                     disabled={!useMouseWheelVolume || !useOverlay}
-                    tooltip="Slightly tilt the overlay"
+                    sliderDisabled={
+                        !useMouseWheelVolume || !useOverlay || !useDutchAngle
+                    }
+                    switchTooltip="Enable or disable Dutch Angle tilt"
+                    sliderTooltip="Set the tilt angle"
+                    valueTooltip="Current tilt angle"
                     activeDomain={activeDomain}
                     editSetting={editSetting}
                     isOverridden={isOverridden}
                     handleReset={handleReset}
-                    id="useDutchAngleContainer"
+                    onValueChange={setDutchAngleValue}
+                    valueFormatter={(v) => `${v}°`}
+                    containerId="useDutchAngleContainer"
+                    toggleContainerId="useDutchAngleToggleContainer"
+                    valueDisplayId="useDutchAngleDisplay"
                 />
                 <ColorPicker
                     label="Color"

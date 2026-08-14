@@ -68,11 +68,15 @@ const ToggleSlider: React.FC<ToggleSliderProps> = ({
     };
 
     const formattedValue = valueFormatter ? valueFormatter(value) : value;
-    const isSliderCurrentlyDisabled = sliderDisabled !== undefined ? sliderDisabled : (disabled || !checked);
+    const isSliderCurrentlyDisabled =
+        sliderDisabled !== undefined ? sliderDisabled : disabled || !checked;
 
     return (
         <div id={containerId}>
-            <div id={toggleContainerId} style={{ display: "flex", alignItems: "center" }}>
+            <div
+                id={toggleContainerId}
+                style={{ display: "flex", alignItems: "center" }}
+            >
                 <SettingsSwitch
                     label={label}
                     checked={checked}
@@ -83,6 +87,7 @@ const ToggleSlider: React.FC<ToggleSliderProps> = ({
                 />
                 <SettingsValueDisplay
                     id={valueDisplayId}
+                    className="sliderDisplay"
                     value={formattedValue}
                     tooltip={valueTooltip}
                     isOverridden={isOverridden(sliderKey)}
@@ -90,9 +95,7 @@ const ToggleSlider: React.FC<ToggleSliderProps> = ({
                 <ResetButton
                     isOverridden={isOverridden(switchKey)}
                     onReset={
-                        activeDomain
-                            ? () => handleReset(switchKey)
-                            : undefined
+                        activeDomain ? () => handleReset(switchKey) : undefined
                     }
                 />
             </div>
@@ -111,9 +114,7 @@ const ToggleSlider: React.FC<ToggleSliderProps> = ({
                 <ResetButton
                     isOverridden={isOverridden(sliderKey)}
                     onReset={
-                        activeDomain
-                            ? () => handleReset(sliderKey)
-                            : undefined
+                        activeDomain ? () => handleReset(sliderKey) : undefined
                     }
                 />
             </div>

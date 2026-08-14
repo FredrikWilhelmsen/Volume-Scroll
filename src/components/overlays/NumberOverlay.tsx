@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import { Settings, OverlayType } from "../../types";
 import { MutedIcon, UnmutedIcon, PlayIcon, PauseIcon } from "./Icons";
 
@@ -40,16 +40,22 @@ export const NumberOverlay: React.FC<NumberOverlayProps> = ({
         x = mouseX - (parentRect?.left || 0);
         y = mouseY - (parentRect?.top || 0);
     } else if (playerRect && parentRect) {
-        x = playerRect.left - parentRect.left + (playerRect.width / 100) * settings.overlayXPos;
-        y = playerRect.top - parentRect.top + (playerRect.height / 100) * settings.overlayYPos;
+        x =
+            playerRect.left -
+            parentRect.left +
+            (playerRect.width / 100) * settings.overlayXPos;
+        y =
+            playerRect.top -
+            parentRect.top +
+            (playerRect.height / 100) * settings.overlayYPos;
     }
 
-    const rotation =
-        settings.useDutchAngle && settings.overlayPosition !== "mouse"
-            ? settings.overlayXPos <= 50
-                ? " rotate(-6deg)"
-                : " rotate(6deg)"
-            : "";
+    const angle = settings.dutchAngleValue;
+    const rotation = settings.useDutchAngle
+        ? settings.overlayXPos <= 50
+            ? ` rotate(${-angle}deg)`
+            : ` rotate(${angle}deg)`
+        : "";
 
     const renderContent = () => {
         const icons: React.ReactNode[] = [];
