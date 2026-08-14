@@ -85,12 +85,12 @@ export const CircleOverlay: React.FC<CircleOverlayProps> = ({
         }
     }
 
-    const rotation =
-        settings.useDutchAngle && settings.overlayPosition !== "mouse"
-            ? settings.overlayXPos <= 50
-                ? " rotate(-6deg)"
-                : " rotate(6deg)"
-            : "";
+    const angle = settings.dutchAngleValue;
+    const rotation = settings.useDutchAngle
+        ? settings.overlayXPos <= 50
+            ? ` rotate(${-angle}deg)`
+            : ` rotate(${angle}deg)`
+        : "";
 
     // Volume progression calculations
     const normalPercent = Math.min(volume, 100);
