@@ -32,8 +32,6 @@ export class YoutubeHandler extends DefaultHandler {
             video
                 .closest(".html5-video-player")
                 ?.querySelector(".ytp-volume-panel");
-        debug("Found video volume slider ", volumePanel);
-        debug("Calculated volume ", calculatedVolume);
 
         if (volumePanel) {
             const cappedVolume = Math.min(
