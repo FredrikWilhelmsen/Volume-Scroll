@@ -225,16 +225,16 @@ const MenuPage: React.FC<MenuPageInterface> = ({
                     onClick={() => setPage("overlay")}
                 />
                 <MenuButton
-                    title="Domain"
-                    subtitle="Site-specific rules"
-                    icon={<PublicIcon />}
-                    onClick={() => setPage("domains")}
-                />
-                <MenuButton
                     title="Misc"
                     subtitle="Advanced"
                     icon={<TuneIcon />}
                     onClick={() => setPage("misc")}
+                />
+                <MenuButton
+                    title="Domain"
+                    subtitle="Site-specific rules"
+                    icon={<PublicIcon />}
+                    onClick={() => setPage("domains")}
                 />
             </ButtonGroup>
 
