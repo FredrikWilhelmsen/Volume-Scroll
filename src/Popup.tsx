@@ -57,13 +57,15 @@ const SettingsPopup = () => {
     }, []);
 
     useEffect(() => {
+        let width = "275px";
         if (page === "updatePage") {
-            document.body.style.width = "500px"; // Expand for update notes
+            width = "500px"; // Expand for update notes
         } else if (activeDomain && page !== "domains") {
-            document.body.style.width = "315px"; // Slightly wider for overrides
-        } else {
-            document.body.style.width = "275px"; // Normal popup width
+            width = "315px"; // Slightly wider for overrides
         }
+
+        document.documentElement.style.width = width;
+        document.body.style.width = width;
     }, [activeDomain, page]);
 
     const navigateTo = (targetPage: Pages): void => {
