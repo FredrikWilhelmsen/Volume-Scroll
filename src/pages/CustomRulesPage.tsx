@@ -4,9 +4,9 @@ import { CustomRule, Pages } from "../types";
 
 interface CustomRulesPageProps {
     customRules?: Record<string, CustomRule[]>;
-    ignoredElementsList?: Record<string, string[]>;
+    ignoredElements?: Record<string, string[]>;
     updateCustomRules: (domain: string, rules: CustomRule[]) => void;
-    updateIgnoredElementsList: (
+    updateIgnoredElements: (
         domain: string,
         ignoredElements: string[],
     ) => void;
@@ -16,9 +16,9 @@ interface CustomRulesPageProps {
 
 const CustomRulesPage: React.FC<CustomRulesPageProps> = ({
     customRules,
-    ignoredElementsList,
+    ignoredElements,
     updateCustomRules,
-    updateIgnoredElementsList,
+    updateIgnoredElements,
     activeDomain,
     setPage,
 }) => {

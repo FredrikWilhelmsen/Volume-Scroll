@@ -135,7 +135,7 @@ export interface ExtensionData {
     globalSettings: Settings; // Global settings
     domainOverrides: Record<string, Partial<Settings>>; // Settings saved for specific domains
     customRules: Record<string, CustomRule[]>; // Custom rules for specific domains
-    ignoredElementsList: Record<string, string[]>; // Elements to ignore for specific domains
+    ignoredElements: Record<string, string[]>; // Elements to ignore for specific domains
     lastVersionRead: string;
 }
 

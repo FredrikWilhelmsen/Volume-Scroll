@@ -52,11 +52,12 @@ const SettingsPopup = () => {
                     globalSettings: defaultSettings,
                     domainOverrides: {},
                     customRules: {},
-                    ignoredElementsList: {},
+                    ignoredElements: {},
                     lastVersionRead: "0.0.0",
                 };
             if (!data.customRules) data.customRules = {};
-            if (!data.ignoredElementsList) data.ignoredElementsList = {};
+            if (!data.ignoredElements)
+                data.ignoredElements = data.ignoredElements || {};
             setExtensionData(data);
         });
     }, []);
@@ -166,7 +167,7 @@ const SettingsPopup = () => {
         });
     };
 
-    const handleIgnoredElementsListChange = (
+    const handleIgnoredElementsChange = (
         domain: string,
         ignoredElements: string[],
     ) => {
@@ -174,8 +175,8 @@ const SettingsPopup = () => {
             if (prevData === null) return prevData;
             const updatedData = {
                 ...prevData,
-                ignoredElementsList: {
-                    ...prevData.ignoredElementsList,
+                ignoredElements: {
+                    ...prevData.ignoredElements,
                     [domain]: ignoredElements,
                 },
             };
@@ -263,11 +264,9 @@ const SettingsPopup = () => {
                 {page === "customRules" && (
                     <CustomRulesPage
                         customRules={extensionData.customRules}
-                        ignoredElementsList={extensionData.ignoredElementsList}
+                        ignoredElements={extensionData.ignoredElements}
                         updateCustomRules={handleCustomRulesChange}
-                        updateIgnoredElementsList={
-                            handleIgnoredElementsListChange
-                        }
+                        updateIgnoredElements={handleIgnoredElementsChange}
                         activeDomain={activeDomain}
                         setPage={navigateTo}
                     />
