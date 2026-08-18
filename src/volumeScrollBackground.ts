@@ -51,6 +51,8 @@ browser.runtime.onInstalled.addListener(async (details) => {
         const defaultData: ExtensionData = {
             globalSettings: defaultSettings,
             domainOverrides: {},
+            customRules: {},
+            ignoredElementsList: {},
             lastVersionRead: browser.runtime.getManifest().version,
         };
         await browser.storage.sync.set({ extensionData: defaultData });
@@ -70,6 +72,8 @@ browser.runtime.onInstalled.addListener(async (details) => {
                     ...currentData.globalSettings,
                 },
                 domainOverrides: currentData.domainOverrides || {},
+                customRules: currentData.customRules || {},
+                ignoredElementsList: currentData.ignoredElementsList || {},
                 lastVersionRead: currentData.lastVersionRead,
             };
             await browser.storage.sync.set({ extensionData: newExtensionData });
@@ -107,6 +111,8 @@ browser.runtime.onInstalled.addListener(async (details) => {
                     ...oldSettings,
                 },
                 domainOverrides,
+                customRules: {},
+                ignoredElementsList: {},
                 lastVersionRead: browser.runtime.getManifest().version,
             };
 
