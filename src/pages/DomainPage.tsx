@@ -11,6 +11,7 @@ import MouseIcon from "@mui/icons-material/Mouse";
 import KeyboardIcon from "@mui/icons-material/Keyboard";
 import LayersIcon from "@mui/icons-material/Layers";
 import TuneIcon from "@mui/icons-material/Tune";
+import RuleIcon from "@mui/icons-material/Rule";
 import "../style/domainPage.css";
 
 interface DomainPageInterface {
@@ -142,6 +143,14 @@ const DomainPage: React.FC<DomainPageInterface> = ({
                                 subtitle="Advanced settings"
                                 icon={<TuneIcon />}
                                 onClick={() => navigateToOverridePage("misc")}
+                            />
+                            <MenuButton
+                                title="Custom Rules"
+                                subtitle="Custom handlers"
+                                icon={<RuleIcon />}
+                                onClick={() =>
+                                    navigateToOverridePage("customRules")
+                                }
                             />
                         </ButtonGroup>
                     )}

@@ -28,6 +28,7 @@ import OverlayPage from "./pages/OverlayPage";
 import MiscPage from "./pages/MiscPage";
 import DomainPage from "./pages/DomainPage";
 import UpdatePage from "./pages/UpdatePage";
+import CustomRulesPage from "./pages/CustomRulesPage";
 import "./style/globalStyle.css";
 import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
@@ -50,8 +51,12 @@ const SettingsPopup = () => {
                 (result.extensionData as ExtensionData) || {
                     globalSettings: defaultSettings,
                     domainOverrides: {},
+                    customRules: {},
+                    ignoredElementsList: {},
                     lastVersionRead: "0.0.0",
                 };
+            if (!data.customRules) data.customRules = {};
+            if (!data.ignoredElementsList) data.ignoredElementsList = {};
             setExtensionData(data);
         });
     }, []);
@@ -60,7 +65,11 @@ const SettingsPopup = () => {
         let width = "275px";
         if (page === "updatePage") {
             width = "500px"; // Expand for update notes
-        } else if (activeDomain && page !== "domains") {
+        } else if (
+            activeDomain &&
+            page !== "domains" &&
+            page !== "customRules"
+        ) {
             width = "315px"; // Slightly wider for overrides
         }
 
@@ -139,6 +148,42 @@ const SettingsPopup = () => {
         });
     };
 
+    const handleCustomRulesChange = (
+        domain: string,
+        rules: import("./types").CustomRule[],
+    ) => {
+        setExtensionData((prevData) => {
+            if (prevData === null) return prevData;
+            const updatedData = {
+                ...prevData,
+                customRules: {
+                    ...prevData.customRules,
+                    [domain]: rules,
+                },
+            };
+            browser.storage.sync.set({ extensionData: updatedData });
+            return updatedData;
+        });
+    };
+
+    const handleIgnoredElementsListChange = (
+        domain: string,
+        ignoredElements: string[],
+    ) => {
+        setExtensionData((prevData) => {
+            if (prevData === null) return prevData;
+            const updatedData = {
+                ...prevData,
+                ignoredElementsList: {
+                    ...prevData.ignoredElementsList,
+                    [domain]: ignoredElements,
+                },
+            };
+            browser.storage.sync.set({ extensionData: updatedData });
+            return updatedData;
+        });
+    };
+
     if (extensionData === null) return <LoadingPage />;
 
     const currentGlobalSettings = extensionData.globalSettings;
@@ -212,6 +257,18 @@ const SettingsPopup = () => {
                 {page === "updatePage" && (
                     <UpdatePage
                         settings={currentGlobalSettings}
+                        setPage={navigateTo}
+                    />
+                )}
+                {page === "customRules" && (
+                    <CustomRulesPage
+                        customRules={extensionData.customRules}
+                        ignoredElementsList={extensionData.ignoredElementsList}
+                        updateCustomRules={handleCustomRulesChange}
+                        updateIgnoredElementsList={
+                            handleIgnoredElementsListChange
+                        }
+                        activeDomain={activeDomain}
                         setPage={navigateTo}
                     />
                 )}
