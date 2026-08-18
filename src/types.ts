@@ -126,9 +126,16 @@ export const colors: string[] = [
     "#DABDAB",
 ];
 
+export interface CustomRule {
+    videoQuerySelector: string;
+    playerQuerySelector: string;
+}
+
 export interface ExtensionData {
-    globalSettings: Settings;
-    domainOverrides: Record<string, Partial<Settings>>;
+    globalSettings: Settings; // Global settings
+    domainOverrides: Record<string, Partial<Settings>>; // Settings saved for specific domains
+    customRules: Record<string, CustomRule[]>; // Custom rules for specific domains
+    ignoredElements: Record<string, string[]>; // Elements to ignore for specific domains
     lastVersionRead: string;
 }
 
@@ -139,7 +146,8 @@ export type Pages =
     | "overlay"
     | "misc"
     | "domains"
-    | "updatePage";
+    | "updatePage"
+    | "customRules";
 
 export type OverlayType = "volume" | "mute" | "unmute" | "pause" | "play";
 
