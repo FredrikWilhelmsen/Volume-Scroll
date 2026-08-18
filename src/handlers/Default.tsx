@@ -22,6 +22,7 @@ import {
     defaultSettings,
     VideoState,
     OverlayType,
+    CustomRule,
 } from "../types";
 import { isHotkeyPressed, debug } from "../utils";
 
@@ -33,6 +34,8 @@ export class DefaultHandler {
     protected domains: string[] = [];
     protected observer: MutationObserver | null = null;
     protected settings: Settings = defaultSettings;
+    protected customRules: CustomRule[] = [];
+    protected ignoredElements: string[] = [];
 
     protected volumeTargets = new WeakMap<HTMLVideoElement, VideoState>();
     protected watchdogs = new Set<HTMLVideoElement>();
@@ -61,6 +64,14 @@ export class DefaultHandler {
 
     public updateSettings(newSettings: Settings): void {
         this.settings = newSettings;
+    }
+
+    public updateCustomRules(customRules: CustomRule[]): void {
+        this.customRules = customRules || [];
+    }
+
+    public updateIgnoredElements(ignoredElements: string[]): void {
+        this.ignoredElements = ignoredElements || [];
     }
 
     public getName(): string {
@@ -107,8 +118,6 @@ export class DefaultHandler {
                 }
             } catch (e) {
                 // Invalid URL or other issue, proceed with caution or abort.
-                // Mostly safe to ignore error and try, or fail safe.
-                // Let's debug and fail safe if we can't determine.
                 debug("Could not parse video URL for CORS check", e);
             }
         }
@@ -139,6 +148,10 @@ export class DefaultHandler {
     }
 
     protected hasAudio(video: any): boolean {
+        if (video.tagName === "AUDIO") {
+            return true;
+        }
+
         if (video.audioTracks && video.audioTracks.length > 0) {
             return true;
         }
@@ -163,21 +176,56 @@ export class DefaultHandler {
                 this.tagNamesToIgnore.includes(el.tagName) ||
                 this.classNamesToIgnore.some((className) =>
                     el.classList.contains(className),
-                ),
+                ) ||
+                this.ignoredElements.some((selector) => {
+                    try {
+                        return el.matches(selector);
+                    } catch (e) {
+                        return false;
+                    }
+                }),
         );
 
         return !!scrollLists;
     }
 
     protected getVideoFromElements(elements: Element[]): videoElements | null {
-        const video = elements.find((el) => el.tagName === "VIDEO") as
-            | HTMLVideoElement
-            | undefined;
+        // Check custom rules first
+        for (const rule of this.customRules) {
+            const matchingPlayer = elements.find((el) => {
+                try {
+                    return el.matches(rule.playerQuerySelector);
+                } catch (e) {
+                    return false;
+                }
+            });
+
+            if (matchingPlayer) {
+                try {
+                    const video = document.querySelector(
+                        rule.videoQuerySelector,
+                    ) as HTMLVideoElement | HTMLAudioElement | null;
+
+                    if (video) {
+                        return {
+                            display: matchingPlayer as HTMLBaseElement,
+                            video: video as HTMLVideoElement,
+                        };
+                    }
+                } catch (e) {
+                    // Ignore selector query syntax errors
+                }
+            }
+        }
+
+        const video = elements.find(
+            (el) => el.tagName === "VIDEO" || el.tagName === "AUDIO",
+        ) as HTMLVideoElement | HTMLAudioElement | undefined;
 
         return video
             ? {
                   display: video as unknown as HTMLBaseElement,
-                  video: video,
+                  video: video as HTMLVideoElement,
               }
             : null;
     }

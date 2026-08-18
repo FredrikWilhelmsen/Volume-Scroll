@@ -209,12 +209,15 @@ export const init = () => {
             domainOverrides: {},
             lastVersionRead: "0.0.0",
         };
-        const overrides = data.domainOverrides[getActiveHostname()];
+        const hostname = getActiveHostname();
+        const overrides = data.domainOverrides[hostname];
         settings = { ...data.globalSettings, ...(overrides || {}) };
 
         setUtilSettings(settings);
         debug("Settings loaded: ", settings);
         handler.updateSettings(settings);
+        handler.updateCustomRules(data.customRules?.[hostname] || []);
+        handler.updateIgnoredElements(data.ignoredElements?.[hostname] || []);
 
         window.addEventListener("message", (event) => {
             if (!event.data) return;
@@ -442,11 +445,14 @@ browser.storage.onChanged.addListener((changes, areaName) => {
     if (!changes.extensionData) return;
 
     const data: ExtensionData = changes.extensionData.newValue as ExtensionData;
-    const overrides = data.domainOverrides[getActiveHostname()];
+    const hostname = getActiveHostname();
+    const overrides = data.domainOverrides[hostname];
     settings = { ...data.globalSettings, ...(overrides || {}) };
 
     setUtilSettings(settings);
     handler.updateSettings(settings);
+    handler.updateCustomRules(data.customRules?.[hostname] || []);
+    handler.updateIgnoredElements(data.ignoredElements?.[hostname] || []);
     debug("Settings reapplied: ", settings);
 
     updateListenerState();
