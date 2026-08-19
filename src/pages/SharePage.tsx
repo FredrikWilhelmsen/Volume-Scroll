@@ -52,6 +52,68 @@ const SharePage: React.FC<SharePageInterface> = ({
         }
     };
 
+    const handleImport = async () => {
+        try {
+            const clipboardText = await navigator.clipboard.readText();
+            if (!clipboardText) {
+                setStatusMessage("Clipboard is empty");
+                return;
+            }
+
+            let importedData: ExportData;
+            try {
+                importedData = JSON.parse(clipboardText);
+            } catch (err) {
+                setStatusMessage("Failed to parse clipboard data");
+                return;
+            }
+
+            const currentVersion = browser.runtime.getManifest().version;
+            if (
+                importedData.version &&
+                importedData.version !== currentVersion
+            ) {
+                const confirmed = window.confirm(
+                    `Warning: The imported settings version (${importedData.version}) differs from your current extension version (${currentVersion}). Do you want to proceed?`,
+                );
+                if (!confirmed) {
+                    return;
+                }
+            }
+
+            let hasUpdated = false;
+            const newExtensionData: ExtensionData = { ...extensionData };
+
+            if (includeSettings && importedData.globalSettings) {
+                newExtensionData.globalSettings = importedData.globalSettings;
+                hasUpdated = true;
+            }
+            if (includeOverrides && importedData.domainOverrides) {
+                newExtensionData.domainOverrides = importedData.domainOverrides;
+                hasUpdated = true;
+            }
+            if (includeCustomRules && importedData.customRules) {
+                newExtensionData.customRules = importedData.customRules;
+                hasUpdated = true;
+            }
+            if (includeIgnoredElements && importedData.ignoredElements) {
+                newExtensionData.ignoredElements = importedData.ignoredElements;
+                hasUpdated = true;
+            }
+
+            if (!hasUpdated) {
+                setStatusMessage("No matching data to import");
+                return;
+            }
+
+            setExtensionData(newExtensionData);
+            await browser.storage.sync.set({ extensionData: newExtensionData });
+            setStatusMessage("Imported successfully!");
+        } catch (err) {
+            setStatusMessage("Failed to read clipboard");
+        }
+    };
+
     const isAnySelected =
         includeSettings ||
         includeOverrides ||
@@ -110,11 +172,18 @@ const SharePage: React.FC<SharePageInterface> = ({
                         Export
                     </Button>
 
+                    <Button
+                        variant="outlined"
+                        onClick={handleImport}
+                        disabled={!isAnySelected}
+                        style={{ marginTop: "8px" }}
+                    >
+                        Import
+                    </Button>
+
                     {statusMessage && (
                         <Typography
-                            variant="caption"
                             style={{
-                                color: "white",
                                 marginTop: "8px",
                                 textAlign: "center",
                             }}
