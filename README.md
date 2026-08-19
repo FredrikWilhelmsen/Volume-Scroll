@@ -23,14 +23,15 @@ A highly customizable browser extension for changing video volume by scrolling.
         - Can be displayed next to your mouse.
         - Choose from four different pre-set positions, or create your own position.
         - Customize the overlay's size, duration, color, and background opacity.
+- **Boost audio** up to 500%.
 - **Optional hotkey** for muting or unmuting a video.
-- **Optional hotkey** for pausing or playing a video.
 - **Optional hotkey** to swap the scroll step value.
 - **Optional fullscreen** only mode.
 - **Disable or enable** for specific websites.
 - **Set a default** volume level for a video, and optionally start them muted.
 - **Extremely customizable**, change every setting on a per site basis.
-- **Boost audio** up to 500%.
+- **Create Custom** handlers if your favorite video site isn't supported.
+- **Share** your settings, or import presets from other users.
 - Also works with YT Music and Spotify!
 
 _Take it to the next level, and scroll to change the settings in the extension!_
