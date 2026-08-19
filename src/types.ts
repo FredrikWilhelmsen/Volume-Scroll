@@ -141,6 +141,11 @@ export interface ExtensionData {
     lastVersionRead: string;
 }
 
+export interface ExportData
+    extends Partial<Omit<ExtensionData, "lastVersionRead">> {
+    version: string;
+}
+
 export type Pages =
     | "menu"
     | "scroll"
@@ -149,7 +154,8 @@ export type Pages =
     | "misc"
     | "domains"
     | "updatePage"
-    | "customRules";
+    | "customRules"
+    | "share";
 
 export type OverlayType = "volume" | "mute" | "unmute" | "pause" | "play";
 

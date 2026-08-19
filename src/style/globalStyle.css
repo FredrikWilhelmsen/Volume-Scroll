@@ -41,6 +41,24 @@ body {
     color: gray !important;
 }
 
+.MuiButton-outlined,
+.MuiButton-outlinedPrimary {
+    color: white !important;
+    border-color: rgba(25, 118, 210, 0.5) !important;
+}
+
+.MuiButton-outlined:hover,
+.MuiButton-outlinedPrimary:hover {
+    border-color: #1976d2 !important;
+}
+
+#domainListInputContainer {
+    display: flex;
+    flex-direction: column;
+    margin-top: 8px;
+    gap: 8px;
+}
+
 hr {
     margin-top: 4px;
     margin-bottom: 4px;

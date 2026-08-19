@@ -191,12 +191,10 @@ const CustomRulesPage: React.FC<CustomRulesPageProps> = ({
                     </Tooltip>
                     <Button
                         variant="outlined"
-                        size="small"
                         onClick={handleAddCustomRule}
                         disabled={
                             !videoQueryInput.trim() || !playerQueryInput.trim()
                         }
-                        style={{ marginTop: "4px" }}
                     >
                         Save Rule
                     </Button>
@@ -262,10 +260,8 @@ const CustomRulesPage: React.FC<CustomRulesPageProps> = ({
                     </Tooltip>
                     <Button
                         variant="outlined"
-                        size="small"
                         onClick={handleAddIgnoredElement}
                         disabled={!ignoredElementInput.trim()}
-                        style={{ marginTop: "4px" }}
                     >
                         Add Element
                     </Button>
