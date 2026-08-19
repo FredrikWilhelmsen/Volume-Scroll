@@ -35,6 +35,15 @@ const CustomRulesPage: React.FC<CustomRulesPageProps> = ({
     const [playerQueryInput, setPlayerQueryInput] = useState("");
     const [ignoredElementInput, setIgnoredElementInput] = useState("");
 
+    const handleSelectCustomRule = (rule: CustomRule) => {
+        setRuleNameInput(rule.name || "");
+        setVideoQueryInput(rule.videoQuerySelector || "");
+        setScrollInteractibleQueryInput(
+            (rule.scrollInteractibleQuerySelector || []).join(", "),
+        );
+        setPlayerQueryInput(rule.displayQuerySelector || "");
+    };
+
     const handleAddCustomRule = () => {
         if (!domain || !videoQueryInput.trim() || !playerQueryInput.trim())
             return;
@@ -50,14 +59,6 @@ const CustomRulesPage: React.FC<CustomRulesPageProps> = ({
                 index++;
             }
             ruleName = `Rule #${index}`;
-        } else if (currentRules.some((r) => r.name === ruleName)) {
-            let index = 2;
-            let candidate = `${ruleName} (${index})`;
-            while (currentRules.some((r) => r.name === candidate)) {
-                index++;
-                candidate = `${ruleName} (${index})`;
-            }
-            ruleName = candidate;
         }
 
         const newRule: CustomRule = {
@@ -66,7 +67,17 @@ const CustomRulesPage: React.FC<CustomRulesPageProps> = ({
             displayQuerySelector: playerQueryInput.trim(),
             scrollInteractibleQuerySelector: scrollInteractible,
         };
-        const updated = [...currentRules, newRule];
+
+        const isExisting = currentRules.some(
+            (r) => r.name.toLowerCase() === ruleName.toLowerCase(),
+        );
+
+        const updated = isExisting
+            ? currentRules.map((r) =>
+                  r.name.toLowerCase() === ruleName.toLowerCase() ? newRule : r,
+              )
+            : [...currentRules, newRule];
+
         updateCustomRules(domain, updated);
         setRuleNameInput("");
         setVideoQueryInput("");
@@ -74,7 +85,8 @@ const CustomRulesPage: React.FC<CustomRulesPageProps> = ({
         setPlayerQueryInput("");
     };
 
-    const handleDeleteCustomRule = (index: number) => {
+    const handleDeleteCustomRule = (index: number, e: React.MouseEvent) => {
+        e.stopPropagation();
         if (!domain) return;
         const updated = currentRules.filter((_, i) => i !== index);
         updateCustomRules(domain, updated);
@@ -160,7 +172,7 @@ const CustomRulesPage: React.FC<CustomRulesPageProps> = ({
                         />
                     </Tooltip>
                     <Tooltip
-                        title="The css selector for the scrollable element"
+                        title="The css selector for the display element"
                         placement="top"
                         disableInteractive
                     >
@@ -180,14 +192,13 @@ const CustomRulesPage: React.FC<CustomRulesPageProps> = ({
                     <Button
                         variant="outlined"
                         size="small"
-                        startIcon={<AddIcon />}
                         onClick={handleAddCustomRule}
                         disabled={
                             !videoQueryInput.trim() || !playerQueryInput.trim()
                         }
                         style={{ marginTop: "4px" }}
                     >
-                        Add Rule
+                        Save Rule
                     </Button>
                 </div>
 
@@ -201,7 +212,11 @@ const CustomRulesPage: React.FC<CustomRulesPageProps> = ({
                         </Typography>
                     ) : (
                         currentRules.map((rule, idx) => (
-                            <div key={idx} className="domainListItem">
+                            <div
+                                key={idx}
+                                className="domainListItem"
+                                onClick={() => handleSelectCustomRule(rule)}
+                            >
                                 <div className="domainItemText">
                                     <Typography
                                         variant="body2"
@@ -211,7 +226,9 @@ const CustomRulesPage: React.FC<CustomRulesPageProps> = ({
                                     </Typography>
                                 </div>
                                 <IconButton
-                                    onClick={() => handleDeleteCustomRule(idx)}
+                                    onClick={(e) =>
+                                        handleDeleteCustomRule(idx, e)
+                                    }
                                     size="small"
                                     sx={{ color: "white", flexShrink: 0 }}
                                 >
@@ -244,7 +261,6 @@ const CustomRulesPage: React.FC<CustomRulesPageProps> = ({
                     <Button
                         variant="outlined"
                         size="small"
-                        startIcon={<AddIcon />}
                         onClick={handleAddIgnoredElement}
                         disabled={!ignoredElementInput.trim()}
                         style={{ marginTop: "4px" }}
