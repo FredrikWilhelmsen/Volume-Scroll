@@ -108,7 +108,7 @@ const CustomRulesPage: React.FC<CustomRulesPageProps> = ({
                     >
                         <TextField
                             className="manualDomainInput"
-                            label="Scroll interactible query selectors"
+                            label="Interactible query selectors"
                             placeholder="e.g. .player-controls, .video-overlay"
                             variant="outlined"
                             size="small"
