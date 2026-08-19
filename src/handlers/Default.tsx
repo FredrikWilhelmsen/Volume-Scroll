@@ -192,23 +192,30 @@ export class DefaultHandler {
     protected getVideoFromElements(elements: Element[]): videoElements | null {
         // Check custom rules first
         for (const rule of this.customRules) {
-            const matchingPlayer = elements.find((el) => {
+            const hasInteractibleMatch = elements.some((el) => {
                 try {
-                    return el.matches(rule.playerQuerySelector);
+                    return (
+                        rule.scrollInteractibleQuerySelector?.some((selector) =>
+                            el.matches(selector),
+                        ) || el.matches(rule.displayQuerySelector)
+                    );
                 } catch (e) {
                     return false;
                 }
             });
 
-            if (matchingPlayer) {
+            if (hasInteractibleMatch) {
                 try {
                     const video = document.querySelector(
                         rule.videoQuerySelector,
                     ) as HTMLVideoElement | HTMLAudioElement | null;
+                    const display = document.querySelector(
+                        rule.displayQuerySelector,
+                    ) as HTMLBaseElement | null;
 
-                    if (video) {
+                    if (video && display) {
                         return {
-                            display: matchingPlayer as HTMLBaseElement,
+                            display: display,
                             video: video as HTMLVideoElement,
                         };
                     }

@@ -37,7 +37,8 @@ const CustomRulesPage: React.FC<CustomRulesPageProps> = ({
             return;
         const newRule: CustomRule = {
             videoQuerySelector: videoQueryInput.trim(),
-            playerQuerySelector: playerQueryInput.trim(),
+            displayQuerySelector: playerQueryInput.trim(),
+            scrollInteractibleQuerySelector: [],
         };
         const updated = [...currentRules, newRule];
         updateCustomRules(domain, updated);
@@ -147,7 +148,7 @@ const CustomRulesPage: React.FC<CustomRulesPageProps> = ({
                                         variant="body2"
                                         className="domainName"
                                     >
-                                        Player: {rule.playerQuerySelector}
+                                        Player: {rule.displayQuerySelector}
                                     </Typography>
                                 </div>
                                 <IconButton
