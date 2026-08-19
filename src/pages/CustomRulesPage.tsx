@@ -117,7 +117,7 @@ const CustomRulesPage: React.FC<CustomRulesPageProps> = ({
             <hr />
             <div className="settingsContainer">
                 <div id="domainListInputContainer">
-                    <br></br>
+                    <Typography variant="body1">Handlers</Typography>
                     <Tooltip
                         title="Name for the custom rule"
                         placement="top"
@@ -238,7 +238,9 @@ const CustomRulesPage: React.FC<CustomRulesPageProps> = ({
                         ))
                     )}
                 </div>
-
+                <Typography variant="body1" style={{ paddingTop: "12px" }}>
+                    Ignored Elements
+                </Typography>
                 <div id="domainListInputContainer">
                     <Tooltip
                         title="Input query selector for elements to ignore on scroll"
