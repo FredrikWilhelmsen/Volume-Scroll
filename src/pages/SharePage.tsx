@@ -78,72 +78,66 @@ const SharePage: React.FC<SharePageInterface> = ({
             <BackButton setPage={setPage} title="Share" />
             <hr />
 
-            <div
-                style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "4px",
-                    marginTop: "12px",
-                }}
-            >
-                <SettingsSwitch
-                    label="Settings"
-                    checked={includeSettings}
-                    onChange={(val) => {
-                        setIncludeSettings(val);
-                        setStatusMessage(null);
-                    }}
-                    tooltip="Include global settings"
-                />
-                <SettingsSwitch
-                    label="Overrides"
-                    checked={includeOverrides}
-                    onChange={(val) => {
-                        setIncludeOverrides(val);
-                        setStatusMessage(null);
-                    }}
-                    tooltip="Include domain overrides"
-                />
-                <SettingsSwitch
-                    label="Custom rules"
-                    checked={includeCustomRules}
-                    onChange={(val) => {
-                        setIncludeCustomRules(val);
-                        setStatusMessage(null);
-                    }}
-                    tooltip="Include custom domain rules"
-                />
-                <SettingsSwitch
-                    label="Element ignore"
-                    checked={includeIgnoredElements}
-                    onChange={(val) => {
-                        setIncludeIgnoredElements(val);
-                        setStatusMessage(null);
-                    }}
-                    tooltip="Include ignored elements"
-                />
-
-                <Button
-                    variant="contained"
-                    onClick={handleExport}
-                    disabled={!isAnySelected}
-                    style={{ marginTop: "16px", textTransform: "none" }}
-                >
-                    Export
-                </Button>
-
-                {statusMessage && (
-                    <Typography
-                        variant="caption"
-                        style={{
-                            color: "#4ade80",
-                            marginTop: "8px",
-                            textAlign: "center",
+            <div className="settingsContainer">
+                <div id="domainListInputContainer">
+                    <SettingsSwitch
+                        label="Settings"
+                        checked={includeSettings}
+                        onChange={(val) => {
+                            setIncludeSettings(val);
+                            setStatusMessage(null);
                         }}
+                        tooltip="Include global settings"
+                    />
+                    <SettingsSwitch
+                        label="Overrides"
+                        checked={includeOverrides}
+                        onChange={(val) => {
+                            setIncludeOverrides(val);
+                            setStatusMessage(null);
+                        }}
+                        tooltip="Include domain overrides"
+                    />
+                    <SettingsSwitch
+                        label="Custom rules"
+                        checked={includeCustomRules}
+                        onChange={(val) => {
+                            setIncludeCustomRules(val);
+                            setStatusMessage(null);
+                        }}
+                        tooltip="Include custom domain rules"
+                    />
+                    <SettingsSwitch
+                        label="Element ignore"
+                        checked={includeIgnoredElements}
+                        onChange={(val) => {
+                            setIncludeIgnoredElements(val);
+                            setStatusMessage(null);
+                        }}
+                        tooltip="Include ignored elements"
+                    />
+
+                    <Button
+                        variant="outlined"
+                        onClick={handleExport}
+                        disabled={!isAnySelected}
                     >
-                        {statusMessage}
-                    </Typography>
-                )}
+                        Export
+                    </Button>
+
+                    {statusMessage && (
+                        <Typography
+                            variant="caption"
+                            style={{
+                                color: "#4ade80",
+                                marginTop: "8px",
+                                textAlign: "center",
+                            }}
+                        >
+                            {statusMessage}
+                        </Typography>
+                    )}
+                </div>
             </div>
         </div>
     );
