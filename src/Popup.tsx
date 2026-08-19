@@ -29,6 +29,7 @@ import MiscPage from "./pages/MiscPage";
 import DomainPage from "./pages/DomainPage";
 import UpdatePage from "./pages/UpdatePage";
 import CustomRulesPage from "./pages/CustomRulesPage";
+import SharePage from "./pages/SharePage";
 import "./style/globalStyle.css";
 import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
@@ -268,6 +269,13 @@ const SettingsPopup = () => {
                         updateCustomRules={handleCustomRulesChange}
                         updateIgnoredElements={handleIgnoredElementsChange}
                         activeDomain={activeDomain}
+                        setPage={navigateTo}
+                    />
+                )}
+                {page === "share" && (
+                    <SharePage
+                        extensionData={extensionData}
+                        setExtensionData={setExtensionData}
                         setPage={navigateTo}
                     />
                 )}

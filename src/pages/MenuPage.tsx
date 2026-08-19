@@ -13,6 +13,7 @@ import KeyboardIcon from "@mui/icons-material/Keyboard";
 import LayersIcon from "@mui/icons-material/Layers";
 import PublicIcon from "@mui/icons-material/Public";
 import TuneIcon from "@mui/icons-material/Tune";
+import ShareIcon from "@mui/icons-material/Share";
 
 interface MenuPageInterface {
     settings: Settings;
@@ -235,6 +236,12 @@ const MenuPage: React.FC<MenuPageInterface> = ({
                     subtitle="Site-specific rules"
                     icon={<PublicIcon />}
                     onClick={() => setPage("domains")}
+                />
+                <MenuButton
+                    title="Share"
+                    subtitle="Export & import"
+                    icon={<ShareIcon />}
+                    onClick={() => setPage("share")}
                 />
             </ButtonGroup>
 
