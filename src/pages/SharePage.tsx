@@ -1,23 +1,6 @@
-/*
- * Volume Scroll - Scrollable volume for any video on the internet
- * Copyright (C) 2026  Fredrik Wilhelmsen
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
-
+import browser from "webextension-polyfill";
 import React, { useState } from "react";
-import { ExtensionData, Pages } from "../types";
+import { ExtensionData, ExportData, Pages } from "../types";
 import BackButton from "../components/BackButton";
 import SettingsSwitch from "../components/SettingsSwitch";
 import Button from "@mui/material/Button";
@@ -43,7 +26,9 @@ const SharePage: React.FC<SharePageInterface> = ({
     const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
     const handleExport = async () => {
-        const exportData: Partial<ExtensionData> = {};
+        const exportData: ExportData = {
+            version: browser.runtime.getManifest().version,
+        };
 
         if (includeSettings) {
             exportData.globalSettings = extensionData.globalSettings;
@@ -129,7 +114,7 @@ const SharePage: React.FC<SharePageInterface> = ({
                         <Typography
                             variant="caption"
                             style={{
-                                color: "#4ade80",
+                                color: "white",
                                 marginTop: "8px",
                                 textAlign: "center",
                             }}
