@@ -11,12 +11,15 @@
     gap: 8px;
 }
 
-.manualDomainInput input {
+.manualDomainInput input,
+.manualDomainInput textarea {
     color: white;
 }
 
 .manualDomainInput label {
     color: gray;
+    white-space: normal;
+    word-wrap: break-word;
 }
 
 .manualDomainInput .MuiOutlinedInput-root fieldset {

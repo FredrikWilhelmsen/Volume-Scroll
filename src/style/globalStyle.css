@@ -37,8 +37,8 @@ body {
     padding-bottom: 16px;
 }
 
-.Mui-disabled {
-    color: white !important;
+.MuiButton-root.Mui-disabled {
+    color: gray !important;
 }
 
 hr {
