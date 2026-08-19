@@ -24,8 +24,11 @@ const SharePage: React.FC<SharePageInterface> = ({
     const [includeCustomRules, setIncludeCustomRules] = useState(true);
     const [includeIgnoredElements, setIncludeIgnoredElements] = useState(true);
     const [statusMessage, setStatusMessage] = useState<string | null>(null);
+    const [pendingImportData, setPendingImportData] =
+        useState<ExportData | null>(null);
 
     const handleExport = async () => {
+        setPendingImportData(null);
         const exportData: ExportData = {
             version: browser.runtime.getManifest().version,
         };
@@ -52,7 +55,41 @@ const SharePage: React.FC<SharePageInterface> = ({
         }
     };
 
+    const applyImport = async (importedData: ExportData) => {
+        let hasUpdated = false;
+        const newExtensionData: ExtensionData = { ...extensionData };
+
+        if (includeSettings && importedData.globalSettings) {
+            newExtensionData.globalSettings = importedData.globalSettings;
+            hasUpdated = true;
+        }
+        if (includeOverrides && importedData.domainOverrides) {
+            newExtensionData.domainOverrides = importedData.domainOverrides;
+            hasUpdated = true;
+        }
+        if (includeCustomRules && importedData.customRules) {
+            newExtensionData.customRules = importedData.customRules;
+            hasUpdated = true;
+        }
+        if (includeIgnoredElements && importedData.ignoredElements) {
+            newExtensionData.ignoredElements = importedData.ignoredElements;
+            hasUpdated = true;
+        }
+
+        if (!hasUpdated) {
+            setStatusMessage("No matching data to import");
+            setPendingImportData(null);
+            return;
+        }
+
+        setExtensionData(newExtensionData);
+        await browser.storage.sync.set({ extensionData: newExtensionData });
+        setPendingImportData(null);
+        setStatusMessage("Imported successfully!");
+    };
+
     const handleImport = async () => {
+        setPendingImportData(null);
         try {
             const clipboardText = await navigator.clipboard.readText();
             if (!clipboardText) {
@@ -73,42 +110,14 @@ const SharePage: React.FC<SharePageInterface> = ({
                 importedData.version &&
                 importedData.version !== currentVersion
             ) {
-                const confirmed = window.confirm(
-                    `Warning: The imported settings version (${importedData.version}) differs from your current extension version (${currentVersion}). Do you want to proceed?`,
+                setPendingImportData(importedData);
+                setStatusMessage(
+                    `Version mismatch: Exported from v${importedData.version}, current is v${currentVersion}.`,
                 );
-                if (!confirmed) {
-                    return;
-                }
-            }
-
-            let hasUpdated = false;
-            const newExtensionData: ExtensionData = { ...extensionData };
-
-            if (includeSettings && importedData.globalSettings) {
-                newExtensionData.globalSettings = importedData.globalSettings;
-                hasUpdated = true;
-            }
-            if (includeOverrides && importedData.domainOverrides) {
-                newExtensionData.domainOverrides = importedData.domainOverrides;
-                hasUpdated = true;
-            }
-            if (includeCustomRules && importedData.customRules) {
-                newExtensionData.customRules = importedData.customRules;
-                hasUpdated = true;
-            }
-            if (includeIgnoredElements && importedData.ignoredElements) {
-                newExtensionData.ignoredElements = importedData.ignoredElements;
-                hasUpdated = true;
-            }
-
-            if (!hasUpdated) {
-                setStatusMessage("No matching data to import");
                 return;
             }
 
-            setExtensionData(newExtensionData);
-            await browser.storage.sync.set({ extensionData: newExtensionData });
-            setStatusMessage("Imported successfully!");
+            await applyImport(importedData);
         } catch (err) {
             setStatusMessage("Failed to read clipboard");
         }
@@ -133,6 +142,7 @@ const SharePage: React.FC<SharePageInterface> = ({
                         onChange={(val) => {
                             setIncludeSettings(val);
                             setStatusMessage(null);
+                            setPendingImportData(null);
                         }}
                         tooltip="Include global settings"
                     />
@@ -142,6 +152,7 @@ const SharePage: React.FC<SharePageInterface> = ({
                         onChange={(val) => {
                             setIncludeOverrides(val);
                             setStatusMessage(null);
+                            setPendingImportData(null);
                         }}
                         tooltip="Include domain overrides"
                     />
@@ -151,15 +162,17 @@ const SharePage: React.FC<SharePageInterface> = ({
                         onChange={(val) => {
                             setIncludeCustomRules(val);
                             setStatusMessage(null);
+                            setPendingImportData(null);
                         }}
                         tooltip="Include custom domain rules"
                     />
                     <SettingsSwitch
-                        label="Element ignore"
+                        label="Ignored elements"
                         checked={includeIgnoredElements}
                         onChange={(val) => {
                             setIncludeIgnoredElements(val);
                             setStatusMessage(null);
+                            setPendingImportData(null);
                         }}
                         tooltip="Include ignored elements"
                     />
@@ -180,6 +193,18 @@ const SharePage: React.FC<SharePageInterface> = ({
                     >
                         Import
                     </Button>
+
+                    {pendingImportData && (
+                        <Button
+                            variant="contained"
+                            color="warning"
+                            onClick={() => applyImport(pendingImportData)}
+                            disabled={!isAnySelected}
+                            style={{ marginTop: "8px" }}
+                        >
+                            Confirm Import
+                        </Button>
+                    )}
 
                     {statusMessage && (
                         <Typography
