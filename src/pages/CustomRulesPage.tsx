@@ -29,20 +29,27 @@ const CustomRulesPage: React.FC<CustomRulesPageProps> = ({
     const currentIgnoredElements = domain ? ignoredElements[domain] || [] : [];
 
     const [videoQueryInput, setVideoQueryInput] = useState("");
+    const [scrollInteractibleQueryInput, setScrollInteractibleQueryInput] = useState("");
     const [playerQueryInput, setPlayerQueryInput] = useState("");
     const [ignoredElementInput, setIgnoredElementInput] = useState("");
 
     const handleAddCustomRule = () => {
         if (!domain || !videoQueryInput.trim() || !playerQueryInput.trim())
             return;
+        const scrollInteractible = scrollInteractibleQueryInput
+            .split(",")
+            .map((s) => s.trim())
+            .filter((s) => s.length > 0);
+
         const newRule: CustomRule = {
             videoQuerySelector: videoQueryInput.trim(),
             displayQuerySelector: playerQueryInput.trim(),
-            scrollInteractibleQuerySelector: [],
+            scrollInteractibleQuerySelector: scrollInteractible,
         };
         const updated = [...currentRules, newRule];
         updateCustomRules(domain, updated);
         setVideoQueryInput("");
+        setScrollInteractibleQueryInput("");
         setPlayerQueryInput("");
     };
 
@@ -95,13 +102,34 @@ const CustomRulesPage: React.FC<CustomRulesPageProps> = ({
                         />
                     </Tooltip>
                     <Tooltip
+                        title="Comma-separated CSS selectors for elements that trigger volume scrolling"
+                        placement="top"
+                        disableInteractive
+                    >
+                        <TextField
+                            className="manualDomainInput"
+                            label="Scroll interactible query selectors"
+                            placeholder="e.g. .player-controls, .video-overlay"
+                            variant="outlined"
+                            size="small"
+                            multiline
+                            minRows={2}
+                            maxRows={4}
+                            autoComplete="off"
+                            value={scrollInteractibleQueryInput}
+                            onChange={(e) =>
+                                setScrollInteractibleQueryInput(e.target.value)
+                            }
+                        />
+                    </Tooltip>
+                    <Tooltip
                         title="The css selector for the scrollable element"
                         placement="top"
                         disableInteractive
                     >
                         <TextField
                             className="manualDomainInput"
-                            label="Player query selector"
+                            label="Display query selector"
                             placeholder="e.g. #movie_player"
                             variant="outlined"
                             size="small"
@@ -144,11 +172,20 @@ const CustomRulesPage: React.FC<CustomRulesPageProps> = ({
                                     >
                                         Video: {rule.videoQuerySelector}
                                     </Typography>
+                                    {rule.scrollInteractibleQuerySelector &&
+                                        rule.scrollInteractibleQuerySelector.length > 0 && (
+                                            <Typography
+                                                variant="body2"
+                                                className="domainName"
+                                            >
+                                                Interactible: {rule.scrollInteractibleQuerySelector.join(", ")}
+                                            </Typography>
+                                        )}
                                     <Typography
                                         variant="body2"
                                         className="domainName"
                                     >
-                                        Player: {rule.displayQuerySelector}
+                                        Display: {rule.displayQuerySelector}
                                     </Typography>
                                 </div>
                                 <IconButton
