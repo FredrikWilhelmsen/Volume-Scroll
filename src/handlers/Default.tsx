@@ -194,10 +194,8 @@ export class DefaultHandler {
         for (const rule of this.customRules) {
             const hasInteractibleMatch = elements.some((el) => {
                 try {
-                    return (
-                        rule.scrollInteractibleQuerySelector?.some((selector) =>
-                            el.matches(selector),
-                        ) || el.matches(rule.displayQuerySelector)
+                    return rule.scrollInteractibleQuerySelector?.some(
+                        (selector) => el.matches(selector),
                     );
                 } catch (e) {
                     return false;
