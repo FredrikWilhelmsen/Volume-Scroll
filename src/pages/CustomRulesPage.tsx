@@ -30,7 +30,8 @@ const CustomRulesPage: React.FC<CustomRulesPageProps> = ({
 
     const [ruleNameInput, setRuleNameInput] = useState("");
     const [videoQueryInput, setVideoQueryInput] = useState("");
-    const [scrollInteractibleQueryInput, setScrollInteractibleQueryInput] = useState("");
+    const [scrollInteractibleQueryInput, setScrollInteractibleQueryInput] =
+        useState("");
     const [playerQueryInput, setPlayerQueryInput] = useState("");
     const [ignoredElementInput, setIgnoredElementInput] = useState("");
 
