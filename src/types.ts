@@ -127,6 +127,7 @@ export const colors: string[] = [
 ];
 
 export interface CustomRule {
+    name: string;
     videoQuerySelector: string;
     displayQuerySelector: string;
     scrollInteractibleQuerySelector: string[];

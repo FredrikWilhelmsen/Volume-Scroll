@@ -28,6 +28,7 @@ const CustomRulesPage: React.FC<CustomRulesPageProps> = ({
     const currentRules = domain ? customRules[domain] || [] : [];
     const currentIgnoredElements = domain ? ignoredElements[domain] || [] : [];
 
+    const [ruleNameInput, setRuleNameInput] = useState("");
     const [videoQueryInput, setVideoQueryInput] = useState("");
     const [scrollInteractibleQueryInput, setScrollInteractibleQueryInput] = useState("");
     const [playerQueryInput, setPlayerQueryInput] = useState("");
@@ -41,13 +42,32 @@ const CustomRulesPage: React.FC<CustomRulesPageProps> = ({
             .map((s) => s.trim())
             .filter((s) => s.length > 0);
 
+        let ruleName = ruleNameInput.trim();
+        if (!ruleName) {
+            let index = currentRules.length + 1;
+            while (currentRules.some((r) => r.name === `Rule #${index}`)) {
+                index++;
+            }
+            ruleName = `Rule #${index}`;
+        } else if (currentRules.some((r) => r.name === ruleName)) {
+            let index = 2;
+            let candidate = `${ruleName} (${index})`;
+            while (currentRules.some((r) => r.name === candidate)) {
+                index++;
+                candidate = `${ruleName} (${index})`;
+            }
+            ruleName = candidate;
+        }
+
         const newRule: CustomRule = {
+            name: ruleName,
             videoQuerySelector: videoQueryInput.trim(),
             displayQuerySelector: playerQueryInput.trim(),
             scrollInteractibleQuerySelector: scrollInteractible,
         };
         const updated = [...currentRules, newRule];
         updateCustomRules(domain, updated);
+        setRuleNameInput("");
         setVideoQueryInput("");
         setScrollInteractibleQueryInput("");
         setPlayerQueryInput("");
@@ -85,6 +105,22 @@ const CustomRulesPage: React.FC<CustomRulesPageProps> = ({
             <div className="settingsContainer">
                 <div id="domainListInputContainer">
                     <br></br>
+                    <Tooltip
+                        title="Name for the custom rule"
+                        placement="top"
+                        disableInteractive
+                    >
+                        <TextField
+                            className="manualDomainInput"
+                            label="Rule name"
+                            placeholder="e.g. My Custom Rule"
+                            variant="outlined"
+                            size="small"
+                            autoComplete="off"
+                            value={ruleNameInput}
+                            onChange={(e) => setRuleNameInput(e.target.value)}
+                        />
+                    </Tooltip>
                     <Tooltip
                         title="The css selector for the video"
                         placement="top"
@@ -170,22 +206,7 @@ const CustomRulesPage: React.FC<CustomRulesPageProps> = ({
                                         variant="body2"
                                         className="domainName"
                                     >
-                                        Video: {rule.videoQuerySelector}
-                                    </Typography>
-                                    {rule.scrollInteractibleQuerySelector &&
-                                        rule.scrollInteractibleQuerySelector.length > 0 && (
-                                            <Typography
-                                                variant="body2"
-                                                className="domainName"
-                                            >
-                                                Interactible: {rule.scrollInteractibleQuerySelector.join(", ")}
-                                            </Typography>
-                                        )}
-                                    <Typography
-                                        variant="body2"
-                                        className="domainName"
-                                    >
-                                        Display: {rule.displayQuerySelector}
+                                        {rule.name || `Rule #${idx + 1}`}
                                     </Typography>
                                 </div>
                                 <IconButton
