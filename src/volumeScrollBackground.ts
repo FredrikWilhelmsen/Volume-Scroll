@@ -90,6 +90,30 @@ browser.runtime.onInstalled.addListener(async (details) => {
             newExtensionData.ignoredElements = currentIgnored;
             schemaVersion = 2;
         }
+        if (schemaVersion === 2) {
+            const currentIgnored = {
+                ...(newExtensionData.ignoredElements || {}),
+            };
+            const ytIgnored = [...(currentIgnored["www.youtube.com"] || [])];
+            const youtubeDefaults = [
+                "YT-MULTI-PAGE-MENU-SECTION-RENDERER",
+                "YT-CONTEXTUAL-SHEET-LAYOUT",
+                "YTD-LIVE-CHAT-FRAME",
+                "YTD-GUIDE-RENDERER",
+                ".ytSearchboxComponentSuggestionsContainerScrollable",
+                ".ytd-popup-container",
+                ".ytp-settings-menu",
+                ".yt-live-chat-renderer",
+            ];
+            for (const item of youtubeDefaults) {
+                if (!ytIgnored.includes(item)) {
+                    ytIgnored.push(item);
+                }
+            }
+            currentIgnored["www.youtube.com"] = ytIgnored;
+            newExtensionData.ignoredElements = currentIgnored;
+            schemaVersion = 3;
+        }
 
         newExtensionData.schemaVersion = schemaVersion;
         await browser.storage.sync.set({ extensionData: newExtensionData });
