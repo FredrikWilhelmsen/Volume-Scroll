@@ -28,6 +28,7 @@ import {
     setManualMouse4Pressed,
     setManualMouse5Pressed,
     isFullscreen,
+    getFullscreenElement,
 } from "./utils";
 
 import {
@@ -502,11 +503,16 @@ const isFullscreenModeActive = function (): boolean {
     try {
         if (window.self !== window.top && window.top?.document) {
             const topDoc = window.top.document;
+            const topFsEl =
+                topDoc.fullscreenElement ||
+                (topDoc as any).webkitFullscreenElement ||
+                (topDoc as any).mozFullScreenElement ||
+                (topDoc as any).msFullscreenElement;
+
             if (
-                topDoc.fullscreenElement != null ||
-                (topDoc as any).webkitFullscreenElement != null ||
-                (topDoc as any).mozFullScreenElement != null ||
-                (topDoc as any).msFullscreenElement != null
+                topFsEl != null &&
+                window.frameElement &&
+                topFsEl === window.frameElement
             ) {
                 return true;
             }
@@ -535,7 +541,7 @@ export function broadcastStatusToIframes(): void {
     const iframes = document.getElementsByTagName("iframe");
     const hasVideo = document.getElementsByTagName("video").length > 0;
     const disabled = isDisabledOnSite();
-    const activeFullscreen = isFullscreenModeActive();
+    const isFsActive = isFullscreenModeActive();
     for (let i = 0; i < iframes.length; i++) {
         try {
             iframes[i].contentWindow?.postMessage(
@@ -543,7 +549,7 @@ export function broadcastStatusToIframes(): void {
                     type: "VOLUME_SCROLL_PARENT_STATUS",
                     parentDisabled: disabled,
                     parentHasVideo: hasVideo,
-                    parentIsFullscreen: activeFullscreen,
+                    parentIsFullscreen: isFsActive,
                 },
                 "*",
             );
