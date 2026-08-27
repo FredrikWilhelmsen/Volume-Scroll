@@ -4,7 +4,7 @@
     "version": "3.9.0",
     "description": "Scrollable volume for any video on the internet",
     "homepage_url": "https://github.com/FredrikWilhelmsen/Volume-Scroll/",
-    "permissions": ["storage", "activeTab"],
+    "permissions": ["storage", "activeTab", "clipboardRead"],
     "icons": {
         "128": "images/128.png"
     },
