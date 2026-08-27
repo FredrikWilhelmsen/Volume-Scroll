@@ -56,9 +56,6 @@ export class DefaultHandler {
     protected overlayContainer: HTMLElement | null = null;
     protected animationKey: number = 0;
 
-    protected tagNamesToIgnore: string[] = [];
-    protected classNamesToIgnore: string[] = [];
-
     protected scrollAccumulator: number = 0;
     protected lastScrollTime: number = 0;
 
@@ -171,19 +168,14 @@ export class DefaultHandler {
     }
 
     public isIgnored(elements: Element[]): boolean {
-        const scrollLists = elements.find(
-            (el) =>
-                this.tagNamesToIgnore.includes(el.tagName) ||
-                this.classNamesToIgnore.some((className) =>
-                    el.classList.contains(className),
-                ) ||
-                this.ignoredElements.some((selector) => {
-                    try {
-                        return el.matches(selector);
-                    } catch (e) {
-                        return false;
-                    }
-                }),
+        const scrollLists = elements.find((el) =>
+            this.ignoredElements.some((selector) => {
+                try {
+                    return el.matches(selector);
+                } catch (e) {
+                    return false;
+                }
+            }),
         );
 
         return !!scrollLists;
