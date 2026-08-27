@@ -1,6 +1,11 @@
 import browser from "webextension-polyfill";
 import React, { useState } from "react";
-import { ExtensionData, ExportData, Pages } from "../types";
+import {
+    ExtensionData,
+    ExportData,
+    Pages,
+    defaultExtensionData,
+} from "../types";
 import BackButton from "../components/BackButton";
 import SettingsSwitch from "../components/SettingsSwitch";
 import Button from "@mui/material/Button";
@@ -26,6 +31,17 @@ const SharePage: React.FC<SharePageInterface> = ({
     const [statusMessage, setStatusMessage] = useState<string | null>(null);
     const [pendingImportData, setPendingImportData] =
         useState<ExportData | null>(null);
+
+    const handleResetToDefault = async () => {
+        setPendingImportData(null);
+        const newExtensionData: ExtensionData = {
+            ...defaultExtensionData,
+        };
+
+        setExtensionData(newExtensionData);
+        await browser.storage.sync.set({ extensionData: newExtensionData });
+        setStatusMessage("Reset to default successfully!");
+    };
 
     const handleExport = async () => {
         setPendingImportData(null);
@@ -136,6 +152,13 @@ const SharePage: React.FC<SharePageInterface> = ({
 
             <div className="settingsContainer">
                 <div id="domainListInputContainer">
+                    <Button
+                        variant="outlined"
+                        color="error"
+                        onClick={handleResetToDefault}
+                    >
+                        Reset to Default
+                    </Button>
                     <SettingsSwitch
                         label="Settings"
                         checked={includeSettings}
