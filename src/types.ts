@@ -133,14 +133,13 @@ export interface CustomRule {
     scrollInteractibleQuerySelector: string[];
 }
 
-import browser from "webextension-polyfill";
-
 export interface ExtensionData {
     globalSettings: Settings; // Global settings
     domainOverrides: Record<string, Partial<Settings>>; // Settings saved for specific domains
     customRules: Record<string, CustomRule[]>; // Custom rules for specific domains
     ignoredElements: Record<string, string[]>; // Elements to ignore for specific domains
     lastVersionRead: string;
+    schemaVersion: number;
 }
 
 export const defaultExtensionData: ExtensionData = {
@@ -149,10 +148,11 @@ export const defaultExtensionData: ExtensionData = {
     customRules: {},
     ignoredElements: {},
     lastVersionRead: "0.0.0",
+    schemaVersion: 1,
 };
 
 export interface ExportData extends Partial<
-    Omit<ExtensionData, "lastVersionRead">
+    Omit<ExtensionData, "lastVersionRead" | "schemaVersion">
 > {
     version: string;
 }

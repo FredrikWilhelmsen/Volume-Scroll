@@ -60,69 +60,27 @@ browser.runtime.onInstalled.addListener(async (details) => {
         await browser.storage.sync.set({ extensionData: defaultData });
     } else if (details.reason === "update") {
         // Extension updated
-        const syncData = await browser.storage.sync.get([
-            "settings",
-            "extensionData",
-        ]);
+        const syncData = await browser.storage.sync.get("extensionData");
 
-        // If we already have extensionData, we don't need to migrate old settings
-        if (syncData.extensionData) {
-            const currentData = syncData.extensionData as ExtensionData;
-            const newExtensionData: ExtensionData = {
-                globalSettings: {
-                    ...defaultSettings,
-                    ...currentData.globalSettings,
-                },
-                domainOverrides: currentData.domainOverrides || {},
-                customRules: currentData.customRules || {},
-                ignoredElements: currentData.ignoredElements || {},
-                lastVersionRead: currentData.lastVersionRead,
-            };
-            await browser.storage.sync.set({ extensionData: newExtensionData });
-        } else {
-            // Migrate from old format
-            const oldSettings: any = syncData.settings || {};
+        const currentData = (syncData.extensionData ||
+            {}) as Partial<ExtensionData>;
+        let schemaVersion = currentData.schemaVersion || 0;
 
-            const domainOverrides: Record<string, Partial<Settings>> = {};
+        let newExtensionData: ExtensionData = {
+            ...defaultExtensionData,
+            ...currentData,
+            globalSettings: {
+                ...defaultSettings,
+                ...(currentData.globalSettings || {}),
+            },
+        };
 
-            if (oldSettings.domainList) {
-                const keys = Object.keys(oldSettings.domainList);
-                for (const key of keys) {
-                    const override: Partial<Settings> = {};
-
-                    // Handle the Record<string, DomainSettings> format
-                    const domainSetting = oldSettings.domainList[key];
-                    if (domainSetting.enabled !== undefined) {
-                        override.enableDefault = domainSetting.enabled;
-                    }
-                    if (domainSetting.muted !== undefined) {
-                        override.startMuted = domainSetting.muted;
-                    }
-
-                    domainOverrides[key] = override;
-                }
-            }
-
-            // Clean up deprecated fields from the global settings object
-            delete oldSettings.domainList;
-            delete oldSettings.lastVersionRead; // Just in case it was in there
-
-            const newExtensionData: ExtensionData = {
-                globalSettings: {
-                    ...defaultSettings,
-                    ...oldSettings,
-                },
-                domainOverrides,
-                customRules: {},
-                ignoredElements: {},
-                lastVersionRead: browser.runtime.getManifest().version,
-            };
-
-            await browser.storage.sync.set({ extensionData: newExtensionData });
-
-            // Optionally clean up old storage keys to free space:
-            await browser.storage.sync.remove("settings");
+        if (schemaVersion < 1) {
+            schemaVersion = 1;
         }
+
+        newExtensionData.schemaVersion = schemaVersion;
+        await browser.storage.sync.set({ extensionData: newExtensionData });
     }
     await updateExtensionBadge();
 });
