@@ -36,7 +36,7 @@ import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 
-import { ExtensionData } from "./types";
+import { ExtensionData, defaultExtensionData } from "./types";
 
 const SettingsPopup = () => {
     const [extensionData, setExtensionData] = useState<ExtensionData | null>(
@@ -49,13 +49,7 @@ const SettingsPopup = () => {
         //Load saved settings when the component mounts
         browser.storage.sync.get("extensionData").then((result) => {
             const data: ExtensionData =
-                (result.extensionData as ExtensionData) || {
-                    globalSettings: defaultSettings,
-                    domainOverrides: {},
-                    customRules: {},
-                    ignoredElements: {},
-                    lastVersionRead: "0.0.0",
-                };
+                (result.extensionData as ExtensionData) || defaultExtensionData;
             if (!data.customRules) data.customRules = {};
             if (!data.ignoredElements)
                 data.ignoredElements = data.ignoredElements || {};

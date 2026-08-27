@@ -17,7 +17,12 @@
  */
 
 import browser from "webextension-polyfill";
-import { defaultSettings, Settings, ExtensionData } from "./types";
+import {
+    defaultSettings,
+    Settings,
+    ExtensionData,
+    defaultExtensionData,
+} from "./types";
 
 // Helper function to update action badge indicator for unread updates
 async function updateExtensionBadge() {
@@ -49,10 +54,7 @@ browser.runtime.onInstalled.addListener(async (details) => {
     if (details.reason === "install") {
         // First time install
         const defaultData: ExtensionData = {
-            globalSettings: defaultSettings,
-            domainOverrides: {},
-            customRules: {},
-            ignoredElements: {},
+            ...defaultExtensionData,
             lastVersionRead: browser.runtime.getManifest().version,
         };
         await browser.storage.sync.set({ extensionData: defaultData });

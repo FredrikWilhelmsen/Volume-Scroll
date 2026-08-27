@@ -29,7 +29,7 @@ import {
     setManualMouse5Pressed,
 } from "./utils";
 
-import { Settings, defaultSettings, ExtensionData } from "./types";
+import { Settings, defaultSettings, ExtensionData, defaultExtensionData } from "./types";
 
 import { DefaultHandler } from "./handlers/Default";
 import { YoutubeHandler } from "./handlers/Youtube";
@@ -204,11 +204,8 @@ export const init = () => {
     if (isInitialized) return;
     isInitialized = true;
     browser.storage.sync.get("extensionData").then((result) => {
-        const data: ExtensionData = (result.extensionData as ExtensionData) || {
-            globalSettings: defaultSettings,
-            domainOverrides: {},
-            lastVersionRead: "0.0.0",
-        };
+        const data: ExtensionData =
+            (result.extensionData as ExtensionData) || defaultExtensionData;
         const hostname = getActiveHostname();
         const overrides = data.domainOverrides[hostname];
         settings = { ...data.globalSettings, ...(overrides || {}) };

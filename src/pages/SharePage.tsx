@@ -1,10 +1,16 @@
 import browser from "webextension-polyfill";
 import React, { useState } from "react";
-import { ExtensionData, ExportData, Pages } from "../types";
+import {
+    ExtensionData,
+    ExportData,
+    Pages,
+    defaultExtensionData,
+} from "../types";
 import BackButton from "../components/BackButton";
 import SettingsSwitch from "../components/SettingsSwitch";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
+import Tooltip from "@mui/material/Tooltip";
 
 interface SharePageInterface {
     extensionData: ExtensionData;
@@ -26,6 +32,17 @@ const SharePage: React.FC<SharePageInterface> = ({
     const [statusMessage, setStatusMessage] = useState<string | null>(null);
     const [pendingImportData, setPendingImportData] =
         useState<ExportData | null>(null);
+
+    const handleResetToDefault = async () => {
+        setPendingImportData(null);
+        const newExtensionData: ExtensionData = {
+            ...defaultExtensionData,
+        };
+
+        setExtensionData(newExtensionData);
+        await browser.storage.sync.set({ extensionData: newExtensionData });
+        setStatusMessage("Reset to default successfully!");
+    };
 
     const handleExport = async () => {
         setPendingImportData(null);
@@ -136,6 +153,18 @@ const SharePage: React.FC<SharePageInterface> = ({
 
             <div className="settingsContainer">
                 <div id="domainListInputContainer">
+                    <Tooltip title="Reset all settings and data back to default">
+                        <span style={{ display: "flex", width: "100%" }}>
+                            <Button
+                                fullWidth
+                                variant="outlined"
+                                color="error"
+                                onClick={handleResetToDefault}
+                            >
+                                Reset to Default
+                            </Button>
+                        </span>
+                    </Tooltip>
                     <SettingsSwitch
                         label="Settings"
                         checked={includeSettings}
@@ -177,33 +206,60 @@ const SharePage: React.FC<SharePageInterface> = ({
                         tooltip="Include ignored elements"
                     />
 
-                    <Button
-                        variant="outlined"
-                        onClick={handleExport}
-                        disabled={!isAnySelected}
-                    >
-                        Export
-                    </Button>
+                    <Tooltip title="Export selected settings to clipboard">
+                        <span style={{ display: "flex", width: "100%" }}>
+                            <Button
+                                fullWidth
+                                variant="outlined"
+                                onClick={handleExport}
+                                disabled={!isAnySelected}
+                            >
+                                Export
+                            </Button>
+                        </span>
+                    </Tooltip>
 
-                    <Button
-                        variant="outlined"
-                        onClick={handleImport}
-                        disabled={!isAnySelected}
-                        style={{ marginTop: "8px" }}
-                    >
-                        Import
-                    </Button>
+                    <Tooltip title="Import selected settings from clipboard">
+                        <span
+                            style={{
+                                display: "flex",
+                                width: "100%",
+                                marginTop: "8px",
+                            }}
+                        >
+                            <Button
+                                fullWidth
+                                variant="outlined"
+                                onClick={handleImport}
+                                disabled={!isAnySelected}
+                            >
+                                Import
+                            </Button>
+                        </span>
+                    </Tooltip>
 
                     {pendingImportData && (
-                        <Button
-                            variant="contained"
-                            color="warning"
-                            onClick={() => applyImport(pendingImportData)}
-                            disabled={!isAnySelected}
-                            style={{ marginTop: "8px" }}
-                        >
-                            Confirm Import
-                        </Button>
+                        <Tooltip title="Confirm importing settings despite version mismatch">
+                            <span
+                                style={{
+                                    display: "flex",
+                                    width: "100%",
+                                    marginTop: "8px",
+                                }}
+                            >
+                                <Button
+                                    fullWidth
+                                    variant="contained"
+                                    color="warning"
+                                    onClick={() =>
+                                        applyImport(pendingImportData)
+                                    }
+                                    disabled={!isAnySelected}
+                                >
+                                    Confirm Import
+                                </Button>
+                            </span>
+                        </Tooltip>
                     )}
 
                     {statusMessage && (
