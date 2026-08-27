@@ -27,9 +27,15 @@ import {
     findScrollableParent,
     setManualMouse4Pressed,
     setManualMouse5Pressed,
+    isFullscreen,
 } from "./utils";
 
-import { Settings, defaultSettings, ExtensionData, defaultExtensionData } from "./types";
+import {
+    Settings,
+    defaultSettings,
+    ExtensionData,
+    defaultExtensionData,
+} from "./types";
 
 import { DefaultHandler } from "./handlers/Default";
 import { YoutubeHandler } from "./handlers/Youtube";
@@ -473,10 +479,6 @@ browser.runtime.onMessage.addListener((message: any) => {
         return Promise.resolve(debugData);
     }
 });
-
-const isFullscreen = function (): boolean {
-    return document.fullscreenElement != null;
-};
 
 const isDisabledOnSite = function (): boolean {
     if (window.self !== window.top && parentDisabledState) {

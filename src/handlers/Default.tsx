@@ -24,7 +24,7 @@ import {
     OverlayType,
     CustomRule,
 } from "../types";
-import { isHotkeyPressed, debug } from "../utils";
+import { isHotkeyPressed, debug, getFullscreenElement } from "../utils";
 
 import { createRoot, Root } from "react-dom/client";
 import { VolumeOverlay } from "../components/VolumeOverlay";
@@ -264,15 +264,6 @@ export class DefaultHandler {
         return document.getElementsByTagName("VIDEO");
     }
 
-    protected getFullscreenElement(): Element | null {
-        return (
-            document.fullscreenElement ||
-            (document as any).webkitFullscreenElement ||
-            (document as any).mozFullScreenElement ||
-            (document as any).msFullscreenElement
-        );
-    }
-
     private updateOverlay(
         e: MouseEvent,
         display: HTMLElement,
@@ -290,7 +281,7 @@ export class DefaultHandler {
             );
 
             if (!this.overlayContainer) {
-                const fs = this.getFullscreenElement();
+                const fs = getFullscreenElement();
                 if (fs && fs.shadowRoot) {
                     this.overlayContainer = fs.shadowRoot.querySelector(
                         "#volumeScrollOverlayContainer",
@@ -312,7 +303,7 @@ export class DefaultHandler {
         let container = this.overlayContainer;
 
         // Move container next to video in DOM (do this before measuring/positioning)
-        const fullscreenElement = this.getFullscreenElement();
+        const fullscreenElement = getFullscreenElement();
         if (fullscreenElement) {
             // If the fullscreen element has a shadow root (like Reddit), we must append to it
             if (fullscreenElement.shadowRoot) {
