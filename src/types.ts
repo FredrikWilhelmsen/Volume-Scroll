@@ -146,9 +146,11 @@ export const defaultExtensionData: ExtensionData = {
     globalSettings: defaultSettings,
     domainOverrides: {},
     customRules: {},
-    ignoredElements: {},
+    ignoredElements: {
+        "www.youtube.com": ["yt-thumbnail-view-model"],
+    },
     lastVersionRead: "0.0.0",
-    schemaVersion: 1,
+    schemaVersion: 2,
 };
 
 export interface ExportData extends Partial<

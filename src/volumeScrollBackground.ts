@@ -78,6 +78,18 @@ browser.runtime.onInstalled.addListener(async (details) => {
         if (schemaVersion < 1) {
             schemaVersion = 1;
         }
+        if (schemaVersion === 1) {
+            const currentIgnored = newExtensionData.ignoredElements || {};
+            const ytIgnored = currentIgnored["www.youtube.com"] || [];
+            if (!ytIgnored.includes("yt-thumbnail-view-model")) {
+                currentIgnored["www.youtube.com"] = [
+                    ...ytIgnored,
+                    "yt-thumbnail-view-model",
+                ];
+            }
+            newExtensionData.ignoredElements = currentIgnored;
+            schemaVersion = 2;
+        }
 
         newExtensionData.schemaVersion = schemaVersion;
         await browser.storage.sync.set({ extensionData: newExtensionData });
