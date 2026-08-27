@@ -147,10 +147,20 @@ export const defaultExtensionData: ExtensionData = {
     domainOverrides: {},
     customRules: {},
     ignoredElements: {
-        "www.youtube.com": ["yt-thumbnail-view-model"],
+        "www.youtube.com": [
+            "yt-thumbnail-view-model",
+            "YT-MULTI-PAGE-MENU-SECTION-RENDERER",
+            "YT-CONTEXTUAL-SHEET-LAYOUT",
+            "YTD-LIVE-CHAT-FRAME",
+            "YTD-GUIDE-RENDERER",
+            ".ytSearchboxComponentSuggestionsContainerScrollable",
+            ".ytd-popup-container",
+            ".ytp-settings-menu",
+            ".yt-live-chat-renderer",
+        ],
     },
     lastVersionRead: "0.0.0",
-    schemaVersion: 2,
+    schemaVersion: 3,
 };
 
 export interface ExportData extends Partial<
