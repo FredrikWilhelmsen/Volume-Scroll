@@ -114,6 +114,29 @@ browser.runtime.onInstalled.addListener(async (details) => {
             newExtensionData.ignoredElements = currentIgnored;
             schemaVersion = 3;
         }
+        if (schemaVersion === 3) {
+            const currentRules = { ...(newExtensionData.customRules || {}) };
+            const ytMusicRules = currentRules["music.youtube.com"] || [];
+            const hasRule = ytMusicRules.some(
+                (rule) => rule.name === "YouTube Music Player",
+            );
+            if (!hasRule) {
+                currentRules["music.youtube.com"] = [
+                    ...ytMusicRules,
+                    {
+                        name: "YouTube Music Player",
+                        videoQuerySelector: "video",
+                        displayQuerySelector: "ytmusic-player",
+                        scrollInteractibleQuerySelector: [
+                            "ytmusic-player-bar",
+                            "ytmusic-player",
+                        ],
+                    },
+                ];
+            }
+            newExtensionData.customRules = currentRules;
+            schemaVersion = 4;
+        }
 
         newExtensionData.schemaVersion = schemaVersion;
         await browser.storage.sync.set({ extensionData: newExtensionData });

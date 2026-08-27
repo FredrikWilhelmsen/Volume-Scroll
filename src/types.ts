@@ -145,7 +145,19 @@ export interface ExtensionData {
 export const defaultExtensionData: ExtensionData = {
     globalSettings: defaultSettings,
     domainOverrides: {},
-    customRules: {},
+    customRules: {
+        "music.youtube.com": [
+            {
+                name: "YouTube Music Player",
+                videoQuerySelector: "video",
+                displayQuerySelector: "ytmusic-player",
+                scrollInteractibleQuerySelector: [
+                    "ytmusic-player-bar",
+                    "ytmusic-player",
+                ],
+            },
+        ],
+    },
     ignoredElements: {
         "www.youtube.com": [
             "yt-thumbnail-view-model",
@@ -160,7 +172,7 @@ export const defaultExtensionData: ExtensionData = {
         ],
     },
     lastVersionRead: "0.0.0",
-    schemaVersion: 3,
+    schemaVersion: 4,
 };
 
 export interface ExportData extends Partial<
