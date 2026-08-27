@@ -67,9 +67,13 @@ const DomainPage: React.FC<DomainPageInterface> = ({
         setdomainListInput(e.target.value);
     };
 
-    const allDomains = Object.keys(extensionData.domainOverrides || {}).filter(
-        (d) => d.trim() !== "",
-    );
+    const allDomains = Array.from(
+        new Set([
+            ...Object.keys(extensionData.domainOverrides || {}),
+            ...Object.keys(extensionData.customRules || {}),
+            ...Object.keys(extensionData.ignoredElements || {}),
+        ]),
+    ).filter((d) => d.trim() !== "");
 
     const navigateToOverridePage = (targetPage: Pages) => {
         if (!domainListInput) return;
@@ -178,6 +182,12 @@ const DomainPage: React.FC<DomainPageInterface> = ({
                             const overrideCount =
                                 Object.keys(domainSetting).length;
 
+                            const customRulesCount =
+                                (extensionData.customRules?.[domain] || [])
+                                    .length +
+                                (extensionData.ignoredElements?.[domain] || [])
+                                    .length;
+
                             return (
                                 <Tooltip
                                     key={domain}
@@ -209,9 +219,15 @@ const DomainPage: React.FC<DomainPageInterface> = ({
                                                     gap: "4px",
                                                 }}
                                             >
-                                                {overrideCount === 1
-                                                    ? "1 override"
-                                                    : `${overrideCount} overrides`}
+                                                {`${
+                                                    overrideCount === 1
+                                                        ? "1 override"
+                                                        : `${overrideCount} overrides`
+                                                }, ${
+                                                    customRulesCount === 1
+                                                        ? "1 rule"
+                                                        : `${customRulesCount} rules`
+                                                }`}
                                             </Typography>
                                         </div>
                                         <IconButton
@@ -228,6 +244,24 @@ const DomainPage: React.FC<DomainPageInterface> = ({
                                                 ];
                                                 updatedData.domainOverrides =
                                                     updatedDomainList;
+
+                                                const updatedCustomRules = {
+                                                    ...updatedData.customRules,
+                                                };
+                                                delete updatedCustomRules[
+                                                    domain
+                                                ];
+                                                updatedData.customRules =
+                                                    updatedCustomRules;
+
+                                                const updatedIgnoredElements = {
+                                                    ...updatedData.ignoredElements,
+                                                };
+                                                delete updatedIgnoredElements[
+                                                    domain
+                                                ];
+                                                updatedData.ignoredElements =
+                                                    updatedIgnoredElements;
 
                                                 setExtensionData(updatedData);
                                                 browser.storage.sync.set({
