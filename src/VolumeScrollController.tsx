@@ -40,14 +40,12 @@ import {
 
 import { DefaultHandler } from "./handlers/Default";
 import { YoutubeHandler } from "./handlers/Youtube";
-import { YTMusicHandler } from "./handlers/YTMusic";
 import { TwitchHandler } from "./handlers/Twitch";
 import { RedditHandler } from "./handlers/Reddit";
 import { SpotifyHandler } from "./handlers/Spotify";
 
 const handlers: DefaultHandler[] = [
     new YoutubeHandler(),
-    new YTMusicHandler(),
     new TwitchHandler(),
     new RedditHandler(),
     new SpotifyHandler(),
