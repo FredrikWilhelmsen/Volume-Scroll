@@ -10,6 +10,7 @@ import BackButton from "../components/BackButton";
 import SettingsSwitch from "../components/SettingsSwitch";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
+import Tooltip from "@mui/material/Tooltip";
 
 interface SharePageInterface {
     extensionData: ExtensionData;
@@ -152,13 +153,17 @@ const SharePage: React.FC<SharePageInterface> = ({
 
             <div className="settingsContainer">
                 <div id="domainListInputContainer">
-                    <Button
-                        variant="outlined"
-                        color="error"
-                        onClick={handleResetToDefault}
-                    >
-                        Reset to Default
-                    </Button>
+                    <Tooltip title="Reset all settings and data back to default">
+                        <span>
+                            <Button
+                                variant="outlined"
+                                color="error"
+                                onClick={handleResetToDefault}
+                            >
+                                Reset to Default
+                            </Button>
+                        </span>
+                    </Tooltip>
                     <SettingsSwitch
                         label="Settings"
                         checked={includeSettings}
@@ -200,33 +205,47 @@ const SharePage: React.FC<SharePageInterface> = ({
                         tooltip="Include ignored elements"
                     />
 
-                    <Button
-                        variant="outlined"
-                        onClick={handleExport}
-                        disabled={!isAnySelected}
-                    >
-                        Export
-                    </Button>
+                    <Tooltip title="Export selected settings to clipboard">
+                        <span>
+                            <Button
+                                variant="outlined"
+                                onClick={handleExport}
+                                disabled={!isAnySelected}
+                            >
+                                Export
+                            </Button>
+                        </span>
+                    </Tooltip>
 
-                    <Button
-                        variant="outlined"
-                        onClick={handleImport}
-                        disabled={!isAnySelected}
-                        style={{ marginTop: "8px" }}
-                    >
-                        Import
-                    </Button>
+                    <Tooltip title="Import selected settings from clipboard">
+                        <span>
+                            <Button
+                                variant="outlined"
+                                onClick={handleImport}
+                                disabled={!isAnySelected}
+                                style={{ marginTop: "8px" }}
+                            >
+                                Import
+                            </Button>
+                        </span>
+                    </Tooltip>
 
                     {pendingImportData && (
-                        <Button
-                            variant="contained"
-                            color="warning"
-                            onClick={() => applyImport(pendingImportData)}
-                            disabled={!isAnySelected}
-                            style={{ marginTop: "8px" }}
-                        >
-                            Confirm Import
-                        </Button>
+                        <Tooltip title="Confirm importing settings despite version mismatch">
+                            <span>
+                                <Button
+                                    variant="contained"
+                                    color="warning"
+                                    onClick={() =>
+                                        applyImport(pendingImportData)
+                                    }
+                                    disabled={!isAnySelected}
+                                    style={{ marginTop: "8px" }}
+                                >
+                                    Confirm Import
+                                </Button>
+                            </span>
+                        </Tooltip>
                     )}
 
                     {statusMessage && (
