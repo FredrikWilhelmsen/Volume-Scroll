@@ -27,9 +27,16 @@ import {
     findScrollableParent,
     setManualMouse4Pressed,
     setManualMouse5Pressed,
+    isFullscreen,
+    getFullscreenElement,
 } from "./utils";
 
-import { Settings, defaultSettings, ExtensionData, defaultExtensionData } from "./types";
+import {
+    Settings,
+    defaultSettings,
+    ExtensionData,
+    defaultExtensionData,
+} from "./types";
 
 import { DefaultHandler } from "./handlers/Default";
 import { YoutubeHandler } from "./handlers/Youtube";
@@ -80,6 +87,7 @@ const processedMessageIds = new Set<string>();
 
 let parentDisabledState: boolean = false;
 let parentHasVideoState: boolean = false;
+let parentIsFullscreenState: boolean = false;
 
 export function bindListeners(): void {
     if (listenersBound) return;
@@ -108,6 +116,11 @@ export function bindListeners(): void {
     window.addEventListener("contextmenu", onContextMenu, { capture: true });
     window.addEventListener("auxclick", onAuxClick, { capture: true });
     window.addEventListener("click", onClick, { capture: true });
+    document.addEventListener("fullscreenchange", broadcastStatusToIframes);
+    document.addEventListener(
+        "webkitfullscreenchange",
+        broadcastStatusToIframes,
+    );
     listenersBound = true;
 }
 
@@ -123,6 +136,11 @@ export function unbindListeners(): void {
     window.removeEventListener("contextmenu", onContextMenu, { capture: true });
     window.removeEventListener("auxclick", onAuxClick, { capture: true });
     window.removeEventListener("click", onClick, { capture: true });
+    document.removeEventListener("fullscreenchange", broadcastStatusToIframes);
+    document.removeEventListener(
+        "webkitfullscreenchange",
+        broadcastStatusToIframes,
+    );
     listenersBound = false;
 }
 
@@ -229,6 +247,7 @@ export const init = () => {
                         parentDisabled: isDisabledOnSite(),
                         parentHasVideo:
                             document.getElementsByTagName("video").length > 0,
+                        parentIsFullscreen: isFullscreenModeActive(),
                     },
                     "*",
                 );
@@ -241,6 +260,9 @@ export const init = () => {
             ) {
                 parentDisabledState = event.data.parentDisabled;
                 parentHasVideoState = event.data.parentHasVideo;
+                if (typeof event.data.parentIsFullscreen === "boolean") {
+                    parentIsFullscreenState = event.data.parentIsFullscreen;
+                }
                 updateListenerState();
                 return;
             }
@@ -474,8 +496,36 @@ browser.runtime.onMessage.addListener((message: any) => {
     }
 });
 
-const isFullscreen = function (): boolean {
-    return document.fullscreenElement != null;
+const isFullscreenModeActive = function (): boolean {
+    if (isFullscreen()) return true;
+
+    // If inside a same-origin iframe, check top window
+    try {
+        if (window.self !== window.top && window.top?.document) {
+            const topDoc = window.top.document;
+            const topFsEl =
+                topDoc.fullscreenElement ||
+                (topDoc as any).webkitFullscreenElement ||
+                (topDoc as any).mozFullScreenElement ||
+                (topDoc as any).msFullscreenElement;
+
+            if (
+                topFsEl != null &&
+                window.frameElement &&
+                topFsEl === window.frameElement
+            ) {
+                return true;
+            }
+        }
+    } catch (e) {
+        // Cross-origin iframe; fallback to postMessage state
+    }
+
+    if (window.self !== window.top && parentIsFullscreenState) {
+        return true;
+    }
+
+    return false;
 };
 
 const isDisabledOnSite = function (): boolean {
@@ -491,6 +541,7 @@ export function broadcastStatusToIframes(): void {
     const iframes = document.getElementsByTagName("iframe");
     const hasVideo = document.getElementsByTagName("video").length > 0;
     const disabled = isDisabledOnSite();
+    const isFsActive = isFullscreenModeActive();
     for (let i = 0; i < iframes.length; i++) {
         try {
             iframes[i].contentWindow?.postMessage(
@@ -498,6 +549,7 @@ export function broadcastStatusToIframes(): void {
                     type: "VOLUME_SCROLL_PARENT_STATUS",
                     parentDisabled: disabled,
                     parentHasVideo: hasVideo,
+                    parentIsFullscreen: isFsActive,
                 },
                 "*",
             );
@@ -519,7 +571,7 @@ const doVolumeScroll = function (e: WheelEvent): boolean {
         case settings.useModifierKey &&
             settings.invertModifierKey &&
             isModifierKeyPressed: // Modifier key is enabled, but inverted, key is held down
-        case settings.fullscreenOnly && !isFullscreen(): // Fullscreen only mode is enabled, and there are no fullscreen elements
+        case settings.fullscreenOnly && !isFullscreenModeActive(): // Fullscreen only mode is enabled, and there are no fullscreen elements
             return false;
         default:
             return true;

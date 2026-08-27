@@ -96,6 +96,20 @@ export const isHotkeyPressed = (e: MouseEvent | WheelEvent, hotkey: string): boo
     }
 }
 
+export const getFullscreenElement = (): Element | null => {
+    return (
+        document.fullscreenElement ||
+        (document as any).webkitFullscreenElement ||
+        (document as any).mozFullScreenElement ||
+        (document as any).msFullscreenElement ||
+        null
+    );
+};
+
+export const isFullscreen = (): boolean => {
+    return getFullscreenElement() != null;
+};
+
 export const findScrollableParent = (el: HTMLElement | null): HTMLElement | null => {
     while (el) {
         if (el.scrollHeight > el.clientHeight) {
@@ -106,3 +120,4 @@ export const findScrollableParent = (el: HTMLElement | null): HTMLElement | null
     }
     return null;
 };
+
