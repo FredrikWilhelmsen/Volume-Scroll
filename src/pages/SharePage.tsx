@@ -154,8 +154,9 @@ const SharePage: React.FC<SharePageInterface> = ({
             <div className="settingsContainer">
                 <div id="domainListInputContainer">
                     <Tooltip title="Reset all settings and data back to default">
-                        <span>
+                        <span style={{ display: "flex", width: "100%" }}>
                             <Button
+                                fullWidth
                                 variant="outlined"
                                 color="error"
                                 onClick={handleResetToDefault}
@@ -206,8 +207,9 @@ const SharePage: React.FC<SharePageInterface> = ({
                     />
 
                     <Tooltip title="Export selected settings to clipboard">
-                        <span>
+                        <span style={{ display: "flex", width: "100%" }}>
                             <Button
+                                fullWidth
                                 variant="outlined"
                                 onClick={handleExport}
                                 disabled={!isAnySelected}
@@ -218,12 +220,18 @@ const SharePage: React.FC<SharePageInterface> = ({
                     </Tooltip>
 
                     <Tooltip title="Import selected settings from clipboard">
-                        <span>
+                        <span
+                            style={{
+                                display: "flex",
+                                width: "100%",
+                                marginTop: "8px",
+                            }}
+                        >
                             <Button
+                                fullWidth
                                 variant="outlined"
                                 onClick={handleImport}
                                 disabled={!isAnySelected}
-                                style={{ marginTop: "8px" }}
                             >
                                 Import
                             </Button>
@@ -232,15 +240,21 @@ const SharePage: React.FC<SharePageInterface> = ({
 
                     {pendingImportData && (
                         <Tooltip title="Confirm importing settings despite version mismatch">
-                            <span>
+                            <span
+                                style={{
+                                    display: "flex",
+                                    width: "100%",
+                                    marginTop: "8px",
+                                }}
+                            >
                                 <Button
+                                    fullWidth
                                     variant="contained"
                                     color="warning"
                                     onClick={() =>
                                         applyImport(pendingImportData)
                                     }
                                     disabled={!isAnySelected}
-                                    style={{ marginTop: "8px" }}
                                 >
                                     Confirm Import
                                 </Button>
