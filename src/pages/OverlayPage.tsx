@@ -12,6 +12,7 @@ import Slider from "../components/Slider";
 import ToggleSlider from "../components/ToggleSlider";
 import ColorPicker from "../components/ColorPicker";
 import NamedDropdown from "../components/NamedDropdown";
+import Button from "@mui/material/Button";
 
 interface OverlayPageInterface {
     settings: Settings;
@@ -335,6 +336,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                         { value: "bar", label: "Bar" },
                         { value: "retro", label: "Retro Bar" },
                         { value: "circle", label: "Circle" },
+                        { value: "custom", label: "Custom" },
                     ]}
                     disabled={!useMouseWheelVolume || !useOverlay}
                     tooltip="Set overlay style"
@@ -346,7 +348,9 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                     selectId="overlayStyleSelector"
                 />
 
-                {(overlayStyle === "number" || overlayStyle === "circle") && (
+                {(overlayStyle === "number" ||
+                    overlayStyle === "circle" ||
+                    overlayStyle === "custom") && (
                     <>
                         {/* Position Dropdown Container */}
                         <div
@@ -516,6 +520,18 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                         handleReset={handleReset}
                         id="showNumericValueContainer"
                     />
+                )}
+                {overlayStyle === "custom" && (
+                    <Button
+                        id="customOverlayButton"
+                        variant="outlined"
+                        fullWidth
+                        disabled={!useMouseWheelVolume || !useOverlay}
+                        onClick={() => setPage("customOverlayPage")}
+                        sx={{ marginTop: "12px" }}
+                    >
+                        Custom Overlay
+                    </Button>
                 )}
             </div>
         </div>
