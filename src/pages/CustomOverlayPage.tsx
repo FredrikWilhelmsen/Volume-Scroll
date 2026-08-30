@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CustomOverlay, Pages, Settings } from "../types";
+import { CustomOverlay, CustomOverlayImage, Pages, Settings } from "../types";
 import BackButton from "../components/BackButton";
 import { TextField, IconButton, Typography, Button } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -33,8 +33,9 @@ const CustomOverlayPage: React.FC<CustomOverlayPageProps> = ({
     editSetting,
 }) => {
     const [overlayNameInput, setOverlayNameInput] = useState("");
+    const [imageNameInput, setImageNameInput] = useState("");
     const [imageUrlInput, setImageUrlInput] = useState("");
-    const [imagesList, setImagesList] = useState<string[]>([]);
+    const [imagesList, setImagesList] = useState<CustomOverlayImage[]>([]);
     const [framesList, setFramesList] = useState<number[]>([]);
     const [draggedFrameIndex, setDraggedFrameIndex] = useState<number | null>(
         null,
@@ -67,7 +68,12 @@ const CustomOverlayPage: React.FC<CustomOverlayPageProps> = ({
     const handleSaveLink = () => {
         const url = imageUrlInput.trim();
         if (!url) return;
-        setImagesList((prev) => [...prev, url]);
+        let name = imageNameInput.trim();
+        if (!name) {
+            name = `Image #${imagesList.length + 1}`;
+        }
+        setImagesList((prev) => [...prev, { name, url }]);
+        setImageNameInput("");
         setImageUrlInput("");
     };
 
@@ -209,6 +215,22 @@ const CustomOverlayPage: React.FC<CustomOverlayPageProps> = ({
                         />
                     </Tooltip>
                     <Tooltip
+                        title="Name of the image (optional)"
+                        placement="top"
+                        disableInteractive
+                    >
+                        <TextField
+                            className="manualDomainInput"
+                            label="Image name"
+                            placeholder="e.g. Volume 0"
+                            variant="outlined"
+                            size="small"
+                            autoComplete="off"
+                            value={imageNameInput}
+                            onChange={(e) => setImageNameInput(e.target.value)}
+                        />
+                    </Tooltip>
+                    <Tooltip
                         title="Image URL for the custom overlay"
                         placement="top"
                         disableInteractive
@@ -229,7 +251,7 @@ const CustomOverlayPage: React.FC<CustomOverlayPageProps> = ({
                         onClick={handleSaveLink}
                         disabled={!imageUrlInput.trim()}
                     >
-                        Save Link
+                        Save Image
                     </Button>
                 </div>
 
@@ -239,10 +261,10 @@ const CustomOverlayPage: React.FC<CustomOverlayPageProps> = ({
                 >
                     {imagesList.length === 0 ? (
                         <Typography className="emptyDomainList">
-                            No saved image URLs
+                            No saved images
                         </Typography>
                     ) : (
-                        imagesList.map((url, idx) => (
+                        imagesList.map((img, idx) => (
                             <div
                                 key={idx}
                                 className="domainListItem"
@@ -253,7 +275,18 @@ const CustomOverlayPage: React.FC<CustomOverlayPageProps> = ({
                                         variant="body2"
                                         className="domainName"
                                     >
-                                        {url}
+                                        {img.name}
+                                    </Typography>
+                                    <Typography
+                                        variant="caption"
+                                        sx={{
+                                            color: "rgba(255, 255, 255, 0.5)",
+                                            overflow: "hidden",
+                                            textOverflow: "ellipsis",
+                                            whiteSpace: "nowrap",
+                                        }}
+                                    >
+                                        {img.url}
                                     </Typography>
                                 </div>
                                 <IconButton
@@ -323,7 +356,7 @@ const CustomOverlayPage: React.FC<CustomOverlayPageProps> = ({
                                         variant="body2"
                                         className="domainName"
                                     >
-                                        {`Frame #${frameIdx + 1}: ${imagesList[imageIdx] || `Image #${imageIdx + 1}`}`}
+                                        {`#${frameIdx + 1}: ${imagesList[imageIdx]?.name || `Image #${imageIdx + 1}`}`}
                                     </Typography>
                                 </div>
                                 <IconButton

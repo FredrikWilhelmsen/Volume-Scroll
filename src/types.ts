@@ -128,8 +128,13 @@ export const colors: string[] = [
     "#DABDAB",
 ];
 
+export interface CustomOverlayImage {
+    name: string;
+    url: string;
+}
+
 export interface CustomOverlay {
-    images: string[]; // URL to image
+    images: CustomOverlayImage[]; // List of named images
     frames: number[]; // List of indexes to images for each volume step
 }
 
@@ -181,7 +186,7 @@ export const defaultExtensionData: ExtensionData = {
     },
     customOverlays: {},
     lastVersionRead: "0.0.0",
-    schemaVersion: 5,
+    schemaVersion: 4,
 };
 
 export interface ExportData extends Partial<
