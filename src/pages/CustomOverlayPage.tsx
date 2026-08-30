@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CustomOverlay, Pages } from "../types";
+import { CustomOverlay, Pages, Settings } from "../types";
 import BackButton from "../components/BackButton";
 import { TextField, IconButton, Typography, Button } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -17,12 +17,20 @@ interface CustomOverlayPageProps {
         customOverlays: Record<string, CustomOverlay>,
     ) => void;
     setPage: (targetPage: Pages) => void;
+    settings?: Settings;
+    overrideSettings?: Partial<Settings>;
+    activeDomain?: string;
+    editSetting?: (key: keyof Settings, value: any, domain?: string) => void;
 }
 
 const CustomOverlayPage: React.FC<CustomOverlayPageProps> = ({
     customOverlays = {},
     updateCustomOverlays,
     setPage,
+    settings,
+    overrideSettings,
+    activeDomain,
+    editSetting,
 }) => {
     const [overlayNameInput, setOverlayNameInput] = useState("");
     const [imageUrlInput, setImageUrlInput] = useState("");
@@ -40,6 +48,13 @@ const CustomOverlayPage: React.FC<CustomOverlayPageProps> = ({
         const updated = { ...customOverlays };
         delete updated[name];
         updateCustomOverlays(updated);
+
+        const currentCustomOverlay =
+            overrideSettings?.customOverlay ?? settings?.customOverlay;
+        if (currentCustomOverlay === name && editSetting) {
+            const remainingKeys = Object.keys(updated);
+            editSetting("customOverlay", remainingKeys[0] || "", activeDomain);
+        }
     };
 
     const handleSelectCustomOverlay = (name: string) => {
@@ -120,6 +135,12 @@ const CustomOverlayPage: React.FC<CustomOverlayPageProps> = ({
             },
         };
         updateCustomOverlays(updated);
+
+        const currentCustomOverlay =
+            overrideSettings?.customOverlay ?? settings?.customOverlay;
+        if (!currentCustomOverlay && editSetting) {
+            editSetting("customOverlay", name, activeDomain);
+        }
     };
 
     return (

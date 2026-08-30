@@ -109,16 +109,19 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
     const showNumericValue = getValue("showNumericValue");
 
     const customOverlayKeys = Object.keys(customOverlays || {});
-    const customOverlayOptions = customOverlayKeys.map((name) => ({
-        value: name,
-        label: name,
-    }));
-    if (!customOverlayKeys.includes(customOverlay)) {
-        customOverlayOptions.unshift({
-            value: customOverlay,
-            label: customOverlay ? customOverlay : "None",
-        });
-    }
+    const customOverlayOptions =
+        customOverlayKeys.length === 0
+            ? [{ value: "", label: "None" }]
+            : customOverlayKeys.map((name) => ({
+                  value: name,
+                  label: name,
+              }));
+    const selectedCustomOverlay =
+        customOverlayKeys.length === 0
+            ? ""
+            : customOverlayKeys.includes(customOverlay)
+              ? customOverlay
+              : customOverlayKeys[0];
 
     const hasCategoryOverride =
         !!activeDomain &&
@@ -369,9 +372,13 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                         <NamedDropdown
                             label="Preset"
                             settingKey="customOverlay"
-                            value={customOverlay}
+                            value={selectedCustomOverlay}
                             options={customOverlayOptions}
-                            disabled={!useMouseWheelVolume || !useOverlay}
+                            disabled={
+                                !useMouseWheelVolume ||
+                                !useOverlay ||
+                                customOverlayKeys.length === 0
+                            }
                             tooltip="Select custom overlay preset"
                             activeDomain={activeDomain}
                             editSetting={editSetting}

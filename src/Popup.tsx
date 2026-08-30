@@ -151,10 +151,7 @@ const SettingsPopup = () => {
         });
     };
 
-    const handleCustomRulesChange = (
-        domain: string,
-        rules: CustomRule[],
-    ) => {
+    const handleCustomRulesChange = (domain: string, rules: CustomRule[]) => {
         setExtensionData((prevData) => {
             if (prevData === null) return prevData;
             const updatedData = {
@@ -293,6 +290,10 @@ const SettingsPopup = () => {
                         customOverlays={extensionData.customOverlays}
                         updateCustomOverlays={handleCustomOverlaysChange}
                         setPage={navigateTo}
+                        settings={currentGlobalSettings}
+                        overrideSettings={currentOverrideSettings}
+                        activeDomain={activeDomain || undefined}
+                        editSetting={handleSettingChange}
                     />
                 )}
                 {page === "share" && (
