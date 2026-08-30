@@ -41,6 +41,7 @@ export interface Settings {
     useDutchAngle: boolean;
     dutchAngleValue: number;
     overlayStyle: OverlayStyle;
+    customOverlay: string;
 
     overlayPosition: OverlayNumberPosition;
     overlayXPos: number;
@@ -97,6 +98,7 @@ export const defaultSettings: Settings = {
     useDutchAngle: false,
     dutchAngleValue: 6,
     overlayStyle: "number",
+    customOverlay: "",
 
     // Number style settings
     overlayPosition: "tl",
