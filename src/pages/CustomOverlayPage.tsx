@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Pages } from "../types";
+import BackButton from "../components/BackButton";
 import "../style/domainPage.css";
 
 interface CustomOverlayPageProps {
@@ -7,7 +8,16 @@ interface CustomOverlayPageProps {
 }
 
 const CustomOverlayPage: React.FC<CustomOverlayPageProps> = ({ setPage }) => {
-    return <div></div>;
+    return (
+        <div>
+            <BackButton
+                setPage={setPage}
+                title="Custom Overlay"
+                targetPage="overlay"
+            />
+            <hr />
+        </div>
+    );
 };
 
 export default CustomOverlayPage;
