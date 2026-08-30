@@ -7,6 +7,10 @@ import DragHandleIcon from "@mui/icons-material/DragHandle";
 import Tooltip from "@mui/material/Tooltip/Tooltip";
 import "../style/domainPage.css";
 
+const emptyDragImage = new Image();
+emptyDragImage.src =
+    "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+
 interface CustomOverlayPageProps {
     customOverlays?: Record<string, CustomOverlay>;
     updateCustomOverlays?: (
@@ -75,6 +79,7 @@ const CustomOverlayPage: React.FC<CustomOverlayPageProps> = ({
         setDraggedFrameIndex(index);
         e.dataTransfer.effectAllowed = "move";
         e.dataTransfer.setData("text/plain", index.toString());
+        e.dataTransfer.setDragImage(emptyDragImage, 0, 0);
     };
 
     const handleDragEnter = (targetIndex: number, e: React.DragEvent) => {
