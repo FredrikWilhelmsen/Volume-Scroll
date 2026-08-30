@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Settings, Pages, colors } from "../types";
+import { Settings, Pages, colors, CustomOverlay } from "../types";
 import BackButton from "../components/BackButton";
 import Tooltip from "@mui/material/Tooltip/Tooltip";
 import "../style/overlayPage.css";
@@ -21,6 +21,7 @@ interface OverlayPageInterface {
     editSetting: (key: keyof Settings, value: any, domain?: string) => void;
     resetSetting?: (key: keyof Settings, domain: string) => void;
     setPage: (targetPage: Pages) => void;
+    customOverlays?: Record<string, CustomOverlay>;
 }
 
 const OverlayPage: React.FC<OverlayPageInterface> = ({
@@ -30,6 +31,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
     editSetting,
     resetSetting,
     setPage,
+    customOverlays = {},
 }) => {
     const getValue = <K extends keyof Settings>(key: K): Settings[K] => {
         return overrideSettings?.[key] ?? settings[key];
@@ -102,8 +104,21 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
     const useDutchAngle = getValue("useDutchAngle");
     const dutchAngleVal = getValue("dutchAngleValue");
     const overlayStyle = getValue("overlayStyle");
+    const customOverlay = getValue("customOverlay") || "";
     const overlayBarSide = getValue("overlayBarSide");
     const showNumericValue = getValue("showNumericValue");
+
+    const customOverlayKeys = Object.keys(customOverlays || {});
+    const customOverlayOptions = customOverlayKeys.map((name) => ({
+        value: name,
+        label: name,
+    }));
+    if (!customOverlayKeys.includes(customOverlay)) {
+        customOverlayOptions.unshift({
+            value: customOverlay,
+            label: customOverlay ? customOverlay : "None",
+        });
+    }
 
     const hasCategoryOverride =
         !!activeDomain &&
@@ -120,6 +135,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
             "useDutchAngle",
             "dutchAngleValue",
             "overlayStyle",
+            "customOverlay",
             "overlayBarSide",
             "showNumericValue",
         ].some((key) => isOverridden(key as keyof Settings));
@@ -349,16 +365,32 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                 />
 
                 {overlayStyle === "custom" && (
-                    <Button
-                        id="customOverlayButton"
-                        variant="outlined"
-                        fullWidth
-                        disabled={!useMouseWheelVolume || !useOverlay}
-                        onClick={() => setPage("customOverlayPage")}
-                        sx={{ marginTop: "12px" }}
-                    >
-                        Edit Overlays
-                    </Button>
+                    <>
+                        <NamedDropdown
+                            label="Preset"
+                            settingKey="customOverlay"
+                            value={customOverlay}
+                            options={customOverlayOptions}
+                            disabled={!useMouseWheelVolume || !useOverlay}
+                            tooltip="Select custom overlay preset"
+                            activeDomain={activeDomain}
+                            editSetting={editSetting}
+                            isOverridden={isOverridden}
+                            handleReset={handleReset}
+                            containerId="customOverlayDropdownContainer"
+                            selectId="customOverlaySelector"
+                        />
+                        <Button
+                            id="customOverlayButton"
+                            variant="outlined"
+                            fullWidth
+                            disabled={!useMouseWheelVolume || !useOverlay}
+                            onClick={() => setPage("customOverlayPage")}
+                            sx={{ marginTop: "12px" }}
+                        >
+                            Edit Overlays
+                        </Button>
+                    </>
                 )}
 
                 {(overlayStyle === "number" ||
