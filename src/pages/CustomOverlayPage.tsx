@@ -67,6 +67,19 @@ const CustomOverlayPage: React.FC<CustomOverlayPageProps> = ({
         setFramesList((prev) => prev.filter((_, i) => i !== index));
     };
 
+    const handleSaveCustomOverlay = () => {
+        const name = overlayNameInput.trim();
+        if (!name || !updateCustomOverlays) return;
+        const updated = {
+            ...customOverlays,
+            [name]: {
+                images: imagesList,
+                frames: framesList,
+            },
+        };
+        updateCustomOverlays(updated);
+    };
+
     return (
         <div>
             <BackButton
@@ -224,6 +237,15 @@ const CustomOverlayPage: React.FC<CustomOverlayPageProps> = ({
                         ))
                     )}
                 </div>
+
+                <Button
+                    variant="outlined"
+                    onClick={handleSaveCustomOverlay}
+                    disabled={!overlayNameInput.trim()}
+                    style={{ marginTop: "12px", width: "100%" }}
+                >
+                    Save Overlay
+                </Button>
             </div>
         </div>
     );
