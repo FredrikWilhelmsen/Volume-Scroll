@@ -197,7 +197,8 @@ export type Pages =
     | "domains"
     | "updatePage"
     | "customRules"
-    | "share";
+    | "share"
+    | "customOverlayPage";
 
 export type OverlayType = "volume" | "mute" | "unmute" | "pause" | "play";
 
