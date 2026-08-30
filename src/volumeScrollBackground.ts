@@ -137,6 +137,11 @@ browser.runtime.onInstalled.addListener(async (details) => {
             newExtensionData.customRules = currentRules;
             schemaVersion = 4;
         }
+        if (schemaVersion === 4) {
+            newExtensionData.customOverlays =
+                newExtensionData.customOverlays || {};
+            schemaVersion = 5;
+        }
 
         newExtensionData.schemaVersion = schemaVersion;
         await browser.storage.sync.set({ extensionData: newExtensionData });
