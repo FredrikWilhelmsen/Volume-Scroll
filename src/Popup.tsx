@@ -19,7 +19,15 @@
 import browser from "webextension-polyfill";
 import React, { useState, useEffect } from "react";
 import { createRoot } from "react-dom/client";
-import { Settings, defaultSettings, Pages } from "./types";
+import {
+    Settings,
+    defaultSettings,
+    defaultExtensionData,
+    Pages,
+    ExtensionData,
+    CustomOverlay,
+    CustomRule,
+} from "./types";
 import LoadingPage from "./pages/LoadingPage";
 import MenuPage from "./pages/MenuPage";
 import ScrollPage from "./pages/ScrollPage";
@@ -36,8 +44,6 @@ import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
-
-import { ExtensionData, defaultExtensionData } from "./types";
 
 const SettingsPopup = () => {
     const [extensionData, setExtensionData] = useState<ExtensionData | null>(
@@ -147,7 +153,7 @@ const SettingsPopup = () => {
 
     const handleCustomRulesChange = (
         domain: string,
-        rules: import("./types").CustomRule[],
+        rules: CustomRule[],
     ) => {
         setExtensionData((prevData) => {
             if (prevData === null) return prevData;
@@ -175,6 +181,20 @@ const SettingsPopup = () => {
                     ...prevData.ignoredElements,
                     [domain]: ignoredElements,
                 },
+            };
+            browser.storage.sync.set({ extensionData: updatedData });
+            return updatedData;
+        });
+    };
+
+    const handleCustomOverlaysChange = (
+        customOverlays: Record<string, CustomOverlay>,
+    ) => {
+        setExtensionData((prevData) => {
+            if (prevData === null) return prevData;
+            const updatedData = {
+                ...prevData,
+                customOverlays,
             };
             browser.storage.sync.set({ extensionData: updatedData });
             return updatedData;
@@ -268,7 +288,11 @@ const SettingsPopup = () => {
                     />
                 )}
                 {page === "customOverlayPage" && (
-                    <CustomOverlayPage setPage={navigateTo} />
+                    <CustomOverlayPage
+                        customOverlays={extensionData.customOverlays}
+                        updateCustomOverlays={handleCustomOverlaysChange}
+                        setPage={navigateTo}
+                    />
                 )}
                 {page === "share" && (
                     <SharePage

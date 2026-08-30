@@ -143,7 +143,7 @@ export interface ExtensionData {
     domainOverrides: Record<string, Partial<Settings>>; // Settings saved for specific domains
     customRules: Record<string, CustomRule[]>; // Custom rules for specific domains
     ignoredElements: Record<string, string[]>; // Elements to ignore for specific domains
-    customOverlays: Record<string, CustomOverlay[]>; // Custom overlays, key is name
+    customOverlays: Record<string, CustomOverlay>; // Custom overlays, key is name
     lastVersionRead: string;
     schemaVersion: number;
 }
