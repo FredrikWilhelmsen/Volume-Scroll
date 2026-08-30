@@ -126,6 +126,11 @@ export const colors: string[] = [
     "#DABDAB",
 ];
 
+export interface CustomOverlay {
+    images: string[]; // URL to image
+    frames: number[]; // List of indexes to images for each volume step
+}
+
 export interface CustomRule {
     name: string;
     videoQuerySelector: string;
@@ -138,6 +143,7 @@ export interface ExtensionData {
     domainOverrides: Record<string, Partial<Settings>>; // Settings saved for specific domains
     customRules: Record<string, CustomRule[]>; // Custom rules for specific domains
     ignoredElements: Record<string, string[]>; // Elements to ignore for specific domains
+    customOverlays: Record<string, CustomOverlay[]>; // Custom overlays, key is name
     lastVersionRead: string;
     schemaVersion: number;
 }
@@ -171,8 +177,9 @@ export const defaultExtensionData: ExtensionData = {
             ".yt-live-chat-renderer",
         ],
     },
+    customOverlays: {},
     lastVersionRead: "0.0.0",
-    schemaVersion: 4,
+    schemaVersion: 5,
 };
 
 export interface ExportData extends Partial<
@@ -194,7 +201,7 @@ export type Pages =
 
 export type OverlayType = "volume" | "mute" | "unmute" | "pause" | "play";
 
-export type OverlayStyle = "number" | "bar" | "circle" | "retro";
+export type OverlayStyle = "number" | "bar" | "circle" | "retro" | "custom";
 
 export type OverlayNumberPosition =
     | "tl"
