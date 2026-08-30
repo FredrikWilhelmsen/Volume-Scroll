@@ -348,6 +348,19 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                     selectId="overlayStyleSelector"
                 />
 
+                {overlayStyle === "custom" && (
+                    <Button
+                        id="customOverlayButton"
+                        variant="outlined"
+                        fullWidth
+                        disabled={!useMouseWheelVolume || !useOverlay}
+                        onClick={() => setPage("customOverlayPage")}
+                        sx={{ marginTop: "12px" }}
+                    >
+                        Edit Overlay
+                    </Button>
+                )}
+
                 {(overlayStyle === "number" ||
                     overlayStyle === "circle" ||
                     overlayStyle === "custom") && (
@@ -520,18 +533,6 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                         handleReset={handleReset}
                         id="showNumericValueContainer"
                     />
-                )}
-                {overlayStyle === "custom" && (
-                    <Button
-                        id="customOverlayButton"
-                        variant="outlined"
-                        fullWidth
-                        disabled={!useMouseWheelVolume || !useOverlay}
-                        onClick={() => setPage("customOverlayPage")}
-                        sx={{ marginTop: "12px" }}
-                    >
-                        Custom Overlay
-                    </Button>
                 )}
             </div>
         </div>
