@@ -3,6 +3,7 @@ import { CustomOverlay, Pages } from "../types";
 import BackButton from "../components/BackButton";
 import { TextField, IconButton, Typography, Button } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
+import DragHandleIcon from "@mui/icons-material/DragHandle";
 import Tooltip from "@mui/material/Tooltip/Tooltip";
 import "../style/domainPage.css";
 
@@ -23,6 +24,9 @@ const CustomOverlayPage: React.FC<CustomOverlayPageProps> = ({
     const [imageUrlInput, setImageUrlInput] = useState("");
     const [imagesList, setImagesList] = useState<string[]>([]);
     const [framesList, setFramesList] = useState<number[]>([]);
+    const [draggedFrameIndex, setDraggedFrameIndex] = useState<number | null>(
+        null,
+    );
 
     const overlayEntries = Object.entries(customOverlays || {});
 
@@ -65,6 +69,39 @@ const CustomOverlayPage: React.FC<CustomOverlayPageProps> = ({
     const handleDeleteFrame = (index: number, e: React.MouseEvent) => {
         e.stopPropagation();
         setFramesList((prev) => prev.filter((_, i) => i !== index));
+    };
+
+    const handleDragStart = (index: number, e: React.DragEvent) => {
+        setDraggedFrameIndex(index);
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", index.toString());
+    };
+
+    const handleDragEnter = (targetIndex: number, e: React.DragEvent) => {
+        e.preventDefault();
+        if (draggedFrameIndex === null || draggedFrameIndex === targetIndex)
+            return;
+        setFramesList((prev) => {
+            const updated = [...prev];
+            const [removed] = updated.splice(draggedFrameIndex, 1);
+            updated.splice(targetIndex, 0, removed);
+            return updated;
+        });
+        setDraggedFrameIndex(targetIndex);
+    };
+
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        setDraggedFrameIndex(null);
+    };
+
+    const handleDragEnd = () => {
+        setDraggedFrameIndex(null);
     };
 
     const handleSaveCustomOverlay = () => {
@@ -207,7 +244,7 @@ const CustomOverlayPage: React.FC<CustomOverlayPageProps> = ({
 
                 <div
                     id="domainListVisualContainer"
-                    style={{ height: "100px", marginTop: "8px" }}
+                    style={{ height: "200px", marginTop: "8px" }}
                 >
                     {framesList.length === 0 ? (
                         <Typography className="emptyDomainList">
@@ -215,7 +252,46 @@ const CustomOverlayPage: React.FC<CustomOverlayPageProps> = ({
                         </Typography>
                     ) : (
                         framesList.map((imageIdx, frameIdx) => (
-                            <div key={frameIdx} className="domainListItem">
+                            <div
+                                key={frameIdx}
+                                className="domainListItem"
+                                draggable
+                                onDragStart={(e) =>
+                                    handleDragStart(frameIdx, e)
+                                }
+                                onDragEnter={(e) =>
+                                    handleDragEnter(frameIdx, e)
+                                }
+                                onDragOver={handleDragOver}
+                                onDrop={handleDrop}
+                                onDragEnd={handleDragEnd}
+                                style={{
+                                    cursor: "default",
+                                    opacity:
+                                        draggedFrameIndex === frameIdx
+                                            ? 0.85
+                                            : 1,
+                                    backgroundColor:
+                                        draggedFrameIndex === frameIdx
+                                            ? "rgba(25, 118, 210, 0.25)"
+                                            : undefined,
+                                }}
+                            >
+                                <DragHandleIcon
+                                    fontSize="small"
+                                    sx={{
+                                        color: "rgba(255, 255, 255, 0.4)",
+                                        marginRight: "6px",
+                                        flexShrink: 0,
+                                        cursor: "grab",
+                                        "&:hover": {
+                                            color: "rgba(255, 255, 255, 0.9)",
+                                        },
+                                        "&:active": {
+                                            cursor: "grabbing",
+                                        },
+                                    }}
+                                />
                                 <div className="domainItemText">
                                     <Typography
                                         variant="body2"
@@ -228,6 +304,7 @@ const CustomOverlayPage: React.FC<CustomOverlayPageProps> = ({
                                     onClick={(e) =>
                                         handleDeleteFrame(frameIdx, e)
                                     }
+                                    onMouseDown={(e) => e.stopPropagation()}
                                     size="small"
                                     sx={{ color: "white", flexShrink: 0 }}
                                 >
