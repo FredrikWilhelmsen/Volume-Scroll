@@ -248,6 +248,7 @@ const SettingsPopup = () => {
                         editSetting={handleSettingChange}
                         resetSetting={handleSettingReset}
                         setPage={navigateTo}
+                        customOverlays={extensionData.customOverlays}
                     />
                 )}
                 {page === "misc" && (
