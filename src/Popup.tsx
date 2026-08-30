@@ -29,6 +29,7 @@ import MiscPage from "./pages/MiscPage";
 import DomainPage from "./pages/DomainPage";
 import UpdatePage from "./pages/UpdatePage";
 import CustomRulesPage from "./pages/CustomRulesPage";
+import CustomOverlayPage from "./pages/CustomOverlayPage";
 import SharePage from "./pages/SharePage";
 import "./style/globalStyle.css";
 import "@fontsource/roboto/300.css";
@@ -265,6 +266,9 @@ const SettingsPopup = () => {
                         activeDomain={activeDomain}
                         setPage={navigateTo}
                     />
+                )}
+                {page === "customOverlayPage" && (
+                    <CustomOverlayPage setPage={navigateTo} />
                 )}
                 {page === "share" && (
                     <SharePage
