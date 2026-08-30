@@ -357,7 +357,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                         onClick={() => setPage("customOverlayPage")}
                         sx={{ marginTop: "12px" }}
                     >
-                        Edit Overlay
+                        Edit Overlays
                     </Button>
                 )}
 
