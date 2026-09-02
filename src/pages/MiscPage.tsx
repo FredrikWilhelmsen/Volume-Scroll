@@ -169,7 +169,7 @@ const MiscPage: React.FC<MiscPageInterface> = ({
                     containerId="boostColorPickerContainer"
                 />
                 <NamedDropdown
-                    label="Custom overlay behavior"
+                    label="Custom overlay boost"
                     settingKey="customOverlayBoostBehavior"
                     value={customOverlayBoostBehavior}
                     options={[
