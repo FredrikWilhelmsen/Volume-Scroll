@@ -42,6 +42,7 @@ export interface Settings {
     dutchAngleValue: number;
     overlayStyle: OverlayStyle;
     customOverlay: string;
+    customOverlayBoostBehavior: CustomOverlayBoostBehavior;
 
     overlayPosition: OverlayNumberPosition;
     overlayXPos: number;
@@ -99,6 +100,7 @@ export const defaultSettings: Settings = {
     dutchAngleValue: 6,
     overlayStyle: "number",
     customOverlay: "",
+    customOverlayBoostBehavior: "loop",
 
     // Number style settings
     overlayPosition: "tl",
@@ -210,6 +212,8 @@ export type Pages =
 export type OverlayType = "volume" | "mute" | "unmute" | "pause" | "play";
 
 export type OverlayStyle = "number" | "bar" | "circle" | "retro" | "custom";
+
+export type CustomOverlayBoostBehavior = "stretch" | "loop";
 
 export type OverlayNumberPosition =
     | "tl"
