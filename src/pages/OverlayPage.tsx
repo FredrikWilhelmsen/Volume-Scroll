@@ -59,6 +59,9 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
     const [dutchAngleValue, setDutchAngleValue] = useState(
         getValue("dutchAngleValue"),
     );
+    const [customOverlayScale, setCustomOverlayScale] = useState(
+        getValue("customOverlayScale"),
+    );
 
     // States to control Tooltip visibility manually depending on Select state
     const [positionTooltipOpen, setPositionTooltipOpen] = useState(false);
@@ -71,6 +74,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
         setOverlayDuration(getValue("overlayDuration"));
         setOverlayBackgroundOpacity(getValue("overlayBackgroundOpacity"));
         setDutchAngleValue(getValue("dutchAngleValue"));
+        setCustomOverlayScale(getValue("customOverlayScale"));
     }, [settings, overrideSettings]);
 
     const handlePositionChange = (e: SelectChangeEvent<string>) => {
@@ -139,6 +143,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
             "dutchAngleValue",
             "overlayStyle",
             "customOverlay",
+            "customOverlayScale",
             "overlayBarSide",
             "showNumericValue",
         ].some((key) => isOverridden(key as keyof Settings));
@@ -397,6 +402,26 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                         >
                             Edit Overlays
                         </Button>
+                        <Slider
+                            label="Image scale"
+                            settingKey="customOverlayScale"
+                            value={customOverlayScale}
+                            min={5}
+                            max={90}
+                            step={1}
+                            ariaLabel="Image scale"
+                            disabled={!useMouseWheelVolume || !useOverlay}
+                            tooltip="Set the scale of the custom overlay image"
+                            valueTooltip="Current image scale"
+                            activeDomain={activeDomain}
+                            editSetting={editSetting}
+                            isOverridden={isOverridden}
+                            handleReset={handleReset}
+                            onValueChange={setCustomOverlayScale}
+                            id="customOverlayScaleContainer"
+                            displayContainerId="customOverlayScaleDisplay"
+                            valueDisplayId="customOverlayScaleValueDisplay"
+                        />
                     </>
                 )}
 

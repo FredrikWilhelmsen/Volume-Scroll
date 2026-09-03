@@ -43,6 +43,7 @@ export interface Settings {
     overlayStyle: OverlayStyle;
     customOverlay: string;
     customOverlayBoostBehavior: CustomOverlayBoostBehavior;
+    customOverlayScale: number;
 
     overlayPosition: OverlayNumberPosition;
     overlayXPos: number;
@@ -101,6 +102,7 @@ export const defaultSettings: Settings = {
     overlayStyle: "number",
     customOverlay: "",
     customOverlayBoostBehavior: "loop",
+    customOverlayScale: 10,
 
     // Number style settings
     overlayPosition: "tl",
