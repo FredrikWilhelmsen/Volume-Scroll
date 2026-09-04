@@ -239,11 +239,13 @@ export const CustomOverlay: React.FC<CustomOverlayProps> = ({
 
         return settings.overlayXPos <= 50 ? (
             <React.Fragment>
-                {imageElement} {renderedIcons}
+                {imageElement}
+                {renderedIcons}
             </React.Fragment>
         ) : (
             <React.Fragment>
-                {renderedIcons} {imageElement}
+                {renderedIcons}
+                {imageElement}
             </React.Fragment>
         );
     };
@@ -270,6 +272,7 @@ export const CustomOverlay: React.FC<CustomOverlayProps> = ({
                             : `volumeScrollFade ${settings.overlayDuration}ms normal forwards`
                     };
                     display: flex !important;
+                    flex-direction: row !important;
                     align-items: ${
                         settings.overlayPosition === "mouse"
                             ? "center"
@@ -277,6 +280,7 @@ export const CustomOverlay: React.FC<CustomOverlayProps> = ({
                               ? "flex-start"
                               : "flex-end"
                     } !important;
+                    line-height: 1 !important;
                     gap: 0.25em !important;
                     transform: ${
                         settings.overlayPosition === "mouse"
