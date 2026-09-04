@@ -10,7 +10,7 @@
             "strict_min_version": "109.0"
         }
     },
-    "permissions": ["storage", "activeTab", "clipboardRead"],
+    "permissions": ["storage", "activeTab"],
     "icons": {
         "128": "images/128.png"
     },
