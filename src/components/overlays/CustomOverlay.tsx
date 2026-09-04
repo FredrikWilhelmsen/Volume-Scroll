@@ -60,7 +60,10 @@ export const CustomOverlay: React.FC<CustomOverlayProps> = ({
         const isBoosted = settings.doBoostVolume && volume > 100;
         const boostMax = Math.max(settings.volumeBoostAmount || 200, 100);
 
-        if (isBoosted && settings.customOverlayBoostBehavior === "stretch") {
+        if (
+            settings.doBoostVolume &&
+            settings.customOverlayBoostBehavior === "stretch"
+        ) {
             // Stretch: map entire frame sequence across full boosted range (0 -> boostMax)
             const step = boostMax / numFrames;
             const lastUncappedStep = Math.floor(boostMax / inc) * inc;
