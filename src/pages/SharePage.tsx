@@ -11,6 +11,7 @@ import SettingsSwitch from "../components/SettingsSwitch";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Tooltip from "@mui/material/Tooltip";
+import TextField from "@mui/material/TextField";
 
 interface SharePageInterface {
     extensionData: ExtensionData;
@@ -29,6 +30,7 @@ const SharePage: React.FC<SharePageInterface> = ({
     const [includeOverrides, setIncludeOverrides] = useState(true);
     const [includeCustomRules, setIncludeCustomRules] = useState(true);
     const [includeIgnoredElements, setIncludeIgnoredElements] = useState(true);
+    const [exportImportText, setExportImportText] = useState("");
     const [statusMessage, setStatusMessage] = useState<string | null>(null);
     const [pendingImportData, setPendingImportData] =
         useState<ExportData | null>(null);
@@ -65,6 +67,7 @@ const SharePage: React.FC<SharePageInterface> = ({
 
         try {
             const jsonString = JSON.stringify(exportData, null, 2);
+            setExportImportText(jsonString);
             await navigator.clipboard.writeText(jsonString);
             setStatusMessage("Copied to clipboard!");
         } catch (err) {
@@ -107,37 +110,30 @@ const SharePage: React.FC<SharePageInterface> = ({
 
     const handleImport = async () => {
         setPendingImportData(null);
-        try {
-            const clipboardText = await navigator.clipboard.readText();
-            if (!clipboardText) {
-                setStatusMessage("Clipboard is empty");
-                return;
-            }
-
-            let importedData: ExportData;
-            try {
-                importedData = JSON.parse(clipboardText);
-            } catch (err) {
-                setStatusMessage("Failed to parse clipboard data");
-                return;
-            }
-
-            const currentVersion = browser.runtime.getManifest().version;
-            if (
-                importedData.version &&
-                importedData.version !== currentVersion
-            ) {
-                setPendingImportData(importedData);
-                setStatusMessage(
-                    `Version mismatch: Exported from v${importedData.version}, current is v${currentVersion}.`,
-                );
-                return;
-            }
-
-            await applyImport(importedData);
-        } catch (err) {
-            setStatusMessage("Failed to read clipboard");
+        const rawText = exportImportText.trim();
+        if (!rawText) {
+            setStatusMessage("Input text is empty");
+            return;
         }
+
+        let importedData: ExportData;
+        try {
+            importedData = JSON.parse(rawText);
+        } catch (err) {
+            setStatusMessage("Failed to parse settings JSON");
+            return;
+        }
+
+        const currentVersion = browser.runtime.getManifest().version;
+        if (importedData.version && importedData.version !== currentVersion) {
+            setPendingImportData(importedData);
+            setStatusMessage(
+                `Version mismatch: Exported from v${importedData.version}, current is v${currentVersion}.`,
+            );
+            return;
+        }
+
+        await applyImport(importedData);
     };
 
     const isAnySelected =
@@ -206,7 +202,7 @@ const SharePage: React.FC<SharePageInterface> = ({
                         tooltip="Include ignored elements"
                     />
 
-                    <Tooltip title="Export selected settings to clipboard">
+                    <Tooltip title="Export selected settings to clipboard and text field">
                         <span style={{ display: "flex", width: "100%" }}>
                             <Button
                                 fullWidth
@@ -219,19 +215,50 @@ const SharePage: React.FC<SharePageInterface> = ({
                         </span>
                     </Tooltip>
 
-                    <Tooltip title="Import selected settings from clipboard">
+                    <Tooltip
+                        title="Paste or edit JSON data here"
+                        placement="top"
+                        disableInteractive
+                    >
+                        <TextField
+                            className="manualDomainInput"
+                            label="Export / Import Data"
+                            placeholder="Paste JSON here..."
+                            variant="outlined"
+                            size="small"
+                            multiline
+                            minRows={3}
+                            maxRows={6}
+                            autoComplete="off"
+                            inputProps={{
+                                spellCheck: false,
+                                style: {
+                                    fontSize: "0.8rem",
+                                },
+                            }}
+                            value={exportImportText}
+                            onChange={(e) => {
+                                setExportImportText(e.target.value);
+                                setPendingImportData(null);
+                                setStatusMessage(null);
+                            }}
+                        />
+                    </Tooltip>
+
+                    <Tooltip title="Import selected settings from text field">
                         <span
                             style={{
                                 display: "flex",
                                 width: "100%",
-                                marginTop: "8px",
                             }}
                         >
                             <Button
                                 fullWidth
                                 variant="outlined"
                                 onClick={handleImport}
-                                disabled={!isAnySelected}
+                                disabled={
+                                    !isAnySelected || !exportImportText.trim()
+                                }
                             >
                                 Import
                             </Button>
