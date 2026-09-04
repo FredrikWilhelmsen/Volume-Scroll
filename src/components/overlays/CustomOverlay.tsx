@@ -1,5 +1,5 @@
 import React from "react";
-import { Settings, OverlayType, ExtensionData } from "../../types";
+import { Settings, OverlayType, CustomOverlay as CustomOverlayType } from "../../types";
 import { MutedIcon, UnmutedIcon, PlayIcon, PauseIcon } from "./Icons";
 
 export interface CustomOverlayProps {
@@ -7,7 +7,7 @@ export interface CustomOverlayProps {
     mouseX: number;
     mouseY: number;
     settings: Settings;
-    extensionData?: ExtensionData;
+    customOverlays?: Record<string, CustomOverlayType>;
     animationKey: number;
     fadeStartPercentage: number;
     playerRect?: DOMRect;
@@ -23,7 +23,7 @@ export const CustomOverlay: React.FC<CustomOverlayProps> = ({
     mouseX,
     mouseY,
     settings,
-    extensionData,
+    customOverlays,
     animationKey,
     fadeStartPercentage,
     playerRect,
@@ -34,7 +34,7 @@ export const CustomOverlay: React.FC<CustomOverlayProps> = ({
     lastPauseStickyType,
 }) => {
     const selectedOverlay =
-        extensionData?.customOverlays?.[settings.customOverlay];
+        customOverlays?.[settings.customOverlay];
 
     if (
         !selectedOverlay ||
