@@ -1,5 +1,9 @@
 import React from "react";
-import { Settings, OverlayType, CustomOverlay as CustomOverlayType } from "../../types";
+import {
+    Settings,
+    OverlayType,
+    CustomOverlay as CustomOverlayType,
+} from "../../types";
 import { MutedIcon, UnmutedIcon, PlayIcon, PauseIcon } from "./Icons";
 
 export interface CustomOverlayProps {
@@ -33,8 +37,7 @@ export const CustomOverlay: React.FC<CustomOverlayProps> = ({
     isPauseSticky,
     lastPauseStickyType,
 }) => {
-    const selectedOverlay =
-        customOverlays?.[settings.customOverlay];
+    const selectedOverlay = customOverlays?.[settings.customOverlay];
 
     if (
         !selectedOverlay ||
@@ -66,7 +69,10 @@ export const CustomOverlay: React.FC<CustomOverlayProps> = ({
             } else {
                 frameIndex = Math.min(Math.floor(volume / step), numFrames - 1);
             }
-        } else if (isBoosted && settings.customOverlayBoostBehavior === "loop") {
+        } else if (
+            isBoosted &&
+            settings.customOverlayBoostBehavior === "loop"
+        ) {
             // Loop: restart the animation from frame 0 once volume exceeds 100 up to boostMax
             const boostRange = boostMax - 100;
             const boostedVolume = Math.min(volume - 100, boostRange);
@@ -152,23 +158,56 @@ export const CustomOverlay: React.FC<CustomOverlayProps> = ({
         icons.push(icon);
     }
 
+    const showIconsWrapper = icons.length > 0 || settings.showNumericValue;
+
     const renderIcons = () => {
-        if (icons.length === 0) return null;
+        if (!showIconsWrapper) return null;
 
         return (
             <div
                 style={{
                     display: "inline-flex",
+                    flexDirection: "column",
                     alignItems: "center",
                     gap: "0.25em",
                     backgroundColor: settings.useOverlayBackground
                         ? `rgba(30, 30, 30, ${settings.overlayBackgroundOpacity / 100})`
                         : "transparent",
-                    padding: settings.useOverlayBackground ? "0.1em 0.3em" : "0",
+                    padding: settings.useOverlayBackground
+                        ? "0.1em 0.3em"
+                        : "0",
                     borderRadius: "4px",
                 }}
             >
-                {icons}
+                {settings.showNumericValue && (
+                    <div
+                        style={{
+                            fontWeight: "bold",
+                            fontFamily: "Roboto, Arial, sans-serif",
+                            textShadow:
+                                "-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000",
+                            color:
+                                volume > 100
+                                    ? settings.boostedColor
+                                    : settings.overlayColor,
+                            fontSize: `${settings.fontSize * 0.85}px`,
+                            lineHeight: 1,
+                        }}
+                    >
+                        {Math.round(volume)}
+                    </div>
+                )}
+                {icons.length > 0 && (
+                    <div
+                        style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "0.25em",
+                        }}
+                    >
+                        {icons}
+                    </div>
+                )}
             </div>
         );
     };
