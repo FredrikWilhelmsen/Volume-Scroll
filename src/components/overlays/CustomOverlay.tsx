@@ -163,20 +163,25 @@ export const CustomOverlay: React.FC<CustomOverlayProps> = ({
     const renderIcons = () => {
         if (!showIconsWrapper) return null;
 
+        const isSingleNumber = settings.showNumericValue && icons.length === 0;
+
         return (
             <div
                 style={{
                     display: "inline-flex",
                     flexDirection: "column",
                     alignItems: "center",
-                    gap: "0.25em",
+                    gap: "8px",
                     backgroundColor: settings.useOverlayBackground
                         ? `rgba(30, 30, 30, ${settings.overlayBackgroundOpacity / 100})`
                         : "transparent",
                     padding: settings.useOverlayBackground
-                        ? "0.1em 0.3em"
+                        ? isSingleNumber
+                            ? "12px 16px"
+                            : "16px"
                         : "0",
-                    borderRadius: "4px",
+                    borderRadius: "12px",
+                    boxSizing: "border-box",
                 }}
             >
                 {settings.showNumericValue && (
@@ -202,7 +207,7 @@ export const CustomOverlay: React.FC<CustomOverlayProps> = ({
                         style={{
                             display: "inline-flex",
                             alignItems: "center",
-                            gap: "0.25em",
+                            gap: "8px",
                         }}
                     >
                         {icons}
@@ -224,6 +229,7 @@ export const CustomOverlay: React.FC<CustomOverlayProps> = ({
                     maxWidth: "100%",
                     display: "block",
                     objectFit: "contain",
+                    imageRendering: "pixelated",
                 }}
             />
         );
@@ -264,7 +270,13 @@ export const CustomOverlay: React.FC<CustomOverlayProps> = ({
                             : `volumeScrollFade ${settings.overlayDuration}ms normal forwards`
                     };
                     display: flex !important;
-                    align-items: center !important;
+                    align-items: ${
+                        settings.overlayPosition === "mouse"
+                            ? "center"
+                            : settings.overlayYPos <= 50
+                              ? "flex-start"
+                              : "flex-end"
+                    } !important;
                     gap: 0.25em !important;
                     transform: ${
                         settings.overlayPosition === "mouse"
