@@ -23,6 +23,7 @@ import {
     VideoState,
     OverlayType,
     CustomRule,
+    CustomOverlay,
 } from "../types";
 import { isHotkeyPressed, debug, getFullscreenElement } from "../utils";
 
@@ -36,6 +37,7 @@ export class DefaultHandler {
     protected settings: Settings = defaultSettings;
     protected customRules: CustomRule[] = [];
     protected ignoredElements: string[] = [];
+    protected customOverlays: Record<string, CustomOverlay> = {};
 
     protected volumeTargets = new WeakMap<HTMLVideoElement, VideoState>();
     protected watchdogs = new Set<HTMLVideoElement>();
@@ -61,6 +63,12 @@ export class DefaultHandler {
 
     public updateSettings(newSettings: Settings): void {
         this.settings = newSettings;
+    }
+
+    public updateCustomOverlays(
+        customOverlays: Record<string, CustomOverlay>,
+    ): void {
+        this.customOverlays = customOverlays || {};
     }
 
     public updateCustomRules(customRules: CustomRule[]): void {
@@ -332,6 +340,7 @@ export class DefaultHandler {
                 isMuted={video.muted}
                 isPaused={video.paused}
                 settings={this.settings}
+                customOverlays={this.customOverlays}
                 type={type}
                 animationKey={this.animationKey}
                 playerRect={displayRect}

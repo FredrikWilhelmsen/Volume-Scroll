@@ -41,6 +41,9 @@ export interface Settings {
     useDutchAngle: boolean;
     dutchAngleValue: number;
     overlayStyle: OverlayStyle;
+    customOverlay: string;
+    customOverlayBoostBehavior: CustomOverlayBoostBehavior;
+    customOverlayScale: number;
 
     overlayPosition: OverlayNumberPosition;
     overlayXPos: number;
@@ -97,6 +100,9 @@ export const defaultSettings: Settings = {
     useDutchAngle: false,
     dutchAngleValue: 6,
     overlayStyle: "number",
+    customOverlay: "",
+    customOverlayBoostBehavior: "loop",
+    customOverlayScale: 10,
 
     // Number style settings
     overlayPosition: "tl",
@@ -126,6 +132,16 @@ export const colors: string[] = [
     "#DABDAB",
 ];
 
+export interface CustomOverlayImage {
+    name: string;
+    url: string;
+}
+
+export interface CustomOverlay {
+    images: CustomOverlayImage[]; // List of named images
+    frames: number[]; // List of indexes to images for each volume step
+}
+
 export interface CustomRule {
     name: string;
     videoQuerySelector: string;
@@ -138,6 +154,7 @@ export interface ExtensionData {
     domainOverrides: Record<string, Partial<Settings>>; // Settings saved for specific domains
     customRules: Record<string, CustomRule[]>; // Custom rules for specific domains
     ignoredElements: Record<string, string[]>; // Elements to ignore for specific domains
+    customOverlays: Record<string, CustomOverlay>; // Custom overlays, key is name
     lastVersionRead: string;
     schemaVersion: number;
 }
@@ -171,6 +188,7 @@ export const defaultExtensionData: ExtensionData = {
             ".yt-live-chat-renderer",
         ],
     },
+    customOverlays: {},
     lastVersionRead: "0.0.0",
     schemaVersion: 4,
 };
@@ -190,11 +208,14 @@ export type Pages =
     | "domains"
     | "updatePage"
     | "customRules"
-    | "share";
+    | "share"
+    | "customOverlayPage";
 
 export type OverlayType = "volume" | "mute" | "unmute" | "pause" | "play";
 
-export type OverlayStyle = "number" | "bar" | "circle" | "retro";
+export type OverlayStyle = "number" | "bar" | "circle" | "retro" | "custom";
+
+export type CustomOverlayBoostBehavior = "stretch" | "loop";
 
 export type OverlayNumberPosition =
     | "tl"

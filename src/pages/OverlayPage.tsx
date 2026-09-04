@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Settings, Pages, colors } from "../types";
+import { Settings, Pages, colors, CustomOverlay } from "../types";
 import BackButton from "../components/BackButton";
 import Tooltip from "@mui/material/Tooltip/Tooltip";
 import "../style/overlayPage.css";
@@ -12,6 +12,7 @@ import Slider from "../components/Slider";
 import ToggleSlider from "../components/ToggleSlider";
 import ColorPicker from "../components/ColorPicker";
 import NamedDropdown from "../components/NamedDropdown";
+import Button from "@mui/material/Button";
 
 interface OverlayPageInterface {
     settings: Settings;
@@ -20,6 +21,7 @@ interface OverlayPageInterface {
     editSetting: (key: keyof Settings, value: any, domain?: string) => void;
     resetSetting?: (key: keyof Settings, domain: string) => void;
     setPage: (targetPage: Pages) => void;
+    customOverlays?: Record<string, CustomOverlay>;
 }
 
 const OverlayPage: React.FC<OverlayPageInterface> = ({
@@ -29,6 +31,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
     editSetting,
     resetSetting,
     setPage,
+    customOverlays = {},
 }) => {
     const getValue = <K extends keyof Settings>(key: K): Settings[K] => {
         return overrideSettings?.[key] ?? settings[key];
@@ -56,6 +59,9 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
     const [dutchAngleValue, setDutchAngleValue] = useState(
         getValue("dutchAngleValue"),
     );
+    const [customOverlayScale, setCustomOverlayScale] = useState(
+        getValue("customOverlayScale"),
+    );
 
     // States to control Tooltip visibility manually depending on Select state
     const [positionTooltipOpen, setPositionTooltipOpen] = useState(false);
@@ -68,6 +74,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
         setOverlayDuration(getValue("overlayDuration"));
         setOverlayBackgroundOpacity(getValue("overlayBackgroundOpacity"));
         setDutchAngleValue(getValue("dutchAngleValue"));
+        setCustomOverlayScale(getValue("customOverlayScale"));
     }, [settings, overrideSettings]);
 
     const handlePositionChange = (e: SelectChangeEvent<string>) => {
@@ -101,8 +108,24 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
     const useDutchAngle = getValue("useDutchAngle");
     const dutchAngleVal = getValue("dutchAngleValue");
     const overlayStyle = getValue("overlayStyle");
+    const customOverlay = getValue("customOverlay") || "";
     const overlayBarSide = getValue("overlayBarSide");
     const showNumericValue = getValue("showNumericValue");
+
+    const customOverlayKeys = Object.keys(customOverlays || {});
+    const customOverlayOptions =
+        customOverlayKeys.length === 0
+            ? [{ value: "", label: "None" }]
+            : customOverlayKeys.map((name) => ({
+                  value: name,
+                  label: name,
+              }));
+    const selectedCustomOverlay =
+        customOverlayKeys.length === 0
+            ? ""
+            : customOverlayKeys.includes(customOverlay)
+              ? customOverlay
+              : customOverlayKeys[0];
 
     const hasCategoryOverride =
         !!activeDomain &&
@@ -119,6 +142,8 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
             "useDutchAngle",
             "dutchAngleValue",
             "overlayStyle",
+            "customOverlay",
+            "customOverlayScale",
             "overlayBarSide",
             "showNumericValue",
         ].some((key) => isOverridden(key as keyof Settings));
@@ -335,6 +360,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                         { value: "bar", label: "Bar" },
                         { value: "retro", label: "Retro Bar" },
                         { value: "circle", label: "Circle" },
+                        { value: "custom", label: "Custom" },
                     ]}
                     disabled={!useMouseWheelVolume || !useOverlay}
                     tooltip="Set overlay style"
@@ -346,7 +372,62 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                     selectId="overlayStyleSelector"
                 />
 
-                {(overlayStyle === "number" || overlayStyle === "circle") && (
+                {overlayStyle === "custom" && (
+                    <>
+                        <NamedDropdown
+                            label="Preset"
+                            settingKey="customOverlay"
+                            value={selectedCustomOverlay}
+                            options={customOverlayOptions}
+                            disabled={
+                                !useMouseWheelVolume ||
+                                !useOverlay ||
+                                customOverlayKeys.length === 0
+                            }
+                            tooltip="Select custom overlay preset"
+                            activeDomain={activeDomain}
+                            editSetting={editSetting}
+                            isOverridden={isOverridden}
+                            handleReset={handleReset}
+                            containerId="customOverlayDropdownContainer"
+                            selectId="customOverlaySelector"
+                        />
+                        <Button
+                            id="customOverlayButton"
+                            variant="outlined"
+                            fullWidth
+                            disabled={!useMouseWheelVolume || !useOverlay}
+                            onClick={() => setPage("customOverlayPage")}
+                            sx={{ marginTop: "12px" }}
+                        >
+                            Edit Overlays
+                        </Button>
+                        <Slider
+                            label="Image scale"
+                            settingKey="customOverlayScale"
+                            value={customOverlayScale}
+                            min={5}
+                            max={90}
+                            step={1}
+                            ariaLabel="Image scale"
+                            disabled={!useMouseWheelVolume || !useOverlay}
+                            tooltip="Set the scale of the custom overlay image"
+                            valueTooltip="Current image scale"
+                            activeDomain={activeDomain}
+                            editSetting={editSetting}
+                            isOverridden={isOverridden}
+                            handleReset={handleReset}
+                            onValueChange={setCustomOverlayScale}
+                            id="customOverlayScaleContainer"
+                            displayContainerId="customOverlayScaleDisplay"
+                            valueDisplayId="customOverlayScaleValueDisplay"
+                        />
+                    </>
+                )}
+
+                {(overlayStyle === "number" ||
+                    overlayStyle === "circle" ||
+                    overlayStyle === "custom") && (
                     <>
                         {/* Position Dropdown Container */}
                         <div

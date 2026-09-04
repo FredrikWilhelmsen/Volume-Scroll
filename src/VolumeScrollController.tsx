@@ -229,6 +229,7 @@ export const init = () => {
         setUtilSettings(settings);
         debug("Settings loaded: ", settings);
         handler.updateSettings(settings);
+        handler.updateCustomOverlays(data.customOverlays || {});
         handler.updateCustomRules(data.customRules?.[hostname] || []);
         handler.updateIgnoredElements(data.ignoredElements?.[hostname] || []);
 
@@ -468,6 +469,7 @@ browser.storage.onChanged.addListener((changes, areaName) => {
 
     setUtilSettings(settings);
     handler.updateSettings(settings);
+    handler.updateCustomOverlays(data.customOverlays || {});
     handler.updateCustomRules(data.customRules?.[hostname] || []);
     handler.updateIgnoredElements(data.ignoredElements?.[hostname] || []);
     debug("Settings reapplied: ", settings);

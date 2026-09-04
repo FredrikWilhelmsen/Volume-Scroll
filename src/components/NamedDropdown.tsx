@@ -41,7 +41,7 @@ const NamedDropdown: React.FC<NamedDropdownProps> = ({
     handleReset,
     containerId,
     selectId,
-    width = "150px",
+    width = "100%",
 }) => {
     const [tooltipOpen, setTooltipOpen] = useState(false);
     const [selectOpen, setSelectOpen] = useState(false);
@@ -111,29 +111,24 @@ const NamedDropdown: React.FC<NamedDropdownProps> = ({
         <div
             id={containerId}
             style={{
-                display: "flex",
-                alignItems: "center",
                 marginTop: "10px",
                 marginBottom: "10px",
             }}
         >
-            <Tooltip
-                title={tooltip}
-                open={tooltipOpen && !selectOpen}
-                onOpen={() => setTooltipOpen(true)}
-                onClose={() => setTooltipOpen(false)}
+            <div
+                style={{
+                    display: "flex",
+                    alignItems: "flex-end",
+                }}
             >
-                <span
-                    style={{
-                        display: "flex",
-                        alignItems: "center",
-                        flexGrow: 1,
-                    }}
+                <Tooltip
+                    title={tooltip}
+                    open={tooltipOpen && !selectOpen}
+                    onOpen={() => setTooltipOpen(true)}
+                    onClose={() => setTooltipOpen(false)}
                 >
-                    <Typography variant="body1" sx={{ flexGrow: 1 }}>
-                        {label}
-                    </Typography>
-                    <span style={{ marginRight: "8px" }}>
+                    <div style={{ flexGrow: 1 }}>
+                        <Typography variant="body1">{label}</Typography>
                         <FormControl
                             variant="standard"
                             size="small"
@@ -156,15 +151,15 @@ const NamedDropdown: React.FC<NamedDropdownProps> = ({
                                 ))}
                             </Select>
                         </FormControl>
-                    </span>
-                </span>
-            </Tooltip>
-            <ResetButton
-                isOverridden={overridden}
-                onReset={
-                    activeDomain ? () => handleReset(settingKey) : undefined
-                }
-            />
+                    </div>
+                </Tooltip>
+                <ResetButton
+                    isOverridden={overridden}
+                    onReset={
+                        activeDomain ? () => handleReset(settingKey) : undefined
+                    }
+                />
+            </div>
         </div>
     );
 };

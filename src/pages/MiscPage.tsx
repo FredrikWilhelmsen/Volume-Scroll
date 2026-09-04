@@ -6,6 +6,7 @@ import ToggleSlider from "../components/ToggleSlider";
 import Toggle from "../components/Toggle";
 import ColorPicker from "../components/ColorPicker";
 import Hotkey from "../components/Hotkey";
+import NamedDropdown from "../components/NamedDropdown";
 
 interface MiscPageInterface {
     settings: Settings;
@@ -59,6 +60,7 @@ const MiscPage: React.FC<MiscPageInterface> = ({
     const startMuted = getValue("startMuted");
     const doBoostVolume = getValue("doBoostVolume");
     const boostedColor = getValue("boostedColor");
+    const customOverlayBoostBehavior = getValue("customOverlayBoostBehavior");
     const useAlternateVolumeIncrement = getValue("useAlternateVolumeIncrement");
     const alternateVolumeIncrementHotkey = getValue(
         "alternateVolumeIncrementHotkey",
@@ -73,6 +75,7 @@ const MiscPage: React.FC<MiscPageInterface> = ({
             "doBoostVolume",
             "volumeBoostAmount",
             "boostedColor",
+            "customOverlayBoostBehavior",
             "useAlternateVolumeIncrement",
             "alternateVolumeIncrement",
             "alternateVolumeIncrementHotkey",
@@ -164,6 +167,22 @@ const MiscPage: React.FC<MiscPageInterface> = ({
                     isOverridden={isOverridden}
                     handleReset={handleReset}
                     containerId="boostColorPickerContainer"
+                />
+                <NamedDropdown
+                    label="Custom overlay boost"
+                    settingKey="customOverlayBoostBehavior"
+                    value={customOverlayBoostBehavior}
+                    options={[
+                        { value: "stretch", label: "Stretch" },
+                        { value: "loop", label: "Loop" },
+                    ]}
+                    tooltip="Set behavior for custom overlays when boosted"
+                    activeDomain={activeDomain}
+                    editSetting={editSetting}
+                    isOverridden={isOverridden}
+                    handleReset={handleReset}
+                    containerId="customOverlayBoostBehaviorDropdownContainer"
+                    selectId="customOverlayBoostBehaviorSelector"
                 />
                 <div id="alternateIncrementContainer">
                     <ToggleSlider

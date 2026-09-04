@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Settings, OverlayType } from "../types";
+import { Settings, OverlayType, CustomOverlay as CustomOverlayType } from "../types";
+import { debug } from "../utils";
 import { NumberOverlay } from "./overlays/NumberOverlay";
 import { BarOverlay } from "./overlays/BarOverlay";
 import { CircleOverlay } from "./overlays/CircleOverlay";
 import { RetroBarOverlay } from "./overlays/RetroBarOverlay";
+import { CustomOverlay } from "./overlays/CustomOverlay";
 
 export interface VolumeOverlayProps {
     type: OverlayType;
@@ -13,6 +15,7 @@ export interface VolumeOverlayProps {
     isMuted?: boolean;
     isPaused?: boolean;
     settings: Settings;
+    customOverlays?: Record<string, CustomOverlayType>;
     animationKey: number;
     playerRect?: DOMRect;
     parentRect?: DOMRect;
@@ -26,6 +29,7 @@ export const VolumeOverlay: React.FC<VolumeOverlayProps> = ({
     isMuted,
     isPaused,
     settings,
+    customOverlays,
     animationKey,
     playerRect,
     parentRect,
@@ -159,6 +163,42 @@ export const VolumeOverlay: React.FC<VolumeOverlayProps> = ({
                 isPauseSticky={isPauseSticky}
                 lastPauseStickyType={lastPauseStickyType}
             />
+        );
+    }
+
+    const hasSelectedCustomOverlay =
+        Boolean(settings.customOverlay) &&
+        Boolean(customOverlays?.[settings.customOverlay]);
+
+    if (settings.overlayStyle === "custom") {
+        if (hasSelectedCustomOverlay) {
+            return (
+                <CustomOverlay
+                    volume={volume}
+                    mouseX={mouseX}
+                    mouseY={mouseY}
+                    settings={settings}
+                    customOverlays={customOverlays}
+                    animationKey={animationKey}
+                    fadeStartPercentage={fadeStartPercentage}
+                    playerRect={playerRect}
+                    parentRect={parentRect}
+                    isMuteSticky={isMuteSticky}
+                    lastMuteStickyType={lastMuteStickyType}
+                    isPauseSticky={isPauseSticky}
+                    lastPauseStickyType={lastPauseStickyType}
+                />
+            );
+        }
+
+        debug(
+            `Custom overlay "${settings.customOverlay}" not found or none selected. Defaulting to NumberOverlay.`,
+            {
+                customOverlay: settings.customOverlay,
+                availableOverlays: customOverlays
+                    ? Object.keys(customOverlays)
+                    : [],
+            },
         );
     }
 
