@@ -84,7 +84,10 @@ const SharePage: React.FC<SharePageInterface> = ({
         const newExtensionData: ExtensionData = { ...extensionData };
 
         if (includeSettings && importedData.globalSettings) {
-            newExtensionData.globalSettings = importedData.globalSettings;
+            newExtensionData.globalSettings = {
+                ...extensionData.globalSettings,
+                ...importedData.globalSettings,
+            };
             hasUpdated = true;
         }
         if (includeOverrides && importedData.domainOverrides) {
