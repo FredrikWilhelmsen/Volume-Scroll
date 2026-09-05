@@ -28,6 +28,7 @@ const SharePage: React.FC<SharePageInterface> = ({
 }) => {
     const [includeSettings, setIncludeSettings] = useState(true);
     const [includeOverrides, setIncludeOverrides] = useState(true);
+    const [includeCustomOverlays, setIncludeCustomOverlays] = useState(true);
     const [includeCustomRules, setIncludeCustomRules] = useState(true);
     const [includeIgnoredElements, setIncludeIgnoredElements] = useState(true);
     const [exportImportText, setExportImportText] = useState("");
@@ -58,6 +59,9 @@ const SharePage: React.FC<SharePageInterface> = ({
         if (includeOverrides) {
             exportData.domainOverrides = extensionData.domainOverrides;
         }
+        if (includeCustomOverlays) {
+            exportData.customOverlays = extensionData.customOverlays;
+        }
         if (includeCustomRules) {
             exportData.customRules = extensionData.customRules;
         }
@@ -85,6 +89,10 @@ const SharePage: React.FC<SharePageInterface> = ({
         }
         if (includeOverrides && importedData.domainOverrides) {
             newExtensionData.domainOverrides = importedData.domainOverrides;
+            hasUpdated = true;
+        }
+        if (includeCustomOverlays && importedData.customOverlays) {
+            newExtensionData.customOverlays = importedData.customOverlays;
             hasUpdated = true;
         }
         if (includeCustomRules && importedData.customRules) {
@@ -139,6 +147,7 @@ const SharePage: React.FC<SharePageInterface> = ({
     const isAnySelected =
         includeSettings ||
         includeOverrides ||
+        includeCustomOverlays ||
         includeCustomRules ||
         includeIgnoredElements;
 
@@ -180,6 +189,16 @@ const SharePage: React.FC<SharePageInterface> = ({
                             setPendingImportData(null);
                         }}
                         tooltip="Include domain overrides"
+                    />
+                    <SettingsSwitch
+                        label="Custom overlays"
+                        checked={includeCustomOverlays}
+                        onChange={(val) => {
+                            setIncludeCustomOverlays(val);
+                            setStatusMessage(null);
+                            setPendingImportData(null);
+                        }}
+                        tooltip="Include custom overlays"
                     />
                     <SettingsSwitch
                         label="Custom rules"
