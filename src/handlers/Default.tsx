@@ -61,6 +61,13 @@ export class DefaultHandler {
     protected scrollAccumulator: number = 0;
     protected lastScrollTime: number = 0;
 
+    // Tracks videos for which a CORS soft-reload has been scheduled but not yet
+    // completed (prevents stacking duplicate reloads on rapid scrolls).
+    protected corsReloadPending = new WeakSet<HTMLVideoElement>();
+    // Tracks videos for which we already attempted a CORS soft-reload so we
+    // only try once per element (avoids infinite reload loops on stubborn sites).
+    protected corsReloadAttempted = new WeakSet<HTMLVideoElement>();
+
     public updateSettings(newSettings: Settings): void {
         this.settings = newSettings;
     }
@@ -95,6 +102,120 @@ export class DefaultHandler {
         }
     }
 
+    /**
+     * Performs an in-place "soft reload" of a video element to force the browser
+     * to re-fetch the media with a CORS-credentialed request.
+     *
+     * Preserves the existing <video> tag and all event listeners:
+     *  1. Record current playback state.
+     *  2. Set crossOrigin = "anonymous" (must happen before load()).
+     *  3. Call video.load() — browser re-fetches the src with CORS headers.
+     *     The declarativeNetRequest rule in the background ensures the server
+     *     responds with Access-Control-Allow-Origin: *.
+     *  4. On the first `canplay` event, restore currentTime + resume playback,
+     *     then invoke the onReady callback so the caller can retry
+     *     createMediaElementSource.
+     */
+    protected softReloadForCors(
+        video: HTMLVideoElement,
+        onReady: () => void,
+    ): void {
+        const savedTime = video.currentTime;
+        const wasPaused = video.paused;
+        const savedVolume = video.volume;
+        const savedMuted = video.muted;
+
+        debug("[CORS] Soft-reloading video for CORS", video.currentSrc);
+
+        // Must be set before load() so the browser sends a CORS request.
+        video.crossOrigin = "anonymous";
+
+        const onCanPlay = () => {
+            video.removeEventListener("canplay", onCanPlay);
+            this.corsReloadPending.delete(video);
+
+            // Restore playback position
+            try {
+                video.currentTime = savedTime;
+            } catch (e) {
+                // Some streams don't support seeking; ignore
+            }
+
+            // Restore volume/mute using our internal setter to keep state consistent
+            this.isSettingInternally = true;
+            video.volume = savedVolume;
+            video.muted = savedMuted;
+            this.isSettingInternally = false;
+
+            if (!wasPaused) {
+                video.play().catch(() => {
+                    // Autoplay may be blocked; the user can resume manually
+                });
+            }
+
+            debug("[CORS] Soft-reload complete, retrying GainNode creation");
+            onReady();
+        };
+
+        const onError = () => {
+            video.removeEventListener("canplay", onCanPlay);
+            video.removeEventListener("error", onError);
+            this.corsReloadPending.delete(video);
+            debug("[CORS] Soft-reload failed (network/server error)");
+        };
+
+        video.addEventListener("canplay", onCanPlay, { once: true });
+        video.addEventListener("error", onError, { once: true });
+        video.load();
+    }
+
+    /**
+     * Proactively pre-warms CORS for a newly detected video element so that
+     * audio boost works on the very first scroll above 100%.
+     *
+     * Called at video-discovery time (applyDefaultVolume). If the video
+     * already has a src, the cross-origin check runs immediately; otherwise
+     * it waits for the `loadedmetadata` event so we don't act on an empty URL.
+     */
+    protected prewarmCorsIfNeeded(video: HTMLVideoElement): void {
+        if (!this.settings.doBoostVolume) return;
+        if (this.corsReloadAttempted.has(video)) return;
+
+        const attempt = () => {
+            // Nothing to check yet, or blob URL (same-origin by definition)
+            if (!video.currentSrc || video.currentSrc.startsWith("blob:")) return;
+            // Already has CORS — no reload needed
+            if (video.crossOrigin) return;
+
+            try {
+                const url = new URL(video.currentSrc);
+                if (url.origin === window.location.origin) return; // same-origin
+            } catch (e) {
+                return;
+            }
+
+            // Cross-origin without CORS attribute — pre-warm now
+            if (this.corsReloadPending.has(video)) return;
+            this.corsReloadPending.add(video);
+            this.corsReloadAttempted.add(video);
+            this.softReloadForCors(video, () => {
+                const gainNode = this.getGainNode(video);
+                if (gainNode) {
+                    debug("[CORS] GainNode pre-warmed proactively");
+                } else {
+                    debug("[CORS] GainNode creation still failed after proactive pre-warm");
+                }
+            });
+        };
+
+        if (video.currentSrc) {
+            attempt();
+        } else {
+            // Src not yet assigned — wait until the browser resolves it
+            video.addEventListener("loadedmetadata", attempt, { once: true });
+        }
+    }
+
     protected getGainNode(video: HTMLVideoElement): GainNode | null {
         this.initAudioContext();
 
@@ -108,21 +229,54 @@ export class DefaultHandler {
         }
 
         // Runtime CORS check:
-        // If the video is cross-origin and does not have crossorigin="anonymous" (or similar),
-        // createMediaElementSource will output silence. We must abort in that case.
-        if (video.currentSrc && !video.currentSrc.startsWith("blob:")) {
+        // If the video is cross-origin and does not have crossorigin="anonymous"
+        // (or similar), createMediaElementSource will output silence.
+        // Strategy:
+        //   - If we haven't tried a soft-reload yet, schedule one and return null
+        //     for this call (falls back to 100% cap this once).
+        //   - The soft-reload re-fetches the media with crossOrigin="anonymous";
+        //     on canplay we retry getGainNode() internally to pre-warm the node.
+        //   - If we already attempted a reload (corsReloadAttempted is set), skip
+        //     the check and try createMediaElementSource directly — crossOrigin
+        //     should now be set.
+        if (
+            video.currentSrc &&
+            !video.currentSrc.startsWith("blob:") &&
+            !this.corsReloadAttempted.has(video)
+        ) {
             try {
                 const videoUrl = new URL(video.currentSrc);
                 const isSameOrigin = videoUrl.origin === window.location.origin;
 
                 if (!isSameOrigin && !video.crossOrigin) {
-                    debug(
-                        "Video is cross-origin and lacks CORS attribute. Web Audio API would be silent. Aborting boost.",
-                    );
+                    if (!this.corsReloadPending.has(video)) {
+                        // Schedule a one-time soft reload.
+                        // This call returns null (falls back to 100% cap);
+                        // once canplay fires the GainNode is pre-warmed.
+                        this.corsReloadPending.add(video);
+                        this.corsReloadAttempted.add(video);
+                        this.softReloadForCors(video, () => {
+                            // Pre-warm: create and cache the GainNode so the
+                            // next boost scroll works without another reload.
+                            const gainNode = this.getGainNode(video);
+                            if (gainNode) {
+                                debug(
+                                    "[CORS] GainNode pre-warmed after soft-reload",
+                                );
+                            } else {
+                                debug(
+                                    "[CORS] GainNode creation still failed after soft-reload",
+                                );
+                            }
+                        });
+                    } else {
+                        debug(
+                            "[CORS] Soft-reload already pending for this video",
+                        );
+                    }
                     return null;
                 }
             } catch (e) {
-                // Invalid URL or other issue, proceed with caution or abort.
                 debug("Could not parse video URL for CORS check", e);
             }
         }
@@ -820,6 +974,8 @@ export class DefaultHandler {
                         // Check if the added node is itself a video
                         if (node.tagName === "VIDEO") {
                             const video = node as HTMLVideoElement;
+                            // Always pre-warm CORS regardless of useDefaultVolume
+                            this.prewarmCorsIfNeeded(video);
                             if (this.volumeTargets.has(video)) {
                                 debug(
                                     "Already tracking this video, skipping default volume reset",
@@ -835,6 +991,8 @@ export class DefaultHandler {
                                 node.getElementsByTagName("VIDEO");
                             for (let video of nestedVideos) {
                                 const videoElement = video as HTMLVideoElement;
+                                // Always pre-warm CORS regardless of useDefaultVolume
+                                this.prewarmCorsIfNeeded(videoElement);
                                 if (this.volumeTargets.has(videoElement)) {
                                     debug(
                                         "Already tracking this nested video, skipping default volume reset",
@@ -899,6 +1057,8 @@ export class DefaultHandler {
 
         for (let tag of videoCollection) {
             let video: HTMLVideoElement = tag as HTMLVideoElement;
+            // Always pre-warm CORS regardless of whether this video is already tracked
+            this.prewarmCorsIfNeeded(video);
             if (this.volumeTargets.has(video)) {
                 debug(
                     "Already tracking this video, skipping default volume reset",
@@ -912,6 +1072,22 @@ export class DefaultHandler {
             this.applyDefaultVolume(video);
         }
 
+        this.startVideoObserver(body);
+    }
+
+    /**
+     * Starts the MutationObserver and scans existing videos solely for CORS
+     * pre-warming. Called unconditionally (even when useDefaultVolume is off)
+     * so that audio boost always works on the first scroll above 100%.
+     */
+    public startCorsPrewarm(body: HTMLElement): void {
+        if (this.isDisabled) return;
+        // Scan videos already on the page
+        const videoCollection = this.getAllVideos() as HTMLVideoElement[];
+        for (const video of videoCollection) {
+            this.prewarmCorsIfNeeded(video);
+        }
+        // Start the observer so future videos are also pre-warmed
         this.startVideoObserver(body);
     }
 

@@ -238,6 +238,9 @@
                 );
                 const tag = tagName.toLowerCase();
                 if (tag === "audio" || tag === "video") {
+                    // Set crossOrigin before the page attaches a src so that
+                    // the browser makes a CORS-credentialed media request.
+                    (element as HTMLMediaElement).crossOrigin = "anonymous";
                     registerPlayer(element as HTMLMediaElement);
                 }
                 return element;
@@ -250,6 +253,29 @@
                     registerPlayer(this);
                 }
             } as any;
+        }
+
+        // Proactive CORS patch (all non-Spotify sites)
+        // Override document.createElement globally so every <video>/<audio>
+        // element gets crossOrigin="anonymous" before the page sets a src.
+        // This runs at document_start in the MAIN world, before any framework
+        // code, ensuring the browser sends a CORS-credentialed media request.
+        if (!isSpotify) {
+            document.createElement = function (
+                tagName: string,
+                options?: ElementCreationOptions,
+            ) {
+                const element = originalCreateElement.call(
+                    document,
+                    tagName,
+                    options,
+                );
+                const tag = tagName.toLowerCase();
+                if (tag === "audio" || tag === "video") {
+                    (element as HTMLMediaElement).crossOrigin = "anonymous";
+                }
+                return element;
+            };
         }
 
         Object.defineProperty(HTMLMediaElement.prototype, "volume", {

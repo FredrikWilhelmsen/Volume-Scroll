@@ -160,6 +160,10 @@ export function updateListenerState(): void {
         handler.setDisabled(false);
         if (settings.useDefaultVolume) {
             handler.setDefaultVolume(body);
+        } else {
+            // Even without useDefaultVolume, we still need to start the
+            // observer and pre-warm CORS so boost works on the first scroll.
+            handler.startCorsPrewarm(body);
         }
     }
 }
@@ -1124,10 +1128,15 @@ export function onMouseMove(e: MouseEvent): void {
 }
 
 export function onPageLoad(): void {
-    if (!settings.useDefaultVolume) return;
     debug("Using handler: " + handler.getName());
     debug("Hostname: " + window.location.hostname);
-    handler.setDefaultVolume(body);
+    if (settings.useDefaultVolume) {
+        handler.setDefaultVolume(body);
+    } else {
+        // Even without useDefaultVolume, start the observer and pre-warm CORS
+        // so boost works on the first scroll above 100%.
+        handler.startCorsPrewarm(body);
+    }
 }
 
 export function onContextMenu(e: MouseEvent): void {
