@@ -126,6 +126,7 @@ const NamedDropdown: React.FC<NamedDropdownProps> = ({
                     open={tooltipOpen && !selectOpen}
                     onOpen={() => setTooltipOpen(true)}
                     onClose={() => setTooltipOpen(false)}
+                    disableInteractive
                 >
                     <div style={{ flexGrow: 1 }}>
                         <Typography variant="body1">{label}</Typography>
