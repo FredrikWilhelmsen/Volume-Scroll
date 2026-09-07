@@ -233,7 +233,7 @@ export const VolumeOverlay: React.FC<VolumeOverlayProps> = ({
                 }
                 * {
                     box-sizing: border-box;
-                    font-family: Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif !important;
+                    font-family: Roboto !important;
                     -webkit-font-smoothing: antialiased;
                     -moz-osx-font-smoothing: grayscale;
                 }
