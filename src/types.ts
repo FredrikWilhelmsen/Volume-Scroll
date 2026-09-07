@@ -186,11 +186,12 @@ export const defaultExtensionData: ExtensionData = {
             ".ytd-popup-container",
             ".ytp-settings-menu",
             ".yt-live-chat-renderer",
+            ".ytp-ce-covering-overlay",
         ],
     },
     customOverlays: {},
     lastVersionRead: "0.0.0",
-    schemaVersion: 4,
+    schemaVersion: 5,
 };
 
 export interface ExportData extends Partial<
