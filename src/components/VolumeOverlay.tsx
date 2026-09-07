@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import roboto400Woff2 from "url:@fontsource/roboto/files/roboto-latin-400-normal.woff2";
+import roboto700Woff2 from "url:@fontsource/roboto/files/roboto-latin-700-normal.woff2";
 import {
     Settings,
     OverlayType,
@@ -228,12 +230,26 @@ export const VolumeOverlay: React.FC<VolumeOverlayProps> = ({
     return (
         <React.Fragment>
             <style>{`
+                @font-face {
+                    font-family: 'Roboto';
+                    font-style: normal;
+                    font-weight: 400;
+                    font-display: block;
+                    src: url('${roboto400Woff2}') format('woff2');
+                }
+                @font-face {
+                    font-family: 'Roboto';
+                    font-style: normal;
+                    font-weight: 700;
+                    font-display: block;
+                    src: url('${roboto700Woff2}') format('woff2');
+                }
                 :host {
                     all: initial;
                 }
                 * {
                     box-sizing: border-box;
-                    font-family: Roboto !important;
+                    font-family: 'Roboto', sans-serif !important;
                     -webkit-font-smoothing: antialiased;
                     -moz-osx-font-smoothing: grayscale;
                 }
