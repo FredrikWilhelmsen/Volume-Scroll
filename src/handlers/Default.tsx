@@ -169,6 +169,53 @@ export class DefaultHandler {
         video.load();
     }
 
+    /**
+     * Proactively pre-warms CORS for a newly detected video element so that
+     * audio boost works on the very first scroll above 100%.
+     *
+     * Called at video-discovery time (applyDefaultVolume). If the video
+     * already has a src, the cross-origin check runs immediately; otherwise
+     * it waits for the `loadedmetadata` event so we don't act on an empty URL.
+     */
+    protected prewarmCorsIfNeeded(video: HTMLVideoElement): void {
+        if (!this.settings.doBoostVolume) return;
+        if (this.corsReloadAttempted.has(video)) return;
+
+        const attempt = () => {
+            // Nothing to check yet, or blob URL (same-origin by definition)
+            if (!video.currentSrc || video.currentSrc.startsWith("blob:")) return;
+            // Already has CORS — no reload needed
+            if (video.crossOrigin) return;
+
+            try {
+                const url = new URL(video.currentSrc);
+                if (url.origin === window.location.origin) return; // same-origin
+            } catch (e) {
+                return;
+            }
+
+            // Cross-origin without CORS attribute — pre-warm now
+            if (this.corsReloadPending.has(video)) return;
+            this.corsReloadPending.add(video);
+            this.corsReloadAttempted.add(video);
+            this.softReloadForCors(video, () => {
+                const gainNode = this.getGainNode(video);
+                if (gainNode) {
+                    debug("[CORS] GainNode pre-warmed proactively");
+                } else {
+                    debug("[CORS] GainNode creation still failed after proactive pre-warm");
+                }
+            });
+        };
+
+        if (video.currentSrc) {
+            attempt();
+        } else {
+            // Src not yet assigned — wait until the browser resolves it
+            video.addEventListener("loadedmetadata", attempt, { once: true });
+        }
+    }
+
     protected getGainNode(video: HTMLVideoElement): GainNode | null {
         this.initAudioContext();
 
@@ -927,6 +974,8 @@ export class DefaultHandler {
                         // Check if the added node is itself a video
                         if (node.tagName === "VIDEO") {
                             const video = node as HTMLVideoElement;
+                            // Always pre-warm CORS regardless of useDefaultVolume
+                            this.prewarmCorsIfNeeded(video);
                             if (this.volumeTargets.has(video)) {
                                 debug(
                                     "Already tracking this video, skipping default volume reset",
@@ -942,6 +991,8 @@ export class DefaultHandler {
                                 node.getElementsByTagName("VIDEO");
                             for (let video of nestedVideos) {
                                 const videoElement = video as HTMLVideoElement;
+                                // Always pre-warm CORS regardless of useDefaultVolume
+                                this.prewarmCorsIfNeeded(videoElement);
                                 if (this.volumeTargets.has(videoElement)) {
                                     debug(
                                         "Already tracking this nested video, skipping default volume reset",
@@ -1006,6 +1057,8 @@ export class DefaultHandler {
 
         for (let tag of videoCollection) {
             let video: HTMLVideoElement = tag as HTMLVideoElement;
+            // Always pre-warm CORS regardless of whether this video is already tracked
+            this.prewarmCorsIfNeeded(video);
             if (this.volumeTargets.has(video)) {
                 debug(
                     "Already tracking this video, skipping default volume reset",
@@ -1019,6 +1072,22 @@ export class DefaultHandler {
             this.applyDefaultVolume(video);
         }
 
+        this.startVideoObserver(body);
+    }
+
+    /**
+     * Starts the MutationObserver and scans existing videos solely for CORS
+     * pre-warming. Called unconditionally (even when useDefaultVolume is off)
+     * so that audio boost always works on the first scroll above 100%.
+     */
+    public startCorsPrewarm(body: HTMLElement): void {
+        if (this.isDisabled) return;
+        // Scan videos already on the page
+        const videoCollection = this.getAllVideos() as HTMLVideoElement[];
+        for (const video of videoCollection) {
+            this.prewarmCorsIfNeeded(video);
+        }
+        // Start the observer so future videos are also pre-warmed
         this.startVideoObserver(body);
     }
 
