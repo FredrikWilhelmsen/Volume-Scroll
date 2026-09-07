@@ -189,7 +189,11 @@ export class DefaultHandler {
         return !!scrollLists;
     }
 
-    protected getVideoFromElements(elements: Element[]): videoElements | null {
+    protected getVideoFromElements(
+        elements: Element[],
+        mouseX: number,
+        mouseY: number,
+    ): videoElements | null {
         // Check custom rules first
         for (const rule of this.customRules) {
             const hasInteractibleMatch = elements.some((el) => {
@@ -223,13 +227,47 @@ export class DefaultHandler {
             }
         }
 
-        const video = elements.find(
+        // 1. Direct hit-test match
+        let video = elements.find(
             (el) => el.tagName === "VIDEO" || el.tagName === "AUDIO",
         ) as HTMLVideoElement | HTMLAudioElement | undefined;
+        let display: HTMLBaseElement | undefined =
+            video as unknown as HTMLBaseElement;
+
+        // 2. Fallback: video with pointer-events: none or nested inside a hovered container
+        if (!video) {
+            for (const el of elements) {
+                // Don't search top-level document roots to avoid scanning unrelated videos on the page
+                if (
+                    el.tagName === "HTML" ||
+                    el.tagName === "BODY" ||
+                    el.id === "__next"
+                ) {
+                    continue;
+                }
+
+                const nestedVideo = el.querySelector<
+                    HTMLVideoElement | HTMLAudioElement
+                >("video, audio");
+                if (nestedVideo) {
+                    const rect = nestedVideo.getBoundingClientRect();
+                    if (
+                        mouseX >= rect.left &&
+                        mouseX <= rect.right &&
+                        mouseY >= rect.top &&
+                        mouseY <= rect.bottom
+                    ) {
+                        video = nestedVideo;
+                        display = el as unknown as HTMLBaseElement;
+                        break;
+                    }
+                }
+            }
+        }
 
         return video
             ? {
-                  display: video as unknown as HTMLBaseElement,
+                  display: display || (video as unknown as HTMLBaseElement),
                   video: video as HTMLVideoElement,
               }
             : null;
@@ -243,7 +281,10 @@ export class DefaultHandler {
             return null;
         }
 
-        return this.getVideoFromElements(elements);
+        console.log("SCROLL ELEMENTS");
+        console.log(elements);
+
+        return this.getVideoFromElements(elements, mouseX, mouseY);
     }
 
     protected getVideoState(video: HTMLVideoElement): VideoState {
