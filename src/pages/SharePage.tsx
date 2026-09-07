@@ -1,5 +1,5 @@
 import browser from "webextension-polyfill";
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
     ExtensionData,
     ExportData,
@@ -39,6 +39,17 @@ const SharePage: React.FC<SharePageInterface> = ({
     const [pendingImportMode, setPendingImportMode] = useState<
         "import" | "merge"
     >("import");
+
+    const bottomRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (statusMessage || pendingImportData) {
+            bottomRef.current?.scrollIntoView({
+                behavior: "smooth",
+                block: "end",
+            });
+        }
+    }, [statusMessage, pendingImportData]);
 
     const handleResetToDefault = async () => {
         setPendingImportData(null);
@@ -207,7 +218,10 @@ const SharePage: React.FC<SharePageInterface> = ({
 
             <div className="settingsContainer">
                 <div id="domainListInputContainer">
-                    <Tooltip title="Reset all settings and data back to default" disableInteractive>
+                    <Tooltip
+                        title="Reset all settings and data back to default"
+                        disableInteractive
+                    >
                         <span style={{ display: "flex", width: "100%" }}>
                             <Button
                                 fullWidth
@@ -270,7 +284,10 @@ const SharePage: React.FC<SharePageInterface> = ({
                         tooltip="Include ignored elements"
                     />
 
-                    <Tooltip title="Export selected settings to clipboard and text field" disableInteractive>
+                    <Tooltip
+                        title="Export selected settings to clipboard and text field"
+                        disableInteractive
+                    >
                         <span style={{ display: "flex", width: "100%" }}>
                             <Button
                                 fullWidth
@@ -314,7 +331,10 @@ const SharePage: React.FC<SharePageInterface> = ({
                     </Tooltip>
 
                     <div style={{ display: "flex", gap: "8px", width: "100%" }}>
-                        <Tooltip title="Replace your existing settings with the imported ones" disableInteractive>
+                        <Tooltip
+                            title="Replace your existing settings with the imported ones"
+                            disableInteractive
+                        >
                             <span
                                 style={{
                                     display: "flex",
@@ -335,7 +355,10 @@ const SharePage: React.FC<SharePageInterface> = ({
                             </span>
                         </Tooltip>
 
-                        <Tooltip title="Add the imported settings without deleting your existing ones" disableInteractive>
+                        <Tooltip
+                            title="Add the imported settings without deleting your existing ones"
+                            disableInteractive
+                        >
                             <span
                                 style={{
                                     display: "flex",
@@ -403,6 +426,7 @@ const SharePage: React.FC<SharePageInterface> = ({
                             {statusMessage}
                         </Typography>
                     )}
+                    <div ref={bottomRef} />
                 </div>
             </div>
         </div>
