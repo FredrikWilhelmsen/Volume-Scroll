@@ -446,6 +446,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                                 }
                                 onOpen={() => setPositionTooltipOpen(true)}
                                 onClose={() => setPositionTooltipOpen(false)}
+                                disableInteractive
                             >
                                 <span
                                     style={{ flexGrow: 1, marginRight: "8px" }}
