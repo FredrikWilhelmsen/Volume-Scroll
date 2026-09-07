@@ -23,6 +23,7 @@ import {
     ExtensionData,
     defaultExtensionData,
 } from "./types";
+import { debug } from "./utils";
 
 // Helper function to update action badge indicator for unread updates
 async function updateExtensionBadge() {
@@ -50,6 +51,49 @@ async function updateExtensionBadge() {
     }
 }
 
+// Registers a declarativeNetRequest dynamic rule that injects
+//`Access-Control-Allow-Origin: *` on all media (video/audio) responses.
+
+async function registerCorsRule() {
+    const dnr = (browser as any).declarativeNetRequest;
+    if (!dnr) return; // Extension API not available (shouldn't happen in MV3)
+
+    const RULE_ID = 1;
+
+    try {
+        // Remove any pre-existing rule with this ID to ensure idempotency
+        await dnr.updateDynamicRules({
+            removeRuleIds: [RULE_ID],
+            addRules: [
+                {
+                    id: RULE_ID,
+                    priority: 1,
+                    action: {
+                        type: "modifyHeaders",
+                        responseHeaders: [
+                            {
+                                header: "Access-Control-Allow-Origin",
+                                operation: "set",
+                                value: "*",
+                            },
+                            {
+                                header: "Access-Control-Expose-Headers",
+                                operation: "set",
+                                value: "*",
+                            },
+                        ],
+                    },
+                    condition: {
+                        resourceTypes: ["media"],
+                    },
+                },
+            ],
+        });
+    } catch (e) {
+        // DNR may not be supported in all environments
+        debug("Failed to register CORS declarativeNetRequest rule:", e);
+    }
+}
 
 browser.runtime.onInstalled.addListener(async (details) => {
     if (details.reason === "install") {
@@ -143,11 +187,13 @@ browser.runtime.onInstalled.addListener(async (details) => {
         await browser.storage.sync.set({ extensionData: newExtensionData });
     }
     await updateExtensionBadge();
+    await registerCorsRule();
 });
 
 // Also update badge on startup and whenever storage changes
 browser.runtime.onStartup?.addListener(async () => {
     updateExtensionBadge();
+    await registerCorsRule();
 });
 
 browser.storage.onChanged.addListener((changes, areaName) => {
@@ -158,3 +204,4 @@ browser.storage.onChanged.addListener((changes, areaName) => {
 
 // Run check when background script initializes
 updateExtensionBadge();
+registerCorsRule();
