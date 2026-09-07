@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Settings, OverlayType, CustomOverlay as CustomOverlayType } from "../types";
+import {
+    Settings,
+    OverlayType,
+    CustomOverlay as CustomOverlayType,
+} from "../types";
 import { debug } from "../utils";
 import { NumberOverlay } from "./overlays/NumberOverlay";
 import { BarOverlay } from "./overlays/BarOverlay";
@@ -109,76 +113,14 @@ export const VolumeOverlay: React.FC<VolumeOverlayProps> = ({
               )
             : 0;
 
-    if (settings.overlayStyle === "bar") {
-        return (
-            <BarOverlay
-                volume={volume}
-                mouseX={mouseX}
-                mouseY={mouseY}
-                settings={settings}
-                animationKey={animationKey}
-                fadeStartPercentage={fadeStartPercentage}
-                playerRect={playerRect}
-                parentRect={parentRect}
-                isMuteSticky={isMuteSticky}
-                lastMuteStickyType={lastMuteStickyType}
-                isPauseSticky={isPauseSticky}
-                lastPauseStickyType={lastPauseStickyType}
-            />
-        );
-    }
-
-    if (settings.overlayStyle === "circle") {
-        return (
-            <CircleOverlay
-                volume={volume}
-                mouseX={mouseX}
-                mouseY={mouseY}
-                settings={settings}
-                animationKey={animationKey}
-                fadeStartPercentage={fadeStartPercentage}
-                playerRect={playerRect}
-                parentRect={parentRect}
-                isMuteSticky={isMuteSticky}
-                lastMuteStickyType={lastMuteStickyType}
-                isPauseSticky={isPauseSticky}
-                lastPauseStickyType={lastPauseStickyType}
-            />
-        );
-    }
-
-    if (settings.overlayStyle === "retro") {
-        return (
-            <RetroBarOverlay
-                volume={volume}
-                mouseX={mouseX}
-                mouseY={mouseY}
-                settings={settings}
-                animationKey={animationKey}
-                fadeStartPercentage={fadeStartPercentage}
-                playerRect={playerRect}
-                parentRect={parentRect}
-                isMuteSticky={isMuteSticky}
-                lastMuteStickyType={lastMuteStickyType}
-                isPauseSticky={isPauseSticky}
-                lastPauseStickyType={lastPauseStickyType}
-            />
-        );
-    }
-
-    const hasSelectedCustomOverlay =
-        Boolean(settings.customOverlay) &&
-        Boolean(customOverlays?.[settings.customOverlay]);
-
-    if (settings.overlayStyle === "custom") {
-        if (hasSelectedCustomOverlay) {
+    const renderOverlay = () => {
+        if (settings.overlayStyle === "bar") {
             return (
-                <CustomOverlay
+                <BarOverlay
                     volume={volume}
                     mouseX={mouseX}
                     mouseY={mouseY}
                     settings={settings}
-                    customOverlays={customOverlays}
                     animationKey={animationKey}
                     fadeStartPercentage={fadeStartPercentage}
                     playerRect={playerRect}
@@ -191,31 +133,112 @@ export const VolumeOverlay: React.FC<VolumeOverlayProps> = ({
             );
         }
 
-        debug(
-            `Custom overlay "${settings.customOverlay}" not found or none selected. Defaulting to NumberOverlay.`,
-            {
-                customOverlay: settings.customOverlay,
-                availableOverlays: customOverlays
-                    ? Object.keys(customOverlays)
-                    : [],
-            },
+        if (settings.overlayStyle === "circle") {
+            return (
+                <CircleOverlay
+                    volume={volume}
+                    mouseX={mouseX}
+                    mouseY={mouseY}
+                    settings={settings}
+                    animationKey={animationKey}
+                    fadeStartPercentage={fadeStartPercentage}
+                    playerRect={playerRect}
+                    parentRect={parentRect}
+                    isMuteSticky={isMuteSticky}
+                    lastMuteStickyType={lastMuteStickyType}
+                    isPauseSticky={isPauseSticky}
+                    lastPauseStickyType={lastPauseStickyType}
+                />
+            );
+        }
+
+        if (settings.overlayStyle === "retro") {
+            return (
+                <RetroBarOverlay
+                    volume={volume}
+                    mouseX={mouseX}
+                    mouseY={mouseY}
+                    settings={settings}
+                    animationKey={animationKey}
+                    fadeStartPercentage={fadeStartPercentage}
+                    playerRect={playerRect}
+                    parentRect={parentRect}
+                    isMuteSticky={isMuteSticky}
+                    lastMuteStickyType={lastMuteStickyType}
+                    isPauseSticky={isPauseSticky}
+                    lastPauseStickyType={lastPauseStickyType}
+                />
+            );
+        }
+
+        const hasSelectedCustomOverlay =
+            Boolean(settings.customOverlay) &&
+            Boolean(customOverlays?.[settings.customOverlay]);
+
+        if (settings.overlayStyle === "custom") {
+            if (hasSelectedCustomOverlay) {
+                return (
+                    <CustomOverlay
+                        volume={volume}
+                        mouseX={mouseX}
+                        mouseY={mouseY}
+                        settings={settings}
+                        customOverlays={customOverlays}
+                        animationKey={animationKey}
+                        fadeStartPercentage={fadeStartPercentage}
+                        playerRect={playerRect}
+                        parentRect={parentRect}
+                        isMuteSticky={isMuteSticky}
+                        lastMuteStickyType={lastMuteStickyType}
+                        isPauseSticky={isPauseSticky}
+                        lastPauseStickyType={lastPauseStickyType}
+                    />
+                );
+            }
+
+            debug(
+                `Custom overlay "${settings.customOverlay}" not found or none selected. Defaulting to NumberOverlay.`,
+                {
+                    customOverlay: settings.customOverlay,
+                    availableOverlays: customOverlays
+                        ? Object.keys(customOverlays)
+                        : [],
+                },
+            );
+        }
+
+        return (
+            <NumberOverlay
+                volume={volume}
+                mouseX={mouseX}
+                mouseY={mouseY}
+                settings={settings}
+                animationKey={animationKey}
+                fadeStartPercentage={fadeStartPercentage}
+                playerRect={playerRect}
+                parentRect={parentRect}
+                isMuteSticky={isMuteSticky}
+                lastMuteStickyType={lastMuteStickyType}
+                isPauseSticky={isPauseSticky}
+                lastPauseStickyType={lastPauseStickyType}
+            />
         );
-    }
+    };
 
     return (
-        <NumberOverlay
-            volume={volume}
-            mouseX={mouseX}
-            mouseY={mouseY}
-            settings={settings}
-            animationKey={animationKey}
-            fadeStartPercentage={fadeStartPercentage}
-            playerRect={playerRect}
-            parentRect={parentRect}
-            isMuteSticky={isMuteSticky}
-            lastMuteStickyType={lastMuteStickyType}
-            isPauseSticky={isPauseSticky}
-            lastPauseStickyType={lastPauseStickyType}
-        />
+        <React.Fragment>
+            <style>{`
+                :host {
+                    all: initial;
+                }
+                * {
+                    box-sizing: border-box;
+                    font-family: Roboto !important;
+                    -webkit-font-smoothing: antialiased;
+                    -moz-osx-font-smoothing: grayscale;
+                }
+            `}</style>
+            {renderOverlay()}
+        </React.Fragment>
     );
 };

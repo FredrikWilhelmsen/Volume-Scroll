@@ -335,10 +335,16 @@ export class DefaultHandler {
             debug("Overlay container does not exist, creating a new container");
             this.overlayContainer = document.createElement("div");
             this.overlayContainer.id = "volumeScrollOverlayContainer";
+            const shadow =
+                this.overlayContainer.shadowRoot ||
+                this.overlayContainer.attachShadow({ mode: "open" });
             body.appendChild(this.overlayContainer);
-            this.reactRoot = createRoot(this.overlayContainer);
+            this.reactRoot = createRoot(shadow);
         } else if (!this.reactRoot) {
-            this.reactRoot = createRoot(this.overlayContainer);
+            const shadow =
+                this.overlayContainer.shadowRoot ||
+                this.overlayContainer.attachShadow({ mode: "open" });
+            this.reactRoot = createRoot(shadow);
         }
 
         let container = this.overlayContainer;
