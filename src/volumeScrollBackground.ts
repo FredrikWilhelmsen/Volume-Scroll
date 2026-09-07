@@ -211,3 +211,20 @@ browser.storage.onChanged.addListener((changes, areaName) => {
 // Run check when background script initializes
 updateExtensionBadge();
 registerCorsRule();
+
+// Open popup in a standalone window on request
+browser.runtime.onMessage.addListener((message: any) => {
+    if (message?.type === "OPEN_POPUP_WINDOW") {
+        const manifest = browser.runtime.getManifest();
+        const popupPath =
+            (manifest.action as any)?.default_popup ||
+            (manifest as any).browser_action?.default_popup ||
+            "popup.html";
+        browser.windows.create({
+            url: browser.runtime.getURL(popupPath),
+            type: "popup",
+            width: 320,
+            height: 500,
+        });
+    }
+});

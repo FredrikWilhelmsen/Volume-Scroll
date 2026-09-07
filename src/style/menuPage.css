@@ -29,18 +29,58 @@ footer a {
 }
 
 #debugIcon {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    margin: 10px;
-    width: 16px;
-    height: 16px;
+    width: 10px;
+    height: 10px;
     border-style: solid;
     background-color: red;
     border-radius: 50%;
     border-color: grey;
     border-width: 1px;
     cursor: pointer;
+    margin-bottom: 4px;
+}
+
+#bottomLeftCluster {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    margin: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0px;
+}
+
+#versionContainer {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+#popoutButton {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    margin: 8px;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+    color: rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+#popoutButton:hover {
+    color: rgba(255, 255, 255, 0.85);
+    border-color: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.07);
 }
 
 #versionNumber {

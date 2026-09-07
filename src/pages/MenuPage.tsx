@@ -14,6 +14,7 @@ import LayersIcon from "@mui/icons-material/Layers";
 import PublicIcon from "@mui/icons-material/Public";
 import TuneIcon from "@mui/icons-material/Tune";
 import ShareIcon from "@mui/icons-material/Share";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
 interface MenuPageInterface {
     settings: Settings;
@@ -53,6 +54,10 @@ const MenuPage: React.FC<MenuPageInterface> = ({
             const activeTab = tabs[0];
             if (activeTab?.url) {
                 const url = new URL(activeTab.url);
+                // Only set hostname for real web pages (not extension pages, file://, etc.)
+                if (url.protocol !== "http:" && url.protocol !== "https:") {
+                    return;
+                }
                 setHostname(url.hostname);
             }
         };
@@ -267,58 +272,70 @@ const MenuPage: React.FC<MenuPageInterface> = ({
                     </a>
                 </Typography>
             </footer>
-            <Tooltip
-                title="Debug logging enabled"
-                placement="top-start"
-                disableInteractive
-            >
-                <div>
-                    {settings.doDebugLog && (
+
+            {/* Bottom-left: debug icon (if active) stacked above version number */}
+            <div id="bottomLeftCluster">
+                {settings.doDebugLog && (
+                    <Tooltip
+                        title="Debug logging enabled"
+                        placement="top-start"
+                        disableInteractive
+                    >
                         <div id="debugIcon" onClick={handleCopyLogs}></div>
-                    )}
-                </div>
-            </Tooltip>
+                    </Tooltip>
+                )}
+                <Tooltip
+                    title={`Volume Scroll version ${browser.runtime.getManifest().version}${extensionData.lastVersionRead !== browser.runtime.getManifest().version ? " - Click to read update notes!" : ""}`}
+                    placement="top-start"
+                    disableInteractive
+                >
+                    <div
+                        id="versionContainer"
+                        onClick={() => {
+                            setExtensionData((prev) => {
+                                if (!prev) return prev;
+                                const newData = {
+                                    ...prev,
+                                    lastVersionRead:
+                                        browser.runtime.getManifest().version,
+                                };
+                                browser.storage.sync.set({
+                                    extensionData: newData,
+                                });
+                                return newData;
+                            });
+                            setPage("updatePage");
+                        }}
+                    >
+                        <Typography
+                            id="versionNumber"
+                            variant="body2"
+                        >{`v${browser.runtime.getManifest().version}`}</Typography>
+                        {extensionData.lastVersionRead !==
+                        browser.runtime.getManifest().version ? (
+                            <div id="changelogIcon"></div>
+                        ) : null}
+                    </div>
+                </Tooltip>
+            </div>
+
+            {/* Bottom-right: pop-out button */}
             <Tooltip
-                title={`Volume Scroll version ${browser.runtime.getManifest().version}${extensionData.lastVersionRead !== browser.runtime.getManifest().version ? " - Click to read update notes!" : ""}`}
-                placement="top-start"
+                title="Open in window"
+                placement="top-end"
                 disableInteractive
             >
-                <div
+                <button
+                    id="popoutButton"
                     onClick={() => {
-                        setExtensionData((prev) => {
-                            if (!prev) return prev;
-                            const newData = {
-                                ...prev,
-                                lastVersionRead:
-                                    browser.runtime.getManifest().version,
-                            };
-                            browser.storage.sync.set({
-                                extensionData: newData,
-                            });
-                            return newData;
+                        browser.runtime.sendMessage({
+                            type: "OPEN_POPUP_WINDOW",
                         });
-                        setPage("updatePage");
-                    }}
-                    style={{
-                        cursor: "pointer",
-                        position: "absolute",
-                        bottom: 0,
-                        left: 0,
-                        margin: "10px",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "6px",
+                        window.close();
                     }}
                 >
-                    <Typography
-                        id="versionNumber"
-                        variant="body2"
-                    >{`v${browser.runtime.getManifest().version}`}</Typography>
-                    {extensionData.lastVersionRead !==
-                    browser.runtime.getManifest().version ? (
-                        <div id="changelogIcon"></div>
-                    ) : null}
-                </div>
+                    <OpenInNewIcon sx={{ fontSize: 14 }} />
+                </button>
             </Tooltip>
         </div>
     );
