@@ -182,6 +182,12 @@ browser.runtime.onInstalled.addListener(async (details) => {
             newExtensionData.customRules = currentRules;
             schemaVersion = 4;
         }
+        if (schemaVersion === 4) {
+            newExtensionData.ignoredElements["www.youtube.com"].push(
+                ".ytp-ce-covering-overlay",
+            );
+            schemaVersion = 5;
+        }
 
         newExtensionData.schemaVersion = schemaVersion;
         await browser.storage.sync.set({ extensionData: newExtensionData });
