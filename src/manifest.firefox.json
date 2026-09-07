@@ -10,7 +10,12 @@
             "strict_min_version": "113.0"
         }
     },
-    "permissions": ["storage", "activeTab", "declarativeNetRequest", "declarativeNetRequestWithHostAccess"],
+    "permissions": [
+        "storage",
+        "activeTab",
+        "declarativeNetRequest",
+        "declarativeNetRequestWithHostAccess"
+    ],
     "icons": {
         "128": "images/128.png"
     },
