@@ -36,6 +36,10 @@ const SharePage: React.FC<SharePageInterface> = ({
     const [pendingImportData, setPendingImportData] =
         useState<ExportData | null>(null);
 
+    const [pendingImportMode, setPendingImportMode] = useState<
+        "import" | "merge"
+    >("import");
+
     const handleResetToDefault = async () => {
         setPendingImportData(null);
         const newExtensionData: ExtensionData = {
@@ -79,7 +83,10 @@ const SharePage: React.FC<SharePageInterface> = ({
         }
     };
 
-    const applyImport = async (importedData: ExportData) => {
+    const applyImport = async (
+        importedData: ExportData,
+        mode: "import" | "merge" = "import",
+    ) => {
         let hasUpdated = false;
         const newExtensionData: ExtensionData = { ...extensionData };
 
@@ -90,25 +97,59 @@ const SharePage: React.FC<SharePageInterface> = ({
             };
             hasUpdated = true;
         }
+
         if (includeOverrides && importedData.domainOverrides) {
-            newExtensionData.domainOverrides = importedData.domainOverrides;
+            if (mode === "merge") {
+                newExtensionData.domainOverrides = {
+                    ...extensionData.domainOverrides,
+                    ...importedData.domainOverrides,
+                };
+            } else {
+                newExtensionData.domainOverrides = importedData.domainOverrides;
+            }
             hasUpdated = true;
         }
+
         if (includeCustomOverlays && importedData.customOverlays) {
-            newExtensionData.customOverlays = importedData.customOverlays;
+            if (mode === "merge") {
+                newExtensionData.customOverlays = {
+                    ...extensionData.customOverlays,
+                    ...importedData.customOverlays,
+                };
+            } else {
+                newExtensionData.customOverlays = importedData.customOverlays;
+            }
             hasUpdated = true;
         }
+
         if (includeCustomRules && importedData.customRules) {
-            newExtensionData.customRules = importedData.customRules;
+            if (mode === "merge") {
+                newExtensionData.customRules = {
+                    ...extensionData.customRules,
+                    ...importedData.customRules,
+                };
+            } else {
+                newExtensionData.customRules = importedData.customRules;
+            }
             hasUpdated = true;
         }
+
         if (includeIgnoredElements && importedData.ignoredElements) {
-            newExtensionData.ignoredElements = importedData.ignoredElements;
+            if (mode === "merge") {
+                newExtensionData.ignoredElements = {
+                    ...extensionData.ignoredElements,
+                    ...importedData.ignoredElements,
+                };
+            } else {
+                newExtensionData.ignoredElements = importedData.ignoredElements;
+            }
             hasUpdated = true;
         }
 
         if (!hasUpdated) {
-            setStatusMessage("No matching data to import");
+            setStatusMessage(
+                `No matching data to ${mode === "merge" ? "merge" : "import"}`,
+            );
             setPendingImportData(null);
             return;
         }
@@ -116,11 +157,16 @@ const SharePage: React.FC<SharePageInterface> = ({
         setExtensionData(newExtensionData);
         await browser.storage.sync.set({ extensionData: newExtensionData });
         setPendingImportData(null);
-        setStatusMessage("Imported successfully!");
+        setStatusMessage(
+            mode === "merge"
+                ? "Merged successfully!"
+                : "Imported successfully!",
+        );
     };
 
-    const handleImport = async () => {
+    const handleImport = async (mode: "import" | "merge" = "import") => {
         setPendingImportData(null);
+        setPendingImportMode(mode);
         const rawText = exportImportText.trim();
         if (!rawText) {
             setStatusMessage("Input text is empty");
@@ -144,7 +190,7 @@ const SharePage: React.FC<SharePageInterface> = ({
             return;
         }
 
-        await applyImport(importedData);
+        await applyImport(importedData, mode);
     };
 
     const isAnySelected =
@@ -267,28 +313,58 @@ const SharePage: React.FC<SharePageInterface> = ({
                         />
                     </Tooltip>
 
-                    <Tooltip title="Import selected settings from text field">
-                        <span
-                            style={{
-                                display: "flex",
-                                width: "100%",
-                            }}
-                        >
-                            <Button
-                                fullWidth
-                                variant="outlined"
-                                onClick={handleImport}
-                                disabled={
-                                    !isAnySelected || !exportImportText.trim()
-                                }
+                    <div style={{ display: "flex", gap: "8px", width: "100%" }}>
+                        <Tooltip title="Replace your existing settings with the imported ones">
+                            <span
+                                style={{
+                                    display: "flex",
+                                    flex: 1,
+                                }}
                             >
-                                Import
-                            </Button>
-                        </span>
-                    </Tooltip>
+                                <Button
+                                    fullWidth
+                                    variant="outlined"
+                                    onClick={() => handleImport("import")}
+                                    disabled={
+                                        !isAnySelected ||
+                                        !exportImportText.trim()
+                                    }
+                                >
+                                    Import
+                                </Button>
+                            </span>
+                        </Tooltip>
+
+                        <Tooltip title="Add the imported settings without deleting your existing ones">
+                            <span
+                                style={{
+                                    display: "flex",
+                                    flex: 1,
+                                }}
+                            >
+                                <Button
+                                    fullWidth
+                                    variant="outlined"
+                                    onClick={() => handleImport("merge")}
+                                    disabled={
+                                        !isAnySelected ||
+                                        !exportImportText.trim()
+                                    }
+                                >
+                                    Merge
+                                </Button>
+                            </span>
+                        </Tooltip>
+                    </div>
 
                     {pendingImportData && (
-                        <Tooltip title="Confirm importing settings despite version mismatch">
+                        <Tooltip
+                            title={`Confirm ${
+                                pendingImportMode === "merge"
+                                    ? "merging"
+                                    : "importing"
+                            } settings despite version mismatch`}
+                        >
                             <span
                                 style={{
                                     display: "flex",
@@ -301,11 +377,17 @@ const SharePage: React.FC<SharePageInterface> = ({
                                     variant="contained"
                                     color="warning"
                                     onClick={() =>
-                                        applyImport(pendingImportData)
+                                        applyImport(
+                                            pendingImportData,
+                                            pendingImportMode,
+                                        )
                                     }
                                     disabled={!isAnySelected}
                                 >
-                                    Confirm Import
+                                    Confirm{" "}
+                                    {pendingImportMode === "merge"
+                                        ? "Merge"
+                                        : "Import"}
                                 </Button>
                             </span>
                         </Tooltip>
