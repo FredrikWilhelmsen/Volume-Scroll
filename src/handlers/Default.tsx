@@ -177,15 +177,20 @@ export class DefaultHandler {
      * audio boost works on the very first scroll above 100%.
      */
     protected prewarmCorsIfNeeded(video: HTMLVideoElement): void {
-        if (!this.settings.doBoostVolume) return;
         if (this.corsReloadAttempted.has(video)) return;
 
         // No src resolved yet — nothing to pre-warm.
         if (!video.currentSrc) return;
-        // Blob URLs are same-origin by definition.
-        if (video.currentSrc.startsWith("blob:")) return;
-        // Already has CORS attribute set (e.g. by the interceptor) — no reload needed.
-        if (video.crossOrigin) return;
+        // Blob URLs are same-origin by definition — GainNode can be created now.
+        if (video.currentSrc.startsWith("blob:")) {
+            this.prewarmGainNode(video);
+            return;
+        }
+        // Already has CORS attribute set (e.g. by the interceptor) — GainNode can be created now.
+        if (video.crossOrigin) {
+            this.prewarmGainNode(video);
+            return;
+        }
 
         // Only pre-warm when the browser hasn't started fetching yet.
         // Once readyState > HAVE_NOTHING the media is loading or loaded;
@@ -195,7 +200,11 @@ export class DefaultHandler {
 
         try {
             const url = new URL(video.currentSrc);
-            if (url.origin === window.location.origin) return; // same-origin
+            if (url.origin === window.location.origin) {
+                // Same-origin — GainNode can be created without CORS.
+                this.prewarmGainNode(video);
+                return;
+            }
         } catch (e) {
             return;
         }
@@ -214,6 +223,21 @@ export class DefaultHandler {
                 );
             }
         });
+    }
+
+    protected prewarmGainNode(video: HTMLVideoElement): void {
+        if (this.gainNodes.has(video)) return; // Already pre-warmed
+        const gainNode = this.getGainNode(video);
+        if (gainNode) {
+            // Ensure the node is transparent (gain = 1) while not boosting.
+            gainNode.gain.value = 1;
+            debug("[GainNode] GainNode pre-warmed for video", video.currentSrc);
+        } else {
+            debug(
+                "[GainNode] GainNode creation failed during pre-warm",
+                video.currentSrc,
+            );
+        }
     }
 
     protected getGainNode(video: HTMLVideoElement): GainNode | null {
