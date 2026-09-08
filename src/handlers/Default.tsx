@@ -161,6 +161,9 @@ export class DefaultHandler {
             video.removeEventListener("canplay", onCanPlay);
             video.removeEventListener("error", onError);
             this.corsReloadPending.delete(video);
+            // Clear the attempted flag so getGainNode can still trigger a
+            // reactive retry when the user first boosts.
+            this.corsReloadAttempted.delete(video);
             debug("[CORS] Soft-reload failed (network/server error)");
         };
 
@@ -170,50 +173,47 @@ export class DefaultHandler {
     }
 
     /**
-     * Proactively pre-warms CORS for a newly detected video element so that
+     * Proactively pre-warms CORS for a newly detected media element so that
      * audio boost works on the very first scroll above 100%.
-     *
-     * Called at video-discovery time (applyDefaultVolume). If the video
-     * already has a src, the cross-origin check runs immediately; otherwise
-     * it waits for the `loadedmetadata` event so we don't act on an empty URL.
      */
     protected prewarmCorsIfNeeded(video: HTMLVideoElement): void {
         if (!this.settings.doBoostVolume) return;
         if (this.corsReloadAttempted.has(video)) return;
 
-        const attempt = () => {
-            // Nothing to check yet, or blob URL (same-origin by definition)
-            if (!video.currentSrc || video.currentSrc.startsWith("blob:")) return;
-            // Already has CORS — no reload needed
-            if (video.crossOrigin) return;
+        // No src resolved yet — nothing to pre-warm.
+        if (!video.currentSrc) return;
+        // Blob URLs are same-origin by definition.
+        if (video.currentSrc.startsWith("blob:")) return;
+        // Already has CORS attribute set (e.g. by the interceptor) — no reload needed.
+        if (video.crossOrigin) return;
 
-            try {
-                const url = new URL(video.currentSrc);
-                if (url.origin === window.location.origin) return; // same-origin
-            } catch (e) {
-                return;
-            }
+        // Only pre-warm when the browser hasn't started fetching yet.
+        // Once readyState > HAVE_NOTHING the media is loading or loaded;
+        // reloading at that point hits the browser's media cache without
+        // CORS headers and causes the exact error we are trying to avoid.
+        if (video.readyState !== HTMLMediaElement.HAVE_NOTHING) return;
 
-            // Cross-origin without CORS attribute — pre-warm now
-            if (this.corsReloadPending.has(video)) return;
-            this.corsReloadPending.add(video);
-            this.corsReloadAttempted.add(video);
-            this.softReloadForCors(video, () => {
-                const gainNode = this.getGainNode(video);
-                if (gainNode) {
-                    debug("[CORS] GainNode pre-warmed proactively");
-                } else {
-                    debug("[CORS] GainNode creation still failed after proactive pre-warm");
-                }
-            });
-        };
-
-        if (video.currentSrc) {
-            attempt();
-        } else {
-            // Src not yet assigned — wait until the browser resolves it
-            video.addEventListener("loadedmetadata", attempt, { once: true });
+        try {
+            const url = new URL(video.currentSrc);
+            if (url.origin === window.location.origin) return; // same-origin
+        } catch (e) {
+            return;
         }
+
+        // Cross-origin, src set, not yet fetching — safe to pre-warm with CORS.
+        if (this.corsReloadPending.has(video)) return;
+        this.corsReloadPending.add(video);
+        this.corsReloadAttempted.add(video);
+        this.softReloadForCors(video, () => {
+            const gainNode = this.getGainNode(video);
+            if (gainNode) {
+                debug("[CORS] GainNode pre-warmed proactively");
+            } else {
+                debug(
+                    "[CORS] GainNode creation still failed after proactive pre-warm",
+                );
+            }
+        });
     }
 
     protected getGainNode(video: HTMLVideoElement): GainNode | null {
@@ -455,8 +455,14 @@ export class DefaultHandler {
         return state;
     }
 
-    protected getAllVideos(): HTMLCollectionOf<Element> | HTMLVideoElement[] {
-        return document.getElementsByTagName("VIDEO");
+    protected getAllVideos(): HTMLVideoElement[] {
+        const videos = Array.from(
+            document.getElementsByTagName("VIDEO"),
+        ) as HTMLVideoElement[];
+        const audios = Array.from(
+            document.getElementsByTagName("AUDIO"),
+        ) as HTMLVideoElement[];
+        return [...videos, ...audios];
     }
 
     private updateOverlay(
@@ -971,8 +977,11 @@ export class DefaultHandler {
                 // Check added nodes
                 for (const node of mutation.addedNodes) {
                     if (node instanceof HTMLElement) {
-                        // Check if the added node is itself a video
-                        if (node.tagName === "VIDEO") {
+                        // Check if the added node is itself a video or audio element
+                        if (
+                            node.tagName === "VIDEO" ||
+                            node.tagName === "AUDIO"
+                        ) {
                             const video = node as HTMLVideoElement;
                             // Always pre-warm CORS regardless of useDefaultVolume
                             this.prewarmCorsIfNeeded(video);
@@ -985,12 +994,14 @@ export class DefaultHandler {
                                 this.applyDefaultVolume(video);
                             }
                         }
-                        // Check if the added node contains videos (e.g. a div with a video inside)
+                        // Check if the added node contains video/audio elements
+                        // (e.g. a div with a video or audio inside)
                         else {
-                            const nestedVideos =
-                                node.getElementsByTagName("VIDEO");
-                            for (let video of nestedVideos) {
-                                const videoElement = video as HTMLVideoElement;
+                            const nestedMedia =
+                                node.querySelectorAll<HTMLVideoElement>(
+                                    "video, audio",
+                                );
+                            for (let videoElement of nestedMedia) {
                                 // Always pre-warm CORS regardless of useDefaultVolume
                                 this.prewarmCorsIfNeeded(videoElement);
                                 if (this.volumeTargets.has(videoElement)) {
