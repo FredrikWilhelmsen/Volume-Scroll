@@ -243,11 +243,11 @@ export const CustomOverlay: React.FC<CustomOverlayProps> = ({
         return settings.overlayXPos <= 50 ? (
             <React.Fragment>
                 {imageElement}
-                {renderedIcons}
+                {settings.showMutePlayIcons && renderedIcons}
             </React.Fragment>
         ) : (
             <React.Fragment>
-                {renderedIcons}
+                {settings.showMutePlayIcons && renderedIcons}
                 {imageElement}
             </React.Fragment>
         );

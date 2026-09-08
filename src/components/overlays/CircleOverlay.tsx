@@ -281,7 +281,7 @@ export const CircleOverlay: React.FC<CircleOverlayProps> = ({
                                     fontSize: `${settings.fontSize}px`,
                                 }}
                             >
-                                {icons}
+                                {settings.showMutePlayIcons && icons}
                             </div>
                         )}
                     </div>

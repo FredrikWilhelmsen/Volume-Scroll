@@ -86,11 +86,11 @@ export const NumberOverlay: React.FC<NumberOverlayProps> = ({
 
         return settings.overlayXPos <= 50 ? (
             <React.Fragment>
-                {volumeDisplay} {icons}
+                {volumeDisplay} {settings.showMutePlayIcons && icons}
             </React.Fragment>
         ) : (
             <React.Fragment>
-                {icons} {volumeDisplay}
+                {settings.showMutePlayIcons && icons} {volumeDisplay}
             </React.Fragment>
         );
     };
