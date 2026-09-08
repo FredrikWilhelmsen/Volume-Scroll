@@ -52,6 +52,10 @@ const DomainPage: React.FC<DomainPageInterface> = ({
             const activeTab = tabs[0];
             if (activeTab?.url) {
                 const url = new URL(activeTab.url);
+                // Only set hostname for real web pages (not extension pages, file://, etc.)
+                if (url.protocol !== "http:" && url.protocol !== "https:") {
+                    return;
+                }
                 setdomainListInput(url.hostname);
             }
         };
