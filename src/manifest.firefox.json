@@ -16,6 +16,7 @@
         "declarativeNetRequest",
         "declarativeNetRequestWithHostAccess"
     ],
+    "host_permissions": ["<all_urls>"],
     "icons": {
         "128": "images/128.png"
     },
