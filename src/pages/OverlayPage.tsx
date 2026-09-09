@@ -111,6 +111,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
     const customOverlay = getValue("customOverlay") || "";
     const overlayBarSide = getValue("overlayBarSide");
     const showNumericValue = getValue("showNumericValue");
+    const showMutePlayIcons = getValue("showMutePlayIcons");
 
     const customOverlayKeys = Object.keys(customOverlays || {});
     const customOverlayOptions =
@@ -337,6 +338,18 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                     containerId="useDutchAngleContainer"
                     toggleContainerId="useDutchAngleToggleContainer"
                     valueDisplayId="useDutchAngleDisplay"
+                />
+                <Toggle
+                    label="Show mute/play"
+                    settingKey="showMutePlayIcons"
+                    checked={showMutePlayIcons}
+                    disabled={!useMouseWheelVolume || !useOverlay}
+                    tooltip="Show mute / play icons when the video is muted / unmuted / paused / playing"
+                    activeDomain={activeDomain}
+                    editSetting={editSetting}
+                    isOverridden={isOverridden}
+                    handleReset={handleReset}
+                    id="showMutePlayIconsContainer"
                 />
                 <ColorPicker
                     label="Color"

@@ -319,7 +319,7 @@ export const BarOverlay: React.FC<BarOverlayProps> = ({
                                     {Math.round(volume)}
                                 </div>
                             )}
-                            {icons}
+                            {settings.showMutePlayIcons && icons}
                         </div>
                     </div>
                 )}

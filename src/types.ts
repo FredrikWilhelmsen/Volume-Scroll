@@ -40,6 +40,7 @@ export interface Settings {
     overlayDuration: number;
     useDutchAngle: boolean;
     dutchAngleValue: number;
+    showMutePlayIcons: boolean;
     overlayStyle: OverlayStyle;
     customOverlay: string;
     customOverlayBoostBehavior: CustomOverlayBoostBehavior;
@@ -98,6 +99,7 @@ export const defaultSettings: Settings = {
     overlayBackgroundOpacity: 65,
     overlayDuration: 2000,
     useDutchAngle: false,
+    showMutePlayIcons: true,
     dutchAngleValue: 6,
     overlayStyle: "number",
     customOverlay: "",

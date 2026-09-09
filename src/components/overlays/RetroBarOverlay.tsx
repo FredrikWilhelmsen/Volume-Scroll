@@ -414,7 +414,7 @@ export const RetroBarOverlay: React.FC<RetroBarOverlayProps> = ({
                                     {Math.round(volume)}
                                 </div>
                             )}
-                            {icons}
+                            {settings.showMutePlayIcons && icons}
                         </div>
                     </div>
                 )}
