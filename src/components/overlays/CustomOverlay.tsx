@@ -226,6 +226,7 @@ export const CustomOverlay: React.FC<CustomOverlayProps> = ({
                 key="customOverlayImg"
                 src={image.url}
                 alt={image.name || "Custom Overlay"}
+                decoding="sync"
                 style={{
                     width: `${calculatedWidth}px`,
                     height: "auto",

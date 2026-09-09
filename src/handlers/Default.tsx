@@ -39,6 +39,11 @@ export class DefaultHandler {
     protected ignoredElements: string[] = [];
     protected customOverlays: Record<string, CustomOverlay> = {};
 
+    // Preloaded custom overlay images, kept alive in memory so the browser's
+    // image cache stays warm and the overlay can render them instantly, even
+    // after the overlay has not been shown for a while.
+    protected preloadedOverlayImages = new Map<string, HTMLImageElement>();
+
     protected volumeTargets = new WeakMap<HTMLVideoElement, VideoState>();
     protected watchdogs = new Set<HTMLVideoElement>();
     protected watchdogListeners = new WeakMap<HTMLVideoElement, () => void>();
@@ -76,6 +81,48 @@ export class DefaultHandler {
         customOverlays: Record<string, CustomOverlay>,
     ): void {
         this.customOverlays = customOverlays || {};
+        this.preloadCustomOverlayImages(this.customOverlays);
+    }
+
+    /**
+     * Preloads all custom overlay images ahead of time so the overlay can be
+     * rendered instantly the first time it appears. The Image objects are kept
+     * alive for the lifetime of the page
+     */
+    protected preloadCustomOverlayImages(
+        customOverlays: Record<string, CustomOverlay>,
+    ): void {
+        const urls = new Set<string>();
+        for (const overlay of Object.values(customOverlays)) {
+            for (const image of overlay.images || []) {
+                if (image && image.url) {
+                    urls.add(image.url);
+                }
+            }
+        }
+
+        // Drop preloads for URLs that are no longer used by any overlay
+        for (const url of this.preloadedOverlayImages.keys()) {
+            if (!urls.has(url)) {
+                this.preloadedOverlayImages.delete(url);
+            }
+        }
+
+        // Preload any URLs we haven't seen yet
+        for (const url of urls) {
+            if (this.preloadedOverlayImages.has(url)) continue;
+
+            const img = new Image();
+            img.src = url;
+            // Force an early decode so the decoded bitmap is ready too
+            img.decode().catch(() => {});
+            // Allow a retry later (e.g. after an overlay update) if the image
+            // failed to load for some reason
+            img.onerror = () => {
+                this.preloadedOverlayImages.delete(url);
+            };
+            this.preloadedOverlayImages.set(url, img);
+        }
     }
 
     public updateCustomRules(customRules: CustomRule[]): void {
