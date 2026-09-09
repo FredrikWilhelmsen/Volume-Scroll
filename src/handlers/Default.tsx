@@ -277,7 +277,7 @@ export class DefaultHandler {
         const gainNode = this.getGainNode(video);
         if (gainNode) {
             // Ensure the node is transparent (gain = 1) while not boosting.
-            gainNode.gain.value = 1;
+            this.applyGain(gainNode, 1);
             debug("[GainNode] GainNode pre-warmed for video", video.currentSrc);
         } else {
             debug(
@@ -634,7 +634,11 @@ export class DefaultHandler {
     ): boolean {
         // Default behavior: strict enforcement. Revert if diff > 0.001
         let expectedVolume = targetVolume;
-        if (targetVolume > 1) {
+        // When an audio graph (GainNode) is attached the element volume is
+        // always pinned to 1; the gain node carries the actual loudness.
+        if (this.gainNodes.has(video)) {
+            expectedVolume = 1;
+        } else if (targetVolume > 1) {
             expectedVolume = 1;
         }
 
@@ -647,7 +651,13 @@ export class DefaultHandler {
         if (!state) return;
 
         if (this.settings.useMouseWheelVolume) {
-            const target = state.targetVolume > 1 ? 1 : state.targetVolume;
+            // When a GainNode handles the loudness the element volume is pinned
+            // to 1, so the interceptor must allow exactly that value.
+            const target = this.gainNodes.has(video)
+                ? 1
+                : state.targetVolume > 1
+                  ? 1
+                  : state.targetVolume;
             video.setAttribute("data-vs-locked-volume", target.toString());
         } else {
             video.removeAttribute("data-vs-locked-volume");
@@ -701,28 +711,32 @@ export class DefaultHandler {
                 // Force it back. We use setTimeout to ensure we run after any other site listeners
                 setTimeout(() => {
                     if (this.isDisabled) return;
-                    if (state.targetVolume > 1) {
+
+                    const gainNode = this.gainNodes.get(video);
+                    if (gainNode) {
+                        // Gain node owns the loudness — element volume is pinned to 1.
+                        this.isSettingInternally = true;
+                        video.volume = 1;
+                        video.muted = state.isMuted || state.targetVolume <= 0;
+                        this.isSettingInternally = false;
+                        this.applyGain(
+                            gainNode,
+                            state.targetVolume <= 0 || state.isMuted
+                                ? 0
+                                : state.targetVolume,
+                        );
+                    } else if (state.targetVolume > 1) {
+                        // Boost requested but the audio graph is unavailable —
+                        // cap the element at 100%.
                         this.isSettingInternally = true;
                         video.volume = 1;
                         video.muted = state.isMuted;
                         this.isSettingInternally = false;
-                        // Ensure gain is correct (re-apply boost)
-                        const gainNode = this.getGainNode(video);
-
-                        if (gainNode) {
-                            gainNode.gain.value = state.targetVolume;
-                        }
                     } else {
                         this.isSettingInternally = true;
                         video.volume = state.targetVolume;
                         video.muted = state.isMuted || state.targetVolume <= 0;
                         this.isSettingInternally = false;
-
-                        // Reset gain if exists
-                        const gainNode = this.gainNodes.get(video);
-                        if (gainNode) {
-                            gainNode.gain.value = 1;
-                        }
                     }
 
                     // Alert site of the change we just made.
@@ -757,6 +771,23 @@ export class DefaultHandler {
         }
     }
 
+    protected applyGain(gainNode: GainNode, gainValue: number): void {
+        // AlWAYS use cancelScheduledValues + setValueAtTime (never raw .value).
+        // A raw `gain.value = X` assignment does NOT override scheduled AudioParam
+        // automation (e.g. a setValueAtTime event from an earlier boost), so the
+        // effective gain could silently stay boosted. Scheduling at currentTime
+        // applies the value immediately and deterministically.
+        if (this.audioCtx) {
+            gainNode.gain.cancelScheduledValues(this.audioCtx.currentTime);
+            gainNode.gain.setValueAtTime(
+                gainValue,
+                this.audioCtx.currentTime,
+            );
+        } else {
+            gainNode.gain.value = gainValue;
+        }
+    }
+
     protected setVolume(
         volume: number,
         video: HTMLVideoElement,
@@ -776,72 +807,59 @@ export class DefaultHandler {
 
         let effectiveVolume = volume;
 
-        if (volume > 100) {
-            // Uncapped volume logic
-            const gainNode = this.getGainNode(video);
+        // If a GainNode exists for this video, it is the SINGLE source of truth
+        // for loudness: pin the element's volume at 100% and carry the whole
+        // requested volume (including 0-100%) through the gain node. Mixing the
+        // element volume with the gain node (element volume for <100%, gain for
+        // >100%) double-counts/leaks and makes e.g. 100% sound louder than the
+        // native 100% whenever a stale element volume or gain survives.
+        //
+        // Use the cached node directly when present: calling getGainNode() can
+        // return null during the one-shot CORS check even though a node already
+        // exists, which would leave the cached gain unmanaged (and possibly
+        // still boosted). Only create the graph on-demand for a >100% request.
+        const existingGain = this.gainNodes.get(video);
+        const gainNode =
+            existingGain || (volume > 100 ? this.getGainNode(video) : null);
 
-            if (gainNode) {
-                // We can boost
-                this.isSettingInternally = true;
-                video.volume = 1; // Max out the actual video element
-                video.muted = state.isMuted;
-                this.isSettingInternally = false;
+        if (gainNode) {
+            // We have an audio graph — volume maps 1:1 onto the gain.
+            this.isSettingInternally = true;
+            video.volume = 1; // Max out the actual video element
+            video.muted = state.isMuted;
+            this.isSettingInternally = false;
 
-                // 100 = 1x gain. 500 = 5x gain.
-                const gainValue = state.isMuted ? 0 : volume / 100;
+            // 100 = 1x gain. 500 = 5x gain.
+            const gainValue = state.isMuted ? 0 : volume / 100;
+            this.applyGain(gainNode, gainValue);
 
-                // Use setValueAtTime for immediate and precise application
-                if (this.audioCtx) {
-                    gainNode.gain.cancelScheduledValues(
-                        this.audioCtx.currentTime,
-                    );
-                    gainNode.gain.setValueAtTime(
-                        gainValue,
-                        this.audioCtx.currentTime,
-                    );
-                } else {
-                    gainNode.gain.value = gainValue;
-                }
+            debug(
+                `Set GainNode value to ${gainValue} for ${video.currentSrc}`,
+                gainNode,
+            );
+        } else if (volume > 100) {
+            // Wanted to boost but no GainNode available (CORS, etc.) — cap at 100%.
+            debug("Boosting failed or not allowed, capping at 100%");
+            this.isSettingInternally = true;
+            video.volume = 1;
+            video.muted = state.isMuted;
+            this.isSettingInternally = false;
 
-                debug(
-                    `Set GainNode value to ${gainValue} for ${video.currentSrc}`,
-                    gainNode,
-                );
-            } else {
-                // Fallback if boosting fails (CORS, etc)
-                debug("Boosting failed or not allowed, capping at 100%");
-                this.isSettingInternally = true;
-                video.volume = 1;
-                video.muted = state.isMuted;
-                this.isSettingInternally = false;
-
-                // Correct the target since we failed to boost
-                state.targetVolume = 1;
-                effectiveVolume = 100;
-            }
+            // Correct the target since we failed to boost
+            state.targetVolume = 1;
+            effectiveVolume = 100;
         } else {
-            // Normal volume logic
+            // Normal volume logic, no audio graph — plain element volume.
+            // Also reset any stale cached gain that could not be applied.
+            const staleGain = this.gainNodes.get(video);
+            if (staleGain) {
+                this.applyGain(staleGain, state.isMuted ? 0 : 1);
+            }
+
             this.isSettingInternally = true;
             video.volume = volume / 100;
             video.muted = state.isMuted;
             this.isSettingInternally = false;
-
-            // Reset gain if it exists
-            const gainNode = this.gainNodes.get(video);
-            if (gainNode) {
-                const gainValue = state.isMuted ? 0 : 1;
-                if (this.audioCtx) {
-                    gainNode.gain.cancelScheduledValues(
-                        this.audioCtx.currentTime,
-                    );
-                    gainNode.gain.setValueAtTime(
-                        gainValue,
-                        this.audioCtx.currentTime,
-                    );
-                } else {
-                    gainNode.gain.value = gainValue;
-                }
-            }
         }
 
         if (!this.watchdogs.has(video)) {
@@ -1095,6 +1113,9 @@ export class DefaultHandler {
     }
 
     protected applyDefaultVolume(video: HTMLVideoElement) {
+        // The MutationObserver also runs during CORS pre-warming (feature off),
+        // so only force the default volume when the feature is actually enabled.
+        if (!this.settings.useDefaultVolume) return;
         debug("New video found: ", video);
         debug("Default volume set to: ", this.settings.defaultVolume);
         this.setVolume(
@@ -1120,12 +1141,48 @@ export class DefaultHandler {
         this.watchdogs.clear();
     }
 
+    /**
+     * Removes any boost the extension applied: pinning the element volume at 1
+     * during boost would otherwise keep playing louder than the site intends
+     * once the extension stops controlling the video (e.g. toggled off).
+     * Restores the element to the site/plain state: element volume carries the
+     * volume again, and every GainNode is reset to unity gain (or 0 while muted).
+     *
+     * Only videos we actually set volume on have a watchdog attached; freshly
+     * pre-warmed (but untouched) videos only have a transparent gain node, so
+     * iterating the watchdog set covers everything that could be boosted.
+     */
+    public cleanupAudioGraph(): void {
+        for (const video of Array.from(this.watchdogs)) {
+            const state = this.volumeTargets.get(video);
+            if (!state) continue;
+
+            const gainNode = this.gainNodes.get(video);
+            if (gainNode) {
+                // Leave the graph in place (re-creating it later is disruptive)
+                // but make it pass-through at the element's plain volume.
+                this.applyGain(
+                    gainNode,
+                    state.isMuted || state.targetVolume <= 0 ? 0 : 1,
+                );
+            }
+
+            this.isSettingInternally = true;
+            video.volume = Math.min(1, state.targetVolume);
+            video.muted = state.isMuted || state.targetVolume <= 0;
+            this.isSettingInternally = false;
+        }
+    }
+
     public setDisabled(disabled: boolean): void {
         if (this.isDisabled === disabled) return;
         this.isDisabled = disabled;
         debug(`Handler disabled state changed to: ${disabled}`);
 
         if (disabled) {
+            // Remove boost before stopping the watchdogs so the site regains
+            // full control at a sane loudness (no stuck >100% gain).
+            this.cleanupAudioGraph();
             this.stopVideoObserver();
             this.removeAllWatchdogs();
         }
