@@ -871,6 +871,16 @@ export class DefaultHandler {
         video.dispatchEvent(new Event("volumechange"));
         this.isSettingInternally = false;
 
+        // Debug: log the stored volume state and the audio graph level so we
+        // can verify the gain node + element volume match the intended volume.
+        const currentGain = this.gainNodes.get(video);
+        debug(`Volume change applied. Effective volume: ${effectiveVolume}`, {
+            storedState: state,
+            videoVolume: video.volume,
+            videoMuted: video.muted,
+            gainLevel: currentGain ? currentGain.gain.value : null,
+        });
+
         return effectiveVolume;
     }
 
