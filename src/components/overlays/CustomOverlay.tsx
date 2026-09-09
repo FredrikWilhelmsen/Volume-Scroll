@@ -166,8 +166,6 @@ export const CustomOverlay: React.FC<CustomOverlayProps> = ({
     const renderIcons = () => {
         if (!showIconsWrapper) return null;
 
-        const isSingleNumber = settings.showNumericValue && icons.length === 0;
-
         return (
             <div
                 style={{
@@ -179,10 +177,7 @@ export const CustomOverlay: React.FC<CustomOverlayProps> = ({
                         ? `rgba(30, 30, 30, ${settings.overlayBackgroundOpacity / 100})`
                         : "transparent",
                     padding: settings.useOverlayBackground
-                        ? isSingleNumber
-                            ? "12px 16px"
-                            : "16px"
-                        : "0",
+                        ? "16px" : "0",
                     borderRadius: "12px",
                     boxSizing: "border-box",
                 }}
@@ -205,7 +200,7 @@ export const CustomOverlay: React.FC<CustomOverlayProps> = ({
                         {Math.round(volume)}
                     </div>
                 )}
-                {icons.length > 0 && (
+                {settings.showMutePlayIcons && icons.length > 0 && (
                     <div
                         style={{
                             display: "inline-flex",
@@ -244,11 +239,11 @@ export const CustomOverlay: React.FC<CustomOverlayProps> = ({
         return settings.overlayXPos <= 50 ? (
             <React.Fragment>
                 {imageElement}
-                {settings.showMutePlayIcons && renderedIcons}
+                {renderedIcons}
             </React.Fragment>
         ) : (
             <React.Fragment>
-                {settings.showMutePlayIcons && renderedIcons}
+                {renderedIcons}
                 {imageElement}
             </React.Fragment>
         );
