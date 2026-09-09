@@ -33,7 +33,7 @@ export class YoutubeHandler extends DefaultHandler {
             );
             if (handle) {
                 const pxOffset = (cappedVolume / 100) * 40;
-                handle.style = `left: ${pxOffset}px`;
+                handle.style.left = `${pxOffset}px`;
             }
         }
 
