@@ -24,6 +24,10 @@ import {
     defaultExtensionData,
 } from "./types";
 import { debug } from "./utils";
+import ExtPay from 'extpay';
+
+const extpay = ExtPay('volume-scroll');
+extpay.startBackground();
 
 // Helper function to update action badge indicator for unread updates
 async function updateExtensionBadge() {

@@ -9,6 +9,7 @@
         "@mui/icons-material": "^5.16.7",
         "@mui/material": "^5.16.7",
         "@types/firefox-webext-browser": "^120.0.2",
+        "extpay": "^3.1.2",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "webextension-polyfill": "^0.12.0"
