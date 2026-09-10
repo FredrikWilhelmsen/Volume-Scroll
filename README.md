@@ -60,7 +60,7 @@ Every overlay is fully customizable:
 
 ### Import & Export
 
-- **Share your settings** with a friend, or **import presets** from other users.
+- **Share your settings**, or **import presets** from other users.
 
 ---
 
