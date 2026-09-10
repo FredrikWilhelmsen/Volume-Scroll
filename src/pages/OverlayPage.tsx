@@ -112,6 +112,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
     const overlayBarSide = getValue("overlayBarSide");
     const showNumericValue = getValue("showNumericValue");
     const showMutePlayIcons = getValue("showMutePlayIcons");
+    const customOverlayBoostBehavior = getValue("customOverlayBoostBehavior");
 
     const customOverlayKeys = Object.keys(customOverlays || {});
     const customOverlayOptions =
@@ -145,6 +146,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
             "overlayStyle",
             "customOverlay",
             "customOverlayScale",
+            "customOverlayBoostBehavior",
             "overlayBarSide",
             "showNumericValue",
         ].some((key) => isOverridden(key as keyof Settings));
@@ -387,6 +389,22 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
 
                 {overlayStyle === "custom" && (
                     <>
+                        <NamedDropdown
+                            label="Custom overlay boost"
+                            settingKey="customOverlayBoostBehavior"
+                            value={customOverlayBoostBehavior}
+                            options={[
+                                { value: "stretch", label: "Stretch" },
+                                { value: "loop", label: "Loop" },
+                            ]}
+                            tooltip="Set behavior for custom overlays when boosted"
+                            activeDomain={activeDomain}
+                            editSetting={editSetting}
+                            isOverridden={isOverridden}
+                            handleReset={handleReset}
+                            containerId="customOverlayBoostBehaviorDropdownContainer"
+                            selectId="customOverlayBoostBehaviorSelector"
+                        />
                         <NamedDropdown
                             label="Preset"
                             settingKey="customOverlay"
