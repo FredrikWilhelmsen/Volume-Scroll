@@ -76,7 +76,7 @@ export const defaultSettings: Settings = {
     customPreciseScrollThreshold: 10,
 
     doBoostVolume: false,
-    volumeBoostAmount: 200,
+    volumeBoostAmount: 300,
     boostedColor: "#EB144C",
 
     modifierKey: "Shift",
