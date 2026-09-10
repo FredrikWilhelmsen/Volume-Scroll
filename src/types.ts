@@ -191,9 +191,136 @@ export const defaultExtensionData: ExtensionData = {
             ".ytp-ce-covering-overlay",
         ],
     },
-    customOverlays: {},
+    customOverlays: {
+        "Hearts": {
+            "images": [
+            {
+                "name": "0",
+                "url": "https://i.imgur.com/iXt9YZ5.png"
+            },
+            {
+                "name": "1",
+                "url": "https://i.imgur.com/41qfm6M.png"
+            },
+            {
+                "name": "2",
+                "url": "https://i.imgur.com/d2AWhtv.png"
+            },
+            {
+                "name": "3",
+                "url": "https://i.imgur.com/lCCu8yp.png"
+            },
+            {
+                "name": "4",
+                "url": "https://i.imgur.com/1mbLmQv.png"
+            },
+            {
+                "name": "5",
+                "url": "https://i.imgur.com/seAmD7m.png"
+            },
+            {
+                "name": "6",
+                "url": "https://i.imgur.com/p1bfreS.png"
+            },
+            {
+                "name": "7",
+                "url": "https://i.imgur.com/jcCygIj.png"
+            },
+            {
+                "name": "8",
+                "url": "https://i.imgur.com/OguJySS.png"
+            },
+            {
+                "name": "9",
+                "url": "https://i.imgur.com/gWnVHKF.png"
+            },
+            {
+                "name": "10",
+                "url": "https://i.imgur.com/ioiFnep.png"
+            }
+            ],
+            "frames": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        },
+        "Cat": {
+            "images": [
+            {
+                "name": "Closed",
+                "url": "https://i.imgur.com/DDnQcL8.png"
+            },
+            {
+                "name": "Open",
+                "url": "https://i.imgur.com/YFiCHwg.png"
+            }
+            ],
+            "frames": [
+                0,
+                1,
+                0,
+                1,
+                0,
+                1,
+                0,
+                1,
+                0,
+                1,
+                0,
+                1,
+                0,
+                1,
+                0,
+                1,
+                0,
+                1,
+                0,
+                1
+            ]
+        },
+        "Signal": {
+            "images": [
+            {
+                "name": "Image #1",
+                "url": "https://i.imgur.com/im3JNTb.png"
+            },
+            {
+                "name": "Image #2",
+                "url": "https://i.imgur.com/CGwsdxa.png"
+            },
+            {
+                "name": "Image #3",
+                "url": "https://i.imgur.com/gi7H7Dy.png"
+            },
+            {
+                "name": "Image #4",
+                "url": "https://i.imgur.com/OoQxtLL.png"
+            },
+            {
+                "name": "Image #5",
+                "url": "https://i.imgur.com/wKvZn5o.png"
+            }
+            ],
+            "frames": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ]
+        }
+      },
     lastVersionRead: "0.0.0",
-    schemaVersion: 5,
+    schemaVersion: 6,
 };
 
 export interface ExportData extends Partial<
