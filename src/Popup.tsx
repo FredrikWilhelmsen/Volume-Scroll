@@ -323,17 +323,6 @@ const SettingsPopup = () => {
                         setPage={navigateTo}
                     />
                 )}
-
-                <Button
-                    id="customOverlayButton"
-                    variant="outlined"
-                    fullWidth
-                    disabled={!isPaid}
-                    onClick={handleOpenPayment}
-                    sx={{ marginTop: "12px" }}
-                >
-                    Unpay
-                </Button>
             </div>
         </div>
     );

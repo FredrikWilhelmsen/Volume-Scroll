@@ -38,6 +38,8 @@ import {
     defaultExtensionData,
 } from "./types";
 
+import ExtPay from "extpay";
+
 import { DefaultHandler } from "./handlers/Default";
 import { YoutubeHandler } from "./handlers/Youtube";
 import { TwitchHandler } from "./handlers/Twitch";
@@ -86,6 +88,8 @@ const processedMessageIds = new Set<string>();
 let parentDisabledState: boolean = false;
 let parentHasVideoState: boolean = false;
 let parentIsFullscreenState: boolean = false;
+
+const extpay = ExtPay("volume-scroll");
 
 export function bindListeners(): void {
     if (listenersBound) return;
@@ -223,6 +227,14 @@ const getActiveHostname = (): string => {
 export const init = () => {
     if (isInitialized) return;
     isInitialized = true;
+
+    extpay.getUser().then((user) => {
+            handler.updatePaidStatus(Boolean(user.paid));
+        })
+        .catch((err) => {
+            debug("[ExtPay] Error fetching user status in content script:", err);
+        });
+
     browser.storage.sync.get("extensionData").then((result) => {
         const data: ExtensionData =
             (result.extensionData as ExtensionData) || defaultExtensionData;
@@ -463,6 +475,14 @@ export const init = () => {
 };
 
 browser.storage.onChanged.addListener((changes, areaName) => {
+
+    extpay.getUser().then((user) => {
+            handler.updatePaidStatus(Boolean(user.paid));
+        })
+        .catch((err) => {
+            debug("[ExtPay] Error fetching user status in content script:", err);
+        });
+
     if (areaName !== "sync") return;
     if (!changes.extensionData) return;
 
