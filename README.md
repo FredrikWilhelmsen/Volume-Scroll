@@ -13,28 +13,54 @@
 ![Chrome Web Store Rating](https://img.shields.io/chrome-web-store/rating/gkmagiadkkhdilnaicdnngcjhmhaeaoh)
 ![GitHub Release](https://img.shields.io/github/v/release/FredrikWilhelmsen/Volume-Scroll)
 
-A highly customizable browser extension for changing video volume by scrolling.
+Let your mouse wheel be the volume knob. Volume Scroll lets you adjust playback volume instantly. No more reaching for tiny on-screen sliders. Just hover over the player and scroll. It works everywhere: YouTube, Twitch, Netflix, Spotify, YT Music, and any other site with a video player.
 
-- **Scroll to change the volume** of any video.
-    - Precise scroll feature for finer volume control at lower levels.
-    - Custom modifier key to toggle the extension on or off while held down.
-    - Optional rounding to the nearest increment.
-    - Display the current volume on screen.
-        - Can be displayed next to your mouse.
-        - Choose from four different pre-set positions, or create your own position.
-        - Customize the overlay's size, duration, color, and background opacity.
-- **Boost audio** up to 500%.
-- **Optional hotkey** for muting or unmuting a video.
-- **Optional hotkey** to swap the scroll step value.
-- **Optional fullscreen** only mode.
-- **Disable or enable** for specific websites.
-- **Set a default** volume level for a video, and optionally start them muted.
-- **Extremely customizable**, change every setting on a per site basis.
-- **Create Custom** handlers if your favorite video site isn't supported.
-- **Share** your settings, or import presets from other users.
-- Also works with YT Music and Spotify!
+### Core Features
 
-_Take it to the next level, and scroll to change the settings in the extension!_
+- **Scroll to change volume** on any video with just your mouse wheel.
+    - **Precise scroll** automatically kicks in at lower volumes for finer control.
+    - **Invert scroll direction** if scrolling down for louder feels more natural.
+    - **Round to the nearest increment** for clean, predictable volume steps.
+    - **Modifier key**: hold a key (e.g. Shift) to toggle volume scroll on or off.
+    - **Alternate step**: hold a different key to switch between two volume increment sizes.
+- **Audio boost**: push volume up to 1000% with a custom boost color indicator.
+
+### Visual Overlay
+
+Choose how you see your volume change, with multiple overlay styles:
+
+- **Number**: a clean numeric display.
+- **Bar**: a volume bar along any edge of the screen.
+- **Circle**: a radial indicator.
+- **Retro**: a classic volume meter look.
+- **Custom**: upload your own image frames that animate across volume steps.
+
+Every overlay is fully customizable:
+
+- **Position**: snap to a corner, place it anywhere with custom X/Y coordinates, or have it **follow your mouse**.
+- Adjust **size, duration, color, background opacity**, and even apply a **dutch angle** tilt.
+- Show or hide **mute/unmute and play/pause icons** on the overlay.
+
+### Smart Behavior
+- **Custom shortcuts**: assign hotkeys or mouse buttons to toggle mute/unmute and play/pause.
+- **Fullscreen-only mode**: only activate when a video is fullscreen.
+- **Playing-only mode**: only activate when a video is actively playing.
+- **Iframe support**: works seamlessly inside embedded players.
+
+### Per-Site Control
+
+- **Enable or disable** the extension on specific websites.
+- **Set a default volume** and optionally **start videos muted** per site.
+- **Every setting** can be overridden on a per-site basis. Scroll behavior, overlay style, boost amount, all of it.
+
+### Custom Rules & Extensibility
+
+- **Create custom handlers** for sites that aren't supported out of the box, just provide a CSS selector for the video element.
+- **Ignore specific elements** on a site to prevent scroll hijacking in menus, chat panels, and other UI.
+
+### Import & Export
+
+- **Share your settings** with a friend, or **import presets** from other users.
 
 ---
 
