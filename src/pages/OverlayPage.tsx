@@ -390,7 +390,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
                 {overlayStyle === "custom" && (
                     <>
                         <NamedDropdown
-                            label="Custom overlay boost"
+                            label="Boost behavior"
                             settingKey="customOverlayBoostBehavior"
                             value={customOverlayBoostBehavior}
                             options={[
