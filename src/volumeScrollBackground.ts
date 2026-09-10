@@ -29,6 +29,23 @@ import ExtPay from 'extpay';
 const extpay = ExtPay('volume-scroll');
 extpay.startBackground();
 
+// Listen for the payment confirmation globally
+extpay.onPaid.addListener(async (user) => {
+    if (user.paid) {
+        // Find all tabs where your volume overlay content script might be running
+        const tabs = await browser.tabs.query({});
+
+        for (const tab of tabs) {
+            // Safely notify the content scripts in real-time
+            if (tab.id !== undefined) {
+                browser.tabs.sendMessage(tab.id, { type: "PAYMENT_SUCCESSFUL" }).catch(() => {
+                    // Silently catch errors for tabs where content script isn't running
+                });
+            }
+        }
+    }
+});
+
 // Helper function to update action badge indicator for unread updates
 async function updateExtensionBadge() {
     const syncData = await browser.storage.sync.get("extensionData");

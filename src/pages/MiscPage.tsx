@@ -6,7 +6,7 @@ import ToggleSlider from "../components/ToggleSlider";
 import Toggle from "../components/Toggle";
 import ColorPicker from "../components/ColorPicker";
 import Hotkey from "../components/Hotkey";
-import NamedDropdown from "../components/NamedDropdown";
+import Button from "@mui/material/Button";
 
 interface MiscPageInterface {
     settings: Settings;
@@ -15,6 +15,8 @@ interface MiscPageInterface {
     editSetting: (key: keyof Settings, value: any, domain?: string) => void;
     resetSetting?: (key: keyof Settings, domain: string) => void;
     setPage: (targetPage: Pages) => void;
+    isPaid?: boolean;
+    onOpenLogin: () => void;
 }
 
 const MiscPage: React.FC<MiscPageInterface> = ({
@@ -24,6 +26,8 @@ const MiscPage: React.FC<MiscPageInterface> = ({
     editSetting,
     resetSetting,
     setPage,
+    isPaid = false,
+    onOpenLogin,
 }) => {
     // Helper functions for overrides
     const getValue = <K extends keyof Settings>(key: K): Settings[K] => {
@@ -204,6 +208,16 @@ const MiscPage: React.FC<MiscPageInterface> = ({
                         handleReset={handleReset}
                         containerStyle={{ marginTop: "12px" }}
                     />
+                    <Button
+                        id="manageSubscriptionButton"
+                        variant="outlined"
+                        fullWidth
+                        disabled={!isPaid}
+                        onClick={onOpenLogin}
+                        sx={{ marginTop: "12px" }}
+                    >
+                        Manage Subscription
+                    </Button>
                 </div>
             </div>
         </div>

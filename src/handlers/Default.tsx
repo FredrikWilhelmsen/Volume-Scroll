@@ -82,6 +82,10 @@ export class DefaultHandler {
         this.isPaid = isPaid;
     }
 
+    public getIsPaid(): boolean {
+        return this.isPaid;
+    }
+
     public updateCustomOverlays(
         customOverlays: Record<string, CustomOverlay>,
     ): void {

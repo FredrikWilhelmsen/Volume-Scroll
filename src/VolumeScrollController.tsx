@@ -229,11 +229,11 @@ export const init = () => {
     isInitialized = true;
 
     extpay.getUser().then((user) => {
-            handler.updatePaidStatus(Boolean(user.paid));
-        })
-        .catch((err) => {
-            debug("[ExtPay] Error fetching user status in content script:", err);
-        });
+        handler.updatePaidStatus(Boolean(user.paid));
+        debug("[ExtPay] Setting user status: " + user.paid);
+    }).catch((err) => {
+        debug("[ExtPay] Error fetching user status in content script:", err);
+    });
 
     browser.storage.sync.get("extensionData").then((result) => {
         const data: ExtensionData =
@@ -273,6 +273,11 @@ export const init = () => {
                 event.data.type === "VOLUME_SCROLL_IFRAME_PONG" ||
                 event.data.type === "VOLUME_SCROLL_PARENT_STATUS"
             ) {
+                // Update the iframe's paid status if provided by the parent window
+                if (event.data.parentIsPaid !== undefined) {
+                    handler.updatePaidStatus(Boolean(event.data.parentIsPaid));
+                }
+
                 parentDisabledState = event.data.parentDisabled;
                 parentHasVideoState = event.data.parentHasVideo;
                 if (typeof event.data.parentIsFullscreen === "boolean") {
@@ -476,13 +481,6 @@ export const init = () => {
 
 browser.storage.onChanged.addListener((changes, areaName) => {
 
-    extpay.getUser().then((user) => {
-            handler.updatePaidStatus(Boolean(user.paid));
-        })
-        .catch((err) => {
-            debug("[ExtPay] Error fetching user status in content script:", err);
-        });
-
     if (areaName !== "sync") return;
     if (!changes.extensionData) return;
 
@@ -506,6 +504,19 @@ browser.storage.onChanged.addListener((changes, areaName) => {
 });
 
 browser.runtime.onMessage.addListener((message: any) => {
+    // Handle payment confirmation from background script
+    if (message.type === "PAYMENT_SUCCESSFUL") {
+        debug("[ExtPay] Got Payment Successfull message")
+
+        handler.updatePaidStatus(true);
+
+        // If running in the top window, notify any iframes
+        if (window.top === window.self) {
+            broadcastStatusToIframes();
+        }
+        return;
+    }
+
     if (message.type === "GET_DEBUG_LOGS") {
         // Only the top-level frame should respond to avoid multiple conflicting responses
         if (window.top !== window.self) return;
@@ -566,6 +577,7 @@ export function broadcastStatusToIframes(): void {
     const hasVideo = document.getElementsByTagName("video").length > 0;
     const disabled = isDisabledOnSite();
     const isFsActive = isFullscreenModeActive();
+
     for (let i = 0; i < iframes.length; i++) {
         try {
             iframes[i].contentWindow?.postMessage(
@@ -574,6 +586,7 @@ export function broadcastStatusToIframes(): void {
                     parentDisabled: disabled,
                     parentHasVideo: hasVideo,
                     parentIsFullscreen: isFsActive,
+                    parentIsPaid: handler.getIsPaid(),
                 },
                 "*",
             );

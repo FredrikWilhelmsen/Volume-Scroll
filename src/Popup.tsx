@@ -105,6 +105,10 @@ const SettingsPopup = () => {
         extpay.openPaymentPage();
     };
 
+    const handleOpenLogin = (): void => {
+        extpay.openLoginPage();
+    }
+
     // Handler for updating settings
     const handleSettingChange = (
         key: keyof Settings,
@@ -276,6 +280,8 @@ const SettingsPopup = () => {
                         editSetting={handleSettingChange}
                         resetSetting={handleSettingReset}
                         setPage={navigateTo}
+                        isPaid={isPaid}
+                        onOpenLogin={handleOpenLogin}
                     />
                 )}
                 {page === "domains" && (
