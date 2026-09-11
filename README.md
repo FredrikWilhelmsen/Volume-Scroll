@@ -13,7 +13,9 @@
 ![Chrome Web Store Rating](https://img.shields.io/chrome-web-store/rating/gkmagiadkkhdilnaicdnngcjhmhaeaoh)
 ![GitHub Release](https://img.shields.io/github/v/release/FredrikWilhelmsen/Volume-Scroll)
 
-Let your mouse wheel be the volume knob. Volume Scroll lets you adjust playback volume instantly. No more reaching for tiny on-screen sliders. Just hover over the player and scroll. It works everywhere: YouTube, Twitch, Netflix, Spotify, YT Music, and any other site with a video player.
+Let your mouse wheel be the volume knob. Volume Scroll lets you adjust playback volume instantly. No more reaching for tiny on-screen sliders. Just hover over the player and scroll. The goal is to work everywhere: YouTube, Twitch, Netflix, Spotify, YT Music, and any other site with a HTML5 video player.
+
+The extension comes preconfigured, but Volume Scroll is extensively customizable. Nearly any setting can be changed as you see fit.
 
 ### Core Features
 
