@@ -6,7 +6,7 @@ import ToggleSlider from "../components/ToggleSlider";
 import Toggle from "../components/Toggle";
 import ColorPicker from "../components/ColorPicker";
 import Hotkey from "../components/Hotkey";
-import NamedDropdown from "../components/NamedDropdown";
+import Button from "@mui/material/Button";
 
 interface MiscPageInterface {
     settings: Settings;
@@ -15,6 +15,8 @@ interface MiscPageInterface {
     editSetting: (key: keyof Settings, value: any, domain?: string) => void;
     resetSetting?: (key: keyof Settings, domain: string) => void;
     setPage: (targetPage: Pages) => void;
+    isPaid?: boolean;
+    onOpenLogin: () => void;
 }
 
 const MiscPage: React.FC<MiscPageInterface> = ({
@@ -24,6 +26,8 @@ const MiscPage: React.FC<MiscPageInterface> = ({
     editSetting,
     resetSetting,
     setPage,
+    isPaid = false,
+    onOpenLogin,
 }) => {
     // Helper functions for overrides
     const getValue = <K extends keyof Settings>(key: K): Settings[K] => {
@@ -60,7 +64,6 @@ const MiscPage: React.FC<MiscPageInterface> = ({
     const startMuted = getValue("startMuted");
     const doBoostVolume = getValue("doBoostVolume");
     const boostedColor = getValue("boostedColor");
-    const customOverlayBoostBehavior = getValue("customOverlayBoostBehavior");
     const useAlternateVolumeIncrement = getValue("useAlternateVolumeIncrement");
     const alternateVolumeIncrementHotkey = getValue(
         "alternateVolumeIncrementHotkey",
@@ -75,7 +78,6 @@ const MiscPage: React.FC<MiscPageInterface> = ({
             "doBoostVolume",
             "volumeBoostAmount",
             "boostedColor",
-            "customOverlayBoostBehavior",
             "useAlternateVolumeIncrement",
             "alternateVolumeIncrement",
             "alternateVolumeIncrementHotkey",
@@ -168,22 +170,6 @@ const MiscPage: React.FC<MiscPageInterface> = ({
                     handleReset={handleReset}
                     containerId="boostColorPickerContainer"
                 />
-                <NamedDropdown
-                    label="Custom overlay boost"
-                    settingKey="customOverlayBoostBehavior"
-                    value={customOverlayBoostBehavior}
-                    options={[
-                        { value: "stretch", label: "Stretch" },
-                        { value: "loop", label: "Loop" },
-                    ]}
-                    tooltip="Set behavior for custom overlays when boosted"
-                    activeDomain={activeDomain}
-                    editSetting={editSetting}
-                    isOverridden={isOverridden}
-                    handleReset={handleReset}
-                    containerId="customOverlayBoostBehaviorDropdownContainer"
-                    selectId="customOverlayBoostBehaviorSelector"
-                />
                 <div id="alternateIncrementContainer">
                     <ToggleSlider
                         label="Alt. Step"
@@ -222,6 +208,16 @@ const MiscPage: React.FC<MiscPageInterface> = ({
                         handleReset={handleReset}
                         containerStyle={{ marginTop: "12px" }}
                     />
+                    <Button
+                        id="manageSubscriptionButton"
+                        variant="outlined"
+                        fullWidth
+                        disabled={!isPaid}
+                        onClick={onOpenLogin}
+                        sx={{ marginTop: "12px" }}
+                    >
+                        Manage Subscription
+                    </Button>
                 </div>
             </div>
         </div>

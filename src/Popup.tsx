@@ -39,11 +39,17 @@ import UpdatePage from "./pages/UpdatePage";
 import CustomRulesPage from "./pages/CustomRulesPage";
 import CustomOverlayPage from "./pages/CustomOverlayPage";
 import SharePage from "./pages/SharePage";
+import Button from "@mui/material/Button";
 import "./style/globalStyle.css";
 import "@fontsource/roboto/latin-300.css";
 import "@fontsource/roboto/latin-400.css";
 import "@fontsource/roboto/latin-500.css";
 import "@fontsource/roboto/latin-700.css";
+import ExtPay from "extpay";
+import { debug } from "./utils";
+
+//Init extpay
+const extpay = ExtPay("volume-scroll");
 
 const SettingsPopup = () => {
     const [extensionData, setExtensionData] = useState<ExtensionData | null>(
@@ -51,8 +57,16 @@ const SettingsPopup = () => {
     );
     const [activeDomain, setActiveDomain] = useState<string | null>(null);
     const [page, setPage] = useState<Pages>("menu");
+    const [isPaid, setIsPaid] = useState<boolean>(false);
 
     useEffect(() => {
+        extpay.getUser().then((user) => {
+                setIsPaid(Boolean(user.paid));
+            })
+            .catch((err) => {
+                debug("[ExtPay] Failed to retrieve payment status:", err);
+            });
+
         //Load saved settings when the component mounts
         browser.storage.sync.get("extensionData").then((result) => {
             const data: ExtensionData =
@@ -86,6 +100,14 @@ const SettingsPopup = () => {
         }
         setPage(targetPage);
     };
+
+    const handleOpenPayment = (): void => {
+        extpay.openPaymentPage();
+    };
+
+    const handleOpenLogin = (): void => {
+        extpay.openLoginPage();
+    }
 
     // Handler for updating settings
     const handleSettingChange = (
@@ -246,6 +268,8 @@ const SettingsPopup = () => {
                         resetSetting={handleSettingReset}
                         setPage={navigateTo}
                         customOverlays={extensionData.customOverlays}
+                        isPaid={isPaid}
+                        onOpenPayment={handleOpenPayment}
                     />
                 )}
                 {page === "misc" && (
@@ -256,6 +280,8 @@ const SettingsPopup = () => {
                         editSetting={handleSettingChange}
                         resetSetting={handleSettingReset}
                         setPage={navigateTo}
+                        isPaid={isPaid}
+                        onOpenLogin={handleOpenLogin}
                     />
                 )}
                 {page === "domains" && (

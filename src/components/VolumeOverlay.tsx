@@ -25,6 +25,7 @@ export interface VolumeOverlayProps {
     animationKey: number;
     playerRect?: DOMRect;
     parentRect?: DOMRect;
+    isPaid: boolean;
 }
 
 export const VolumeOverlay: React.FC<VolumeOverlayProps> = ({
@@ -39,6 +40,7 @@ export const VolumeOverlay: React.FC<VolumeOverlayProps> = ({
     animationKey,
     playerRect,
     parentRect,
+    isPaid,
 }) => {
     const [lastMuteStickyTime, setLastMuteStickyTime] = useState(0);
     const [lastMuteStickyType, setLastMuteStickyType] =
@@ -179,34 +181,40 @@ export const VolumeOverlay: React.FC<VolumeOverlayProps> = ({
 
         if (settings.overlayStyle === "custom") {
             if (hasSelectedCustomOverlay) {
-                return (
-                    <CustomOverlay
-                        volume={volume}
-                        mouseX={mouseX}
-                        mouseY={mouseY}
-                        settings={settings}
-                        customOverlays={customOverlays}
-                        animationKey={animationKey}
-                        fadeStartPercentage={fadeStartPercentage}
-                        playerRect={playerRect}
-                        parentRect={parentRect}
-                        isMuteSticky={isMuteSticky}
-                        lastMuteStickyType={lastMuteStickyType}
-                        isPauseSticky={isPauseSticky}
-                        lastPauseStickyType={lastPauseStickyType}
-                    />
+                if (isPaid) {
+                    return (
+                        <CustomOverlay
+                            volume={volume}
+                            mouseX={mouseX}
+                            mouseY={mouseY}
+                            settings={settings}
+                            customOverlays={customOverlays}
+                            animationKey={animationKey}
+                            fadeStartPercentage={fadeStartPercentage}
+                            playerRect={playerRect}
+                            parentRect={parentRect}
+                            isMuteSticky={isMuteSticky}
+                            lastMuteStickyType={lastMuteStickyType}
+                            isPauseSticky={isPauseSticky}
+                            lastPauseStickyType={lastPauseStickyType}
+                        />
+                    );
+                }
+                else {
+                    debug("[ExtPay] Custom overlay chosen, but user has not paid. Defaulting to NumberOverlay");
+                }
+            }
+            else {
+                debug(
+                    `Custom overlay "${settings.customOverlay}" not found or none selected. Defaulting to NumberOverlay.`,
+                    {
+                        customOverlay: settings.customOverlay,
+                        availableOverlays: customOverlays
+                            ? Object.keys(customOverlays)
+                            : [],
+                    },
                 );
             }
-
-            debug(
-                `Custom overlay "${settings.customOverlay}" not found or none selected. Defaulting to NumberOverlay.`,
-                {
-                    customOverlay: settings.customOverlay,
-                    availableOverlays: customOverlays
-                        ? Object.keys(customOverlays)
-                        : [],
-                },
-            );
         }
 
         return (

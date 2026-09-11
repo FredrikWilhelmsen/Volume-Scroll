@@ -22,6 +22,8 @@ interface OverlayPageInterface {
     resetSetting?: (key: keyof Settings, domain: string) => void;
     setPage: (targetPage: Pages) => void;
     customOverlays?: Record<string, CustomOverlay>;
+    isPaid?: boolean;
+    onOpenPayment: () => void;
 }
 
 const OverlayPage: React.FC<OverlayPageInterface> = ({
@@ -32,6 +34,8 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
     resetSetting,
     setPage,
     customOverlays = {},
+    isPaid = false,
+    onOpenPayment,
 }) => {
     const getValue = <K extends keyof Settings>(key: K): Settings[K] => {
         return overrideSettings?.[key] ?? settings[key];
@@ -112,6 +116,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
     const overlayBarSide = getValue("overlayBarSide");
     const showNumericValue = getValue("showNumericValue");
     const showMutePlayIcons = getValue("showMutePlayIcons");
+    const customOverlayBoostBehavior = getValue("customOverlayBoostBehavior");
 
     const customOverlayKeys = Object.keys(customOverlays || {});
     const customOverlayOptions =
@@ -145,6 +150,7 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
             "overlayStyle",
             "customOverlay",
             "customOverlayScale",
+            "customOverlayBoostBehavior",
             "overlayBarSide",
             "showNumericValue",
         ].some((key) => isOverridden(key as keyof Settings));
@@ -387,54 +393,90 @@ const OverlayPage: React.FC<OverlayPageInterface> = ({
 
                 {overlayStyle === "custom" && (
                     <>
-                        <NamedDropdown
-                            label="Preset"
-                            settingKey="customOverlay"
-                            value={selectedCustomOverlay}
-                            options={customOverlayOptions}
-                            disabled={
-                                !useMouseWheelVolume ||
-                                !useOverlay ||
-                                customOverlayKeys.length === 0
-                            }
-                            tooltip="Select custom overlay preset"
-                            activeDomain={activeDomain}
-                            editSetting={editSetting}
-                            isOverridden={isOverridden}
-                            handleReset={handleReset}
-                            containerId="customOverlayDropdownContainer"
-                            selectId="customOverlaySelector"
-                        />
-                        <Button
-                            id="customOverlayButton"
-                            variant="outlined"
-                            fullWidth
-                            disabled={!useMouseWheelVolume || !useOverlay}
-                            onClick={() => setPage("customOverlayPage")}
-                            sx={{ marginTop: "12px" }}
-                        >
-                            Edit Overlays
-                        </Button>
-                        <Slider
-                            label="Image scale"
-                            settingKey="customOverlayScale"
-                            value={customOverlayScale}
-                            min={5}
-                            max={90}
-                            step={1}
-                            ariaLabel="Image scale"
-                            disabled={!useMouseWheelVolume || !useOverlay}
-                            tooltip="Set the scale of the custom overlay image"
-                            valueTooltip="Current image scale"
-                            activeDomain={activeDomain}
-                            editSetting={editSetting}
-                            isOverridden={isOverridden}
-                            handleReset={handleReset}
-                            onValueChange={setCustomOverlayScale}
-                            id="customOverlayScaleContainer"
-                            displayContainerId="customOverlayScaleDisplay"
-                            valueDisplayId="customOverlayScaleValueDisplay"
-                        />
+                        {!isPaid ? (
+                            <Tooltip
+                                title="Custom overlays are a supporter only perk"
+                                disableInteractive
+                            >
+                                <Button
+                                    id="upgradeCustomOverlayButton"
+                                    variant="contained"
+                                    color="warning"
+                                    fullWidth
+                                    disabled={!useMouseWheelVolume || !useOverlay}
+                                    onClick={onOpenPayment}
+                                >
+                                    Unlock
+                                </Button>
+                            </Tooltip>
+                        ) : (
+                            <>
+                                <NamedDropdown
+                                    label="Boost behavior"
+                                    settingKey="customOverlayBoostBehavior"
+                                    value={customOverlayBoostBehavior}
+                                    options={[
+                                        { value: "stretch", label: "Stretch" },
+                                        { value: "loop", label: "Loop" },
+                                    ]}
+                                    tooltip="Set behavior for custom overlays when boosted"
+                                    activeDomain={activeDomain}
+                                    editSetting={editSetting}
+                                    isOverridden={isOverridden}
+                                    handleReset={handleReset}
+                                    containerId="customOverlayBoostBehaviorDropdownContainer"
+                                    selectId="customOverlayBoostBehaviorSelector"
+                                />
+                                <NamedDropdown
+                                    label="Preset"
+                                    settingKey="customOverlay"
+                                    value={selectedCustomOverlay}
+                                    options={customOverlayOptions}
+                                    disabled={
+                                        !useMouseWheelVolume ||
+                                        !useOverlay ||
+                                        customOverlayKeys.length === 0
+                                    }
+                                    tooltip="Select custom overlay preset"
+                                    activeDomain={activeDomain}
+                                    editSetting={editSetting}
+                                    isOverridden={isOverridden}
+                                    handleReset={handleReset}
+                                    containerId="customOverlayDropdownContainer"
+                                    selectId="customOverlaySelector"
+                                />
+                                <Button
+                                    id="customOverlayButton"
+                                    variant="outlined"
+                                    fullWidth
+                                    disabled={!useMouseWheelVolume || !useOverlay}
+                                    onClick={() => setPage("customOverlayPage")}
+                                    sx={{ marginTop: "12px" }}
+                                >
+                                    Edit Overlays
+                                </Button>
+                                <Slider
+                                    label="Image scale"
+                                    settingKey="customOverlayScale"
+                                    value={customOverlayScale}
+                                    min={5}
+                                    max={90}
+                                    step={1}
+                                    ariaLabel="Image scale"
+                                    disabled={!useMouseWheelVolume || !useOverlay}
+                                    tooltip="Set the scale of the custom overlay image"
+                                    valueTooltip="Current image scale"
+                                    activeDomain={activeDomain}
+                                    editSetting={editSetting}
+                                    isOverridden={isOverridden}
+                                    handleReset={handleReset}
+                                    onValueChange={setCustomOverlayScale}
+                                    id="customOverlayScaleContainer"
+                                    displayContainerId="customOverlayScaleDisplay"
+                                    valueDisplayId="customOverlayScaleValueDisplay"
+                                />
+                            </>
+                        )}
                     </>
                 )}
 

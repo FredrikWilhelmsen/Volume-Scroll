@@ -38,6 +38,7 @@ export class DefaultHandler {
     protected customRules: CustomRule[] = [];
     protected ignoredElements: string[] = [];
     protected customOverlays: Record<string, CustomOverlay> = {};
+    protected isPaid: boolean = false;
 
     // Preloaded custom overlay images, kept alive in memory so the browser's
     // image cache stays warm and the overlay can render them instantly, even
@@ -75,6 +76,14 @@ export class DefaultHandler {
 
     public updateSettings(newSettings: Settings): void {
         this.settings = newSettings;
+    }
+
+    public updatePaidStatus(isPaid: boolean): void {
+        this.isPaid = isPaid;
+    }
+
+    public getIsPaid(): boolean {
+        return this.isPaid;
     }
 
     public updateCustomOverlays(
@@ -623,6 +632,7 @@ export class DefaultHandler {
                 animationKey={this.animationKey}
                 playerRect={displayRect}
                 parentRect={parentRect}
+                isPaid={this.isPaid}
             />,
         );
     }
